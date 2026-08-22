@@ -1,0 +1,6 @@
+{
+  "name": "سيكرت كيلر - Secret Killer",
+  "description": "لعبة الاستنتاج والتحقيق التفاعلية مع الأصدقاء - تدفق لعب كامل من ملف القضية والأدوار السرية والأدلة إلى التصويت وكشف القاتل",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

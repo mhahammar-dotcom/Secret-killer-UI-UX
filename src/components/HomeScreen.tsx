@@ -1,0 +1,271 @@
+import React, { useState } from 'react';
+import { motion } from 'motion/react';
+import { Search, BookOpen, Settings, Users, Trophy, HelpCircle, Star, Crown } from 'lucide-react';
+import { sound } from '../utils/audio';
+import { AchievementsModal } from './AchievementsModal';
+import { OnlineComingSoonModal } from './OnlineComingSoonModal';
+import { RatingModal } from './RatingModal';
+import { FingerprintGraphic } from './FingerprintGraphic';
+import noirBg from '../assets/images/noir_home_bg_1787348360647.jpg';
+
+interface HomeScreenProps {
+  onStartGame: () => void;
+  onOpenCustomStories: () => void;
+  onOpenSettings: () => void;
+  onOpenRules: () => void;
+  totalStories: number;
+  customStoriesCount: number;
+}
+
+export const HomeScreen: React.FC<HomeScreenProps> = ({
+  onStartGame,
+  onOpenCustomStories,
+  onOpenSettings,
+  onOpenRules,
+  totalStories,
+  customStoriesCount,
+}) => {
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [showOnlineModal, setShowOnlineModal] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+
+  return (
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-between p-3 sm:p-5 select-none bg-[#050608] overflow-hidden" dir="rtl">
+      
+      {/* Background Image: Full Viewport Atmospheric Noir Scene */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <img
+          src={noirBg}
+          alt="Noir Victorian Street"
+          referrerPolicy="no-referrer"
+          className="w-full h-full object-cover object-center filter brightness-90 contrast-110"
+        />
+        {/* Soft atmospheric vignettes */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/25 to-black/90" />
+        <div className="absolute inset-0 bg-radial from-transparent via-black/35 to-black/85" />
+      </div>
+
+      {/* Main Container - Compact & Zoomed Out Layout */}
+      <div className="relative z-10 w-full max-w-[360px] flex flex-col justify-between flex-1 py-2">
+        
+        {/* 1. Top Header Bar (Settings on Left + Premium Crown on Right) */}
+        <div className="flex items-center justify-between w-full pt-1 px-1">
+          {/* Settings Circle Button */}
+          <button
+            onClick={() => {
+              sound.playClick();
+              onOpenSettings();
+            }}
+            className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/50 text-[#e5b35a] flex items-center justify-center hover:bg-black/80 hover:border-[#e5b35a] shadow-lg shadow-black/80 transition-all cursor-pointer active:scale-95"
+            title="الإعدادات"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+
+          {/* Premium Crown Badge */}
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#c8923a]/60 text-[#f3cb79] text-[11px] font-bold font-['Cairo'] shadow-lg shadow-black/80">
+            <Crown className="w-3.5 h-3.5 text-[#e5b35a] fill-[#e5b35a]" />
+            <span>النسخة المميزة</span>
+          </div>
+        </div>
+
+        {/* 2. Hero Visual Area: Big Bold "SECRET KILLER" Title with ONLY Faded Fingerprint */}
+        <div className="flex flex-col items-center justify-center text-center my-auto py-2">
+          <div className="relative flex flex-col items-center justify-center w-full">
+            
+            {/* Faded vector fingerprint graphic behind the text */}
+            <div className="absolute -top-6 w-36 h-48 pointer-events-none flex items-center justify-center">
+              <div className="absolute w-28 h-36 bg-red-600/20 rounded-full blur-xl animate-pulse" />
+              <FingerprintGraphic
+                className="w-full h-full drop-shadow-[0_0_12px_rgba(239,68,68,0.6)]"
+                opacity={0.35}
+              />
+            </div>
+
+            {/* Big Prominent Title */}
+            <div className="relative z-10 flex flex-col items-center">
+              <h1 className="text-[44px] sm:text-[50px] font-black font-sans uppercase tracking-[0.18em] text-slate-100 drop-shadow-[0_6px_18px_rgba(0,0,0,1)] leading-[0.95] pl-[0.18em]">
+                SECRET
+              </h1>
+              <h1 className="text-[44px] sm:text-[50px] font-black font-sans uppercase tracking-[0.24em] text-[#dc2626] drop-shadow-[0_6px_22px_rgba(220,38,38,0.95)] leading-[0.95] pl-[0.24em] mt-0.5">
+                KILLER
+              </h1>
+
+              {/* Tagline */}
+              <p className="text-xs text-slate-200/90 font-semibold font-['Cairo'] mt-2.5 drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
+                اكتشف الحقيقة قبل فوات الأوان
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Action Cards Stack - Clean, Compact, Zoomed-Out */}
+        <div className="flex flex-col gap-2.5 w-full my-auto">
+          {/* Card 1: العب قصة (Featured Red Card) */}
+          <motion.button
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              sound.playClick();
+              onStartGame();
+            }}
+            className="w-full rounded-2xl p-3 shadow-xl border border-[#b8860b]/55 bg-gradient-to-r from-[#441812]/95 via-[#34120e]/95 to-[#260c09]/95 hover:from-[#541e17] hover:to-[#36100c] transition-all cursor-pointer flex items-center justify-between backdrop-blur-md group"
+          >
+            {/* Search Icon */}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#e5b35a] shrink-0">
+              <Search className="w-6 h-6 stroke-[2.2]" />
+            </div>
+
+            {/* Title & Subtitle */}
+            <div className="text-center flex-1 pr-1">
+              <h3 className="text-base font-black font-['Cairo'] text-white group-hover:text-amber-200 transition-colors leading-tight">
+                العب قصة
+              </h3>
+              <p className="text-[11px] text-amber-200/75 font-medium font-['Cairo'] mt-0.5">
+                اختر قصة وابدأ اللعبة
+              </p>
+            </div>
+
+            {/* Spacer */}
+            <div className="w-10 h-10 shrink-0 opacity-0" />
+          </motion.button>
+
+          {/* Card 2: قصصي المخصصة */}
+          <motion.button
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              sound.playClick();
+              onOpenCustomStories();
+            }}
+            className="w-full rounded-2xl p-3 shadow-lg border border-[#8a6828]/45 bg-[#0c0e15]/90 hover:bg-[#131722]/95 hover:border-[#c8923a]/65 transition-all cursor-pointer flex items-center justify-between backdrop-blur-md group"
+          >
+            {/* Book Icon */}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#e5b35a] shrink-0">
+              <BookOpen className="w-6 h-6 stroke-[2.2]" />
+            </div>
+
+            {/* Title & Subtitle */}
+            <div className="text-center flex-1 pr-1">
+              <h3 className="text-base font-black font-['Cairo'] text-slate-100 group-hover:text-amber-300 transition-colors leading-tight">
+                قصصي المخصصة
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium font-['Cairo'] mt-0.5">
+                أنشئ قصتك الخاصة
+              </p>
+            </div>
+
+            {/* Spacer */}
+            <div className="w-10 h-10 shrink-0 opacity-0" />
+          </motion.button>
+
+          {/* Card 3: اللعب عبر الإنترنت */}
+          <motion.button
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              sound.playClick();
+              setShowOnlineModal(true);
+            }}
+            className="w-full rounded-2xl p-3 shadow-lg border border-[#8a6828]/45 bg-[#0c0e15]/90 hover:bg-[#131722]/95 hover:border-[#c8923a]/65 transition-all cursor-pointer flex items-center justify-between backdrop-blur-md group"
+          >
+            {/* Users Icon */}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#e5b35a] shrink-0">
+              <Users className="w-6 h-6 stroke-[2.2]" />
+            </div>
+
+            {/* Title & Subtitle */}
+            <div className="text-center flex-1 pr-1">
+              <h3 className="text-base font-black font-['Cairo'] text-slate-100 group-hover:text-amber-300 transition-colors leading-tight">
+                اللعب عبر الإنترنت
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium font-['Cairo'] mt-0.5">
+                العب مع أصدقائك عن بُعد
+              </p>
+            </div>
+
+            {/* Badge: قريباً */}
+            <div className="w-10 h-10 flex items-center justify-center shrink-0">
+              <span className="bg-[#701616] border border-[#a82a2a]/70 text-red-100 text-[10px] px-2 py-0.5 rounded-lg font-bold font-['Cairo'] shadow-sm">
+                قريباً
+              </span>
+            </div>
+          </motion.button>
+
+          {/* Card 4: إنجازاتي */}
+          <motion.button
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              sound.playClick();
+              setShowAchievements(true);
+            }}
+            className="w-full rounded-2xl p-3 shadow-lg border border-[#8a6828]/45 bg-[#0c0e15]/90 hover:bg-[#131722]/95 hover:border-[#c8923a]/65 transition-all cursor-pointer flex items-center justify-between backdrop-blur-md group"
+          >
+            {/* Trophy Icon */}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#e5b35a] shrink-0">
+              <Trophy className="w-6 h-6 stroke-[2.2]" />
+            </div>
+
+            {/* Title & Subtitle */}
+            <div className="text-center flex-1 pr-1">
+              <h3 className="text-base font-black font-['Cairo'] text-slate-100 group-hover:text-amber-300 transition-colors leading-tight">
+                إنجازاتي
+              </h3>
+              <p className="text-[11px] text-slate-400 font-medium font-['Cairo'] mt-0.5">
+                تتبع إحصائياتك وإنجازاتك
+              </p>
+            </div>
+
+            {/* Spacer */}
+            <div className="w-10 h-10 shrink-0 opacity-0" />
+          </motion.button>
+        </div>
+
+        {/* 4. Bottom Navigation / Actions Footer */}
+        <div className="flex items-center justify-between gap-2.5 w-full mt-2 pt-1">
+          {/* Left Button: تقييم التطبيق */}
+          <button
+            onClick={() => {
+              sound.playClick();
+              setShowRatingModal(true);
+            }}
+            className="flex-1 py-2 px-3 rounded-2xl bg-[#0e1017]/85 hover:bg-[#181d2c]/95 border border-slate-700/60 hover:border-[#c8923a]/50 text-slate-300 hover:text-white transition-all text-[11px] font-bold font-['Cairo'] flex items-center justify-center gap-1.5 shadow-md backdrop-blur-md cursor-pointer"
+          >
+            <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <span>تقييم التطبيق</span>
+          </button>
+
+          {/* Right Button: كيف تلعب؟ */}
+          <button
+            onClick={() => {
+              sound.playClick();
+              onOpenRules();
+            }}
+            className="flex-1 py-2 px-3 rounded-2xl bg-[#0e1017]/85 hover:bg-[#181d2c]/95 border border-slate-700/60 hover:border-[#c8923a]/50 text-slate-300 hover:text-white transition-all text-[11px] font-bold font-['Cairo'] flex items-center justify-center gap-1.5 shadow-md backdrop-blur-md cursor-pointer"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+            <span>كيف تلعب؟</span>
+          </button>
+        </div>
+
+      </div>
+
+      {/* Modals */}
+      <AchievementsModal
+        isOpen={showAchievements}
+        onClose={() => setShowAchievements(false)}
+      />
+
+      <OnlineComingSoonModal
+        isOpen={showOnlineModal}
+        onClose={() => setShowOnlineModal(false)}
+      />
+
+      <RatingModal
+        isOpen={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+      />
+    </div>
+  );
+};

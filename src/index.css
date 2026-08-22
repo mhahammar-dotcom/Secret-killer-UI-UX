@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background-color: #0c0d12;
+    color: #f1f5f9;
+    font-family: 'Tajawal', 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #090a0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #252836;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c8923a;
+}
+
+/* Gold Gradient Button matching mockup */
+.btn-gold {
+  background: linear-gradient(135deg, #f0be65 0%, #dda244 50%, #b87c24 100%);
+  color: #120a02;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 900;
+  box-shadow: 0 4px 15px rgba(221, 162, 68, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  border: 1px solid #fed78a;
+  transition: all 0.2s ease;
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #f8cb78 0%, #e5ad4e 50%, #c4872c 100%);
+  box-shadow: 0 6px 20px rgba(221, 162, 68, 0.45);
+}
+
+.btn-gold:active {
+  transform: scale(0.98);
+}
+
+/* Crimson Red Gradient Button for voting/danger */
+.btn-crimson {
+  background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+  color: #ffffff;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 900;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  border: 1px solid #f87171;
+  transition: all 0.2s ease;
+}
+
+.btn-crimson:hover {
+  background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+}
+
+/* Gold Border Noir Card */
+.noir-card {
+  background: linear-gradient(180deg, #141722 0%, #0d0f17 100%);
+  border: 1px solid rgba(217, 154, 58, 0.35);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.9), 0 0 15px rgba(217, 154, 58, 0.08);
+}
+
+.noir-card-subtle {
+  background: rgba(18, 21, 30, 0.85);
+  border: 1px solid rgba(217, 154, 58, 0.2);
+}
+
+/* Skewed Red Stamp for Killer Reveal */
+.stamp-killer {
+  border: 4px solid #dc2626;
+  color: #dc2626;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  display: inline-block;
+  padding: 4px 20px;
+  transform: rotate(-14deg);
+  border-radius: 8px;
+  box-shadow: 0 0 25px rgba(220, 38, 38, 0.5), inset 0 0 10px rgba(220, 38, 38, 0.2);
+  text-shadow: 0 0 12px rgba(220, 38, 38, 0.7);
+  background: rgba(220, 38, 38, 0.12);
+  animation: stampPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes stampPop {
+  0% {
+    opacity: 0;
+    transform: scale(2.6) rotate(-30deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-14deg);
+  }
+}
+
