@@ -96,8 +96,16 @@ export class VotingEngine {
     let winner: WinnerSide = 'NONE';
     let endReason: GameEndReason | null = null;
 
+    /**
+     * VOTING TIE BEHAVIOR SPECIFICATION:
+     * When voting results in a tie (i.e., two or more living players receive the identical highest vote count, or zero votes cast):
+     * 1. `isTie` is set to true.
+     * 2. No player is eliminated for this round (`eliminatedPlayer` is null).
+     * 3. The wrong-vote counter is NOT incremented (`wrongVotesCount` remains unchanged).
+     * 4. No additional penalty hint is unlocked.
+     * 5. The game continues to the next discussion round without elimination.
+     */
     if (isTie || topPlayerIds.length === 0) {
-      // In case of a tie, no one is eliminated in this round
       return {
         selectedPlayerId: null,
         selectedPlayer: null,

@@ -29,10 +29,32 @@ export class CharacterAllocator {
     const random = options?.randomFn || Math.random;
     const doShuffle = options?.shuffle ?? true;
 
-    // 1. Determine guilty count based on story configuration or options
+    // Check if story supports this player count based on available unique characters
+    const totalAvailableChars = (story.guiltyPool?.length || 0) + (story.innocentPool?.length || 0);
+    if (playerCount > totalAvailableChars) {
+      throw new Error(
+        `This story supports a maximum of ${totalAvailableChars} players because it only contains ${totalAvailableChars} valid characters.`
+      );
+    }
+
+    // 1. Determine guilty count based on story configuration or explicit options
     const targetGuiltyCount = options?.guiltyCount !== undefined
-      ? Math.min(Math.max(1, options.guiltyCount), story.guiltyPool.length)
+      ? options.guiltyCount
       : StoryEngine.getGuiltyCountForScenario(story);
+
+    if (targetGuiltyCount < 1) {
+      throw new Error('At least 1 guilty character is required.');
+    }
+    if (targetGuiltyCount > story.guiltyPool.length) {
+      throw new Error(
+        `Requested ${targetGuiltyCount} guilty characters, but story guiltyPool only contains ${story.guiltyPool.length}.`
+      );
+    }
+    if (targetGuiltyCount >= playerCount) {
+      throw new Error(
+        `Guilty characters count (${targetGuiltyCount}) must be less than total players (${playerCount}).`
+      );
+    }
 
     // 2. Select guilty character(s) from guiltyPool
     const shuffledGuiltyPool = doShuffle
@@ -41,43 +63,27 @@ export class CharacterAllocator {
 
     const selectedGuiltyChars = shuffledGuiltyPool.slice(0, targetGuiltyCount).map(char => ({
       ...char,
-      guilty: true // Internal flag
+      guilty: true // Internal flag only
     }));
 
-    // 3. Determine innocent characters needed
+    // 3. Determine innocent characters needed (strictly from innocentPool, no fake characters)
     const innocentCountNeeded = playerCount - selectedGuiltyChars.length;
+    if (innocentCountNeeded > story.innocentPool.length) {
+      throw new Error(
+        `Insufficient innocent characters in story (needed ${innocentCountNeeded}, available ${story.innocentPool.length}).`
+      );
+    }
+
     const shuffledInnocentPool = doShuffle
       ? this.shuffleArray([...story.innocentPool], random)
       : [...story.innocentPool];
 
-    // Ensure we have enough innocent characters (fill dynamically if pool is smaller than 12)
-    const selectedInnocentChars: StoryCharacter[] = [];
-    for (let i = 0; i < innocentCountNeeded; i++) {
-      if (i < shuffledInnocentPool.length) {
-        selectedInnocentChars.push({
-          ...shuffledInnocentPool[i],
-          guilty: false
-        });
-      } else {
-        // Fallback generator for high player counts if custom story has fewer characters
-        const baseIndex = i % (shuffledInnocentPool.length || 1);
-        const baseChar = shuffledInnocentPool[baseIndex] || {
-          name: `ضيف إضافي ${i + 1}`,
-          profession: 'شاهد إضافي',
-          publicIdentity: 'ضيف متواجد أثناء الحادثة',
-          knowledge: 'كنت متواجداً في المكان ولكن لم ألحظ شيئاً مريباً للوهلة الأولى.'
-        };
-        selectedInnocentChars.push({
-          name: `${baseChar.name} (${i + 1})`,
-          profession: baseChar.profession,
-          publicIdentity: baseChar.publicIdentity,
-          knowledge: baseChar.knowledge,
-          guilty: false
-        });
-      }
-    }
+    const selectedInnocentChars = shuffledInnocentPool.slice(0, innocentCountNeeded).map(char => ({
+      ...char,
+      guilty: false
+    }));
 
-    // 4. Combine all characters
+    // 4. Combine all characters - strictly unique legitimate story characters
     const allAssignedCharacters = [...selectedGuiltyChars, ...selectedInnocentChars];
 
     // 5. Shuffle the characters so guilty isn't always player 1

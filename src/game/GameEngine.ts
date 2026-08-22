@@ -205,6 +205,8 @@ export class GameEngine {
     let updatedPlayers = [...this.state.players];
     const newEliminations = [...this.state.history.eliminations];
 
+    // If voteResult.isTie is true, voteResult.eliminatedPlayer is null.
+    // The engine records no elimination, leaves wrongVotes unchanged, and proceeds.
     if (voteResult.eliminatedPlayer) {
       const elim = PlayerManager.eliminatePlayer(
         this.state.players,

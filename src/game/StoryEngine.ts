@@ -66,13 +66,37 @@ export class StoryEngine {
     if (totalCharacters < story.minPlayers) {
       errors.push(`Total available characters (${totalCharacters}) is less than minPlayers (${story.minPlayers}).`);
     }
+    if (story.maxPlayers > totalCharacters) {
+      errors.push(`Story maxPlayers (${story.maxPlayers}) exceeds total unique characters in pool (${totalCharacters}).`);
+    }
 
-    // Validate that characters have authentic professions and aren't named "Killer" / "قاتل" as their story role
+    // Validate guilty count configuration
+    if (story.requiredGuiltyCount !== undefined) {
+      if (story.requiredGuiltyCount < 1) {
+        errors.push('Story requiredGuiltyCount must be at least 1.');
+      }
+      if (story.requiredGuiltyCount > (story.guiltyPool?.length || 0)) {
+        errors.push(`Story requires ${story.requiredGuiltyCount} guilty characters, but only ${story.guiltyPool?.length || 0} are in guiltyPool.`);
+      }
+      if (story.requiredGuiltyCount >= (story.minPlayers || 4)) {
+        errors.push(`Guilty count (${story.requiredGuiltyCount}) must be less than minPlayers (${story.minPlayers}).`);
+      }
+    }
+
+    // Validate character uniqueness across all pools
+    const seenNames = new Set<string>();
     const allCharacters = [...(story.guiltyPool || []), ...(story.innocentPool || [])];
     for (const char of allCharacters) {
       if (!char.name || char.name.trim() === '') {
         errors.push('All characters must have a valid name.');
+        continue;
       }
+      const normalizedName = char.name.trim().toLowerCase();
+      if (seenNames.has(normalizedName)) {
+        errors.push(`Duplicate character name found: "${char.name}". Every character must be unique.`);
+      }
+      seenNames.add(normalizedName);
+
       if (!char.profession || char.profession.trim() === '') {
         errors.push(`Character "${char.name}" must have a legitimate profession/role.`);
       }
@@ -114,12 +138,14 @@ export class StoryEngine {
    * Determines the configured guilty count for a scenario.
    * If the story explicitly specifies requiredGuiltyCount, use it (clamped to guiltyPool.length).
    * Otherwise defaults to 1 (or min of pool and 1).
+   * Player count NEVER automatically determines guilty count.
    */
   static getGuiltyCountForScenario(story: Story): number {
-    if (story.requiredGuiltyCount && story.requiredGuiltyCount > 0) {
+    if (story.requiredGuiltyCount !== undefined && story.requiredGuiltyCount > 0) {
       return Math.min(story.requiredGuiltyCount, story.guiltyPool.length);
     }
-    return Math.min(1, story.guiltyPool.length);
+    // If story defines a guilty pool, use 1 by default unless requiredGuiltyCount is set
+    return Math.min(1, story.guiltyPool?.length || 1);
   }
 
   /**
