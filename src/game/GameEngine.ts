@@ -133,6 +133,43 @@ export class GameEngine {
   }
 
   /**
+   * Returns current viewing player in ROLE_PASS phase
+   */
+  public getCurrentViewingPlayer(): Player | null {
+    if (this.state.players.length === 0) return null;
+    return this.state.players[this.state.currentViewingPlayerIndex] || null;
+  }
+
+  /**
+   * Returns current viewing player index
+   */
+  public getCurrentViewingPlayerIndex(): number {
+    return this.state.currentViewingPlayerIndex;
+  }
+
+  /**
+   * Checks if current viewing player is the last player in the list
+   */
+  public isLastViewingPlayer(): boolean {
+    if (this.state.players.length === 0) return true;
+    return this.state.currentViewingPlayerIndex >= this.state.players.length - 1;
+  }
+
+  /**
+   * Resets role pass to first player
+   */
+  public resetRolePass(): GameState {
+    if (this.state.phase === 'ROLE_PASS') {
+      this.state = {
+        ...this.state,
+        currentViewingPlayerIndex: 0
+      };
+      this.notify();
+    }
+    return this.getState();
+  }
+
+  /**
    * Transitions from lobby or role reveal directly to discussion
    */
   public startDiscussion(): GameState {

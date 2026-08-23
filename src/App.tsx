@@ -7,7 +7,7 @@ import { HomeScreen } from './components/HomeScreen';
 import { StorySelectScreen } from './components/StorySelectScreen';
 import { CaseIntroScreen } from './components/CaseIntroScreen';
 import { PlayerSetupScreen } from './components/PlayerSetupScreen';
-import { SecretRoleScreen } from './components/SecretRoleScreen';
+import { RolePassScreen } from './components/RolePassScreen';
 import { DiscussionEvidenceScreen } from './components/DiscussionEvidenceScreen';
 import { VotingScreen } from './components/VotingScreen';
 import { VoteResultScreen } from './components/VoteResultScreen';
@@ -108,8 +108,11 @@ export default function App() {
     }
   };
 
-  const handleFinishRoles = () => {
-    setCurrentScreen('free_discussion');
+  const handleAdvanceRolePass = () => {
+    const updatedState = gameEngine.advanceRolePass();
+    if (updatedState.phase === 'DISCUSSION') {
+      setCurrentScreen('free_discussion');
+    }
   };
 
   const handleProceedToVoting = () => {
@@ -264,10 +267,14 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="w-full"
             >
-              <SecretRoleScreen
-                players={players}
-                onFinishRoles={handleFinishRoles}
-                onBack={() => setCurrentScreen('player_setup')}
+              <RolePassScreen
+                players={gameState.players}
+                currentViewingIndex={gameState.currentViewingPlayerIndex}
+                onAdvanceRolePass={handleAdvanceRolePass}
+                onBack={() => {
+                  gameEngine.resetRolePass();
+                  setCurrentScreen('player_setup');
+                }}
                 onNavigateHome={handleNavigateHome}
               />
             </motion.div>
