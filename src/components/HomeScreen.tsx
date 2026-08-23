@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Search, BookOpen, Settings, Users, Trophy, HelpCircle, Star, Crown } from 'lucide-react';
+import { BookOpen, Settings, Users, Trophy, HelpCircle, Star, Crown } from 'lucide-react';
 import { sound } from '../utils/audio';
 import { AchievementsModal } from './AchievementsModal';
 import { OnlineComingSoonModal } from './OnlineComingSoonModal';
 import { RatingModal } from './RatingModal';
 import { FingerprintGraphic } from './FingerprintGraphic';
+import { KillerKnifeIcon } from './KillerKnifeIcon';
 import noirBg from '../assets/images/noir_home_bg_1787348360647.jpg';
 
 interface HomeScreenProps {
@@ -74,7 +75,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className="relative flex flex-col items-center justify-center w-full">
             
             {/* Faded vector fingerprint graphic behind the text */}
-            <div className="absolute -top-6 w-36 h-48 pointer-events-none flex items-center justify-center">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-2 w-36 h-48 pointer-events-none flex items-center justify-center">
               <div className="absolute w-28 h-36 bg-red-600/20 rounded-full blur-xl animate-pulse" />
               <FingerprintGraphic
                 className="w-full h-full drop-shadow-[0_0_12px_rgba(239,68,68,0.6)]"
@@ -111,9 +112,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             }}
             className="w-full rounded-2xl p-3 shadow-xl border border-[#b8860b]/55 bg-gradient-to-r from-[#441812]/95 via-[#34120e]/95 to-[#260c09]/95 hover:from-[#541e17] hover:to-[#36100c] transition-all cursor-pointer flex items-center justify-between backdrop-blur-md group"
           >
-            {/* Search Icon */}
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#e5b35a] shrink-0">
-              <Search className="w-6 h-6 stroke-[2.2]" />
+            {/* Movie Killer Knife Icon */}
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-[#e5b35a] group-hover:text-amber-300 shrink-0 transition-colors">
+              <KillerKnifeIcon className="w-8 h-8 drop-shadow-[0_0_8px_rgba(229,179,90,0.55)]" />
             </div>
 
             {/* Title & Subtitle */}
@@ -127,7 +128,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
 
             {/* Spacer */}
-            <div className="w-10 h-10 shrink-0 opacity-0" />
+            <div className="w-11 h-11 shrink-0 opacity-0" />
           </motion.button>
 
           {/* Card 2: قصصي المخصصة */}

@@ -40,7 +40,7 @@ const STORY_META_MAP: Record<string, StoryMeta> = {
   museum: {
     difficultyText: 'صعب',
     difficultyLevel: 3,
-    image: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=800&auto=format&fit=crop&q=80',
+    image: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=800&auto=format&fit=crop&q=80',
   },
   // 4. قطار منتصف الليل (Classic luxury train interior / vintage train racing through dark night)
   train: {
@@ -288,10 +288,10 @@ export const StorySelectScreen: React.FC<StorySelectScreenProps> = ({
                     sound.playClick();
                     onSelectStory(story);
                   }}
-                  className="relative w-full rounded-[24px] bg-[#0d0f16] border border-[#7a5c2b]/50 hover:border-[#c8923a] p-4 sm:p-5 shadow-[0_6px_22px_rgba(0,0,0,0.7)] transition-all cursor-pointer flex items-center gap-4 sm:gap-5 overflow-hidden group"
+                  className="relative w-full rounded-[22px] bg-[#0d0f16] border border-[#7a5c2b]/50 hover:border-[#c8923a] p-3.5 sm:p-4.5 shadow-[0_6px_22px_rgba(0,0,0,0.7)] transition-all cursor-pointer flex items-center gap-3.5 sm:gap-4.5 overflow-hidden group"
                 >
                   {/* Left Thumbnail Image with High Clarity & Optional "جديد" Ribbon Badge */}
-                  <div className="relative w-[130px] sm:w-[155px] h-[115px] sm:h-[130px] rounded-[18px] overflow-hidden shrink-0 border border-[#3b3223] shadow-md bg-black">
+                  <div className="relative w-[110px] sm:w-[140px] h-[105px] sm:h-[125px] rounded-[16px] overflow-hidden shrink-0 border border-[#3b3223] shadow-md bg-black">
                     <img
                       src={storyImg}
                       alt={story.title}
@@ -314,7 +314,7 @@ export const StorySelectScreen: React.FC<StorySelectScreenProps> = ({
                   </div>
 
                   {/* Story Content & Large Legible Data Fields */}
-                  <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
+                  <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5 h-full">
                     
                     {/* Title & Direction Arrow */}
                     <div className="flex items-start justify-between gap-2">
@@ -330,57 +330,63 @@ export const StorySelectScreen: React.FC<StorySelectScreenProps> = ({
                     </p>
 
                     {/* Bottom Metadata Fields: Players (4-12 اللاعبين) & Difficulty (متوسط / سهل / صعب) */}
-                    <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-amber-900/25 text-xs sm:text-sm font-['Cairo']">
+                    <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-amber-900/25 text-xs sm:text-sm font-['Cairo'] gap-2">
                       
-                      {/* Players Count Field */}
-                      <div className="flex items-center gap-1.5 text-[#ede6d8]">
-                        <Users className="w-4 h-4 text-[#c8923a]" />
-                        <span className="font-extrabold text-xs sm:text-sm">
+                      {/* Players Count Field: [اللاعبين] [4-12] [Users Icon] in RTL order */}
+                      <div className="flex items-center gap-1.5 shrink-0 text-[#ede6d8]">
+                        <span className="text-[11px] sm:text-xs text-[#a39a8c] whitespace-nowrap">اللاعبين</span>
+                        <span className="font-extrabold text-xs sm:text-sm whitespace-nowrap text-[#f5ede0]">
                           {story.minPlayers === story.maxPlayers
                             ? `${story.minPlayers}`
                             : `${story.minPlayers}-${story.maxPlayers}`}
                         </span>
-                        <span className="text-[11px] sm:text-xs text-[#a39a8c]">اللاعبين</span>
+                        <Users className="w-4 h-4 text-[#c8923a] shrink-0" />
                       </div>
 
                       {/* Difficulty Field with Signal Bars & Dynamic Colors */}
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-[#ede6d8] text-xs sm:text-sm">
-                          {meta.difficultyText}
-                        </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[11px] sm:text-xs text-[#a39a8c] whitespace-nowrap">الصعوبة</span>
                         
                         {/* Custom 3-Bar Difficulty Signal Icon */}
-                        <div className="flex items-end gap-[3px] h-4 px-0.5">
+                        <div className="flex items-end gap-[2.5px] h-3.5 px-0.5 shrink-0">
                           <div
-                            className={`w-[4px] rounded-sm transition-all ${
+                            className={`w-[3.5px] rounded-sm transition-all ${
                               meta.difficultyLevel >= 1
                                 ? meta.difficultyLevel === 1
-                                  ? 'h-2 bg-[#4ade80] shadow-[0_0_8px_rgba(74,222,128,0.5)]' // Green for easy
+                                  ? 'h-2 bg-[#4ade80] shadow-[0_0_6px_rgba(74,222,128,0.5)]' // Green for easy
                                   : meta.difficultyLevel === 2
-                                  ? 'h-2 bg-[#facc15] shadow-[0_0_8px_rgba(250,204,21,0.5)]' // Yellow for medium
-                                  : 'h-2 bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.5)]' // Red for hard
+                                  ? 'h-2 bg-[#facc15] shadow-[0_0_6px_rgba(250,204,21,0.5)]' // Yellow for medium
+                                  : 'h-2 bg-[#ef4444] shadow-[0_0_6px_rgba(239,68,68,0.5)]' // Red for hard
                                 : 'h-2 bg-slate-700'
                             }`}
                           />
                           <div
-                            className={`w-[4px] rounded-sm transition-all ${
+                            className={`w-[3.5px] rounded-sm transition-all ${
                               meta.difficultyLevel >= 2
                                 ? meta.difficultyLevel === 2
-                                  ? 'h-3 bg-[#facc15] shadow-[0_0_8px_rgba(250,204,21,0.5)]' // Yellow for medium
-                                  : 'h-3 bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.5)]' // Red for hard
-                                : 'h-3 bg-slate-700'
+                                  ? 'h-2.5 bg-[#facc15] shadow-[0_0_6px_rgba(250,204,21,0.5)]' // Yellow for medium
+                                  : 'h-2.5 bg-[#ef4444] shadow-[0_0_6px_rgba(239,68,68,0.5)]' // Red for hard
+                                : 'h-2.5 bg-slate-700'
                             }`}
                           />
                           <div
-                            className={`w-[4px] rounded-sm transition-all ${
+                            className={`w-[3.5px] rounded-sm transition-all ${
                               meta.difficultyLevel >= 3
-                                ? 'h-4 bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.5)]' // Red for hard
-                                : 'h-4 bg-slate-700'
+                                ? 'h-3.5 bg-[#ef4444] shadow-[0_0_6px_rgba(239,68,68,0.5)]' // Red for hard
+                                : 'h-3.5 bg-slate-700'
                             }`}
                           />
                         </div>
 
-                        <span className="text-[11px] sm:text-xs text-[#a39a8c]">الصعوبة</span>
+                        <span className={`font-extrabold text-xs sm:text-sm whitespace-nowrap ${
+                          meta.difficultyLevel === 1
+                            ? 'text-emerald-400'
+                            : meta.difficultyLevel === 2
+                            ? 'text-amber-400'
+                            : 'text-rose-400'
+                        }`}>
+                          {meta.difficultyText}
+                        </span>
                       </div>
 
                     </div>

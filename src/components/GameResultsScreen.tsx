@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Trophy, RotateCcw, Home, Skull, ShieldCheck, CheckCircle, Clock, Percent, ArrowLeft, ChevronLeft } from 'lucide-react';
+import { Trophy, RotateCcw, Home, Skull, CheckCircle, ChevronLeft } from 'lucide-react';
 import { StoryData, PlayerData } from '../types';
 import { sound } from '../utils/audio';
 
@@ -31,13 +31,6 @@ export const GameResultsScreen: React.FC<GameResultsScreenProps> = ({
   const correctVotesCount = Object.entries(votes).filter(([voterId, targetId]) => {
     return guiltyPlayers.some((g) => g.id === targetId);
   }).length;
-
-  const voteAccuracy =
-    totalVotesCount > 0
-      ? Math.round((correctVotesCount / totalVotesCount) * 100)
-      : winner === 'innocents'
-      ? 75
-      : 25;
 
   useEffect(() => {
     sound.playGameOver(winner === 'innocents');
@@ -122,19 +115,9 @@ export const GameResultsScreen: React.FC<GameResultsScreenProps> = ({
           </p>
         </motion.div>
 
-        {/* 2x2 Stats Box */}
+        {/* Stats Box */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Stat 1: Correct Votes */}
-          <div className="p-4 rounded-[20px] bg-[#0d0f16] border border-[#7a5c2b]/50 flex flex-col items-center justify-center text-center shadow-md">
-            <span className="text-xs text-[#a39a8c] font-bold mb-1 flex items-center gap-1 font-['Cairo']">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> أصوات صحيحة
-            </span>
-            <span className="text-base sm:text-lg font-black font-['Cairo'] text-[#f5ebd9]">
-              {correctVotesCount} / {totalVotesCount}
-            </span>
-          </div>
-
-          {/* Stat 2: Killer Identity */}
+          {/* Stat 1: Killer Identity */}
           <div className="p-4 rounded-[20px] bg-[#0d0f16] border border-[#7a5c2b]/50 flex flex-col items-center justify-center text-center shadow-md">
             <span className="text-xs text-[#a39a8c] font-bold mb-1 flex items-center gap-1 font-['Cairo']">
               <Skull className="w-3.5 h-3.5 text-red-400" /> القاتل كان
@@ -144,23 +127,13 @@ export const GameResultsScreen: React.FC<GameResultsScreenProps> = ({
             </span>
           </div>
 
-          {/* Stat 3: Duration */}
+          {/* Stat 2: Correct Votes */}
           <div className="p-4 rounded-[20px] bg-[#0d0f16] border border-[#7a5c2b]/50 flex flex-col items-center justify-center text-center shadow-md">
             <span className="text-xs text-[#a39a8c] font-bold mb-1 flex items-center gap-1 font-['Cairo']">
-              <Clock className="w-3.5 h-3.5 text-[#c8923a]" /> مدة اللعبة
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> أصوات صحيحة
             </span>
             <span className="text-base sm:text-lg font-black font-['Cairo'] text-[#f5ebd9]">
-              38:45
-            </span>
-          </div>
-
-          {/* Stat 4: Accuracy */}
-          <div className="p-4 rounded-[20px] bg-[#0d0f16] border border-[#7a5c2b]/50 flex flex-col items-center justify-center text-center shadow-md">
-            <span className="text-xs text-[#a39a8c] font-bold mb-1 flex items-center gap-1 font-['Cairo']">
-              <Percent className="w-3.5 h-3.5 text-[#c8923a]" /> دقة التصويت
-            </span>
-            <span className="text-base sm:text-lg font-black font-['Cairo'] text-[#f5ebd9]">
-              {voteAccuracy}%
+              {correctVotesCount} / {totalVotesCount}
             </span>
           </div>
         </div>
