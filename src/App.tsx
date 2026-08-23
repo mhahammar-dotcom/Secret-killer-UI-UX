@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GameScreen, StoryData, PlayerData, GameSettings } from './types';
 import { BUILT_IN_STORIES, loadCustomStories, saveCustomStory } from './data/cases';
+import { GameEngine, StoryEngine, Story, GameState } from './game';
 import { HomeScreen } from './components/HomeScreen';
 import { StorySelectScreen } from './components/StorySelectScreen';
 import { CaseIntroScreen } from './components/CaseIntroScreen';
@@ -20,14 +21,24 @@ import { CustomStoryModal } from './components/CustomStoryModal';
 import { sound } from './utils/audio';
 
 export default function App() {
+  // Stable GameEngine instance that survives renders
+  const gameEngineRef = useRef<GameEngine | null>(null);
+  if (!gameEngineRef.current) {
+    gameEngineRef.current = new GameEngine();
+  }
+  const gameEngine = gameEngineRef.current;
+
+  // Subscribe React to GameEngine state
+  const [gameState, setGameState] = useState<GameState>(() => gameEngine.getState());
+
+  useEffect(() => {
+    return gameEngine.subscribe(setGameState);
+  }, [gameEngine]);
+
+  // UI Navigation & Stories State
   const [currentScreen, setCurrentScreen] = useState<GameScreen>('home');
   const [stories, setStories] = useState<StoryData[]>(BUILT_IN_STORIES);
   const [selectedStory, setSelectedStory] = useState<StoryData>(BUILT_IN_STORIES[0]);
-  const [players, setPlayers] = useState<PlayerData[]>([]);
-  const [round, setRound] = useState<number>(1);
-  const [wrongVotesCount, setWrongVotesCount] = useState<number>(0);
-  const [lastVotes, setLastVotes] = useState<Record<number, number>>({});
-  const [winner, setWinner] = useState<'innocents' | 'guilty'>('innocents');
 
   // Modals state
   const [showRules, setShowRules] = useState(false);
@@ -50,8 +61,13 @@ export default function App() {
     }
   }, []);
 
-  // Save new custom story
+  // Save new custom story with StoryEngine validation
   const handleSaveCustomStory = (story: StoryData) => {
+    const validation = StoryEngine.validateStory(story as unknown as Story);
+    if (!validation.valid) {
+      alert(`لا يمكن حفظ القصة: ${validation.errors.join('\n')}`);
+      return;
+    }
     saveCustomStory(story);
     setStories([story, ...stories.filter((s) => s.id !== story.id)]);
     setSelectedStory(story);
@@ -64,6 +80,13 @@ export default function App() {
   };
 
   const handleSelectStory = (story: StoryData) => {
+    // Validate story using StoryEngine before proceeding
+    const validation = StoryEngine.validateStory(story as unknown as Story);
+    if (!validation.valid) {
+      console.error('Invalid story rejected by StoryEngine:', validation.errors);
+      alert(`هذه القصة غير صالحة:\n${validation.errors.join('\n')}`);
+      return;
+    }
     setSelectedStory(story);
     setCurrentScreen('story_intro');
   };
@@ -72,11 +95,17 @@ export default function App() {
     setCurrentScreen('player_setup');
   };
 
-  const handleConfirmPlayers = (configuredPlayers: PlayerData[]) => {
-    setPlayers(configuredPlayers);
-    setRound(1);
-    setWrongVotesCount(0);
-    setCurrentScreen('role_pass');
+  // Start new game via GameEngine
+  const handleConfirmPlayers = (playerNames: string[]) => {
+    try {
+      const newState = gameEngine.startNewGame(selectedStory as unknown as Story, playerNames);
+      if (newState.phase === 'ROLE_PASS') {
+        setCurrentScreen('role_pass');
+      }
+    } catch (error: any) {
+      console.error('Failed to start game via GameEngine:', error);
+      alert(error?.message || 'تعذر بدء اللعبة، يرجى التأكد من صحة إعدادات اللاعبين');
+    }
   };
 
   const handleFinishRoles = () => {
@@ -88,69 +117,20 @@ export default function App() {
   };
 
   const handleCompleteVoting = (votes: Record<number, number>) => {
-    setLastVotes(votes);
-
-    // Compute tally to check if innocent is eliminated
-    const counts: Record<number, number> = {};
-    (Object.values(votes) as number[]).forEach((targetId) => {
-      counts[targetId] = (counts[targetId] || 0) + 1;
-    });
-
-    let maxVotes = 0;
-    let topCandidateIds: number[] = [];
-    Object.entries(counts).forEach(([idStr, count]) => {
-      const id = parseInt(idStr, 10);
-      if (count > maxVotes) {
-        maxVotes = count;
-        topCandidateIds = [id];
-      } else if (count === maxVotes) {
-        topCandidateIds.push(id);
-      }
-    });
-
-    if (topCandidateIds.length === 1 && maxVotes > 0) {
-      const eliminatedId = topCandidateIds[0];
-      const targetPlayer = players.find((p) => p.id === eliminatedId);
-      if (targetPlayer && !targetPlayer.guilty) {
-        setWrongVotesCount((prev) => prev + 1);
-      }
+    try {
+      gameEngine.resolveVotes(votes);
+    } catch (e) {
+      console.error('Error resolving votes via GameEngine', e);
     }
-
     setCurrentScreen('vote_result');
   };
 
   const handleProceedNextRound = () => {
-    // Apply elimination from last vote
-    const counts: Record<number, number> = {};
-    (Object.values(lastVotes) as number[]).forEach((targetId) => {
-      counts[targetId] = (counts[targetId] || 0) + 1;
-    });
-
-    let maxVotes = 0;
-    let topCandidateIds: number[] = [];
-    Object.entries(counts).forEach(([idStr, count]) => {
-      const id = parseInt(idStr, 10);
-      if (count > maxVotes) {
-        maxVotes = count;
-        topCandidateIds = [id];
-      } else if (count === maxVotes) {
-        topCandidateIds.push(id);
-      }
-    });
-
-    if (topCandidateIds.length === 1 && maxVotes > 0) {
-      const eliminatedId = topCandidateIds[0];
-      setPlayers((prev) =>
-        prev.map((p) => (p.id === eliminatedId ? { ...p, eliminated: true } : p))
-      );
-    }
-
-    setRound((prev) => prev + 1);
+    gameEngine.proceedAfterVoteResult();
     setCurrentScreen('free_discussion');
   };
 
   const handleProceedToTruth = (determinedWinner: 'innocents' | 'guilty') => {
-    setWinner(determinedWinner);
     setCurrentScreen('killer_reveal');
   };
 
@@ -167,12 +147,36 @@ export default function App() {
   };
 
   const handlePlayAgain = () => {
+    gameEngine.resetToLobby();
     setCurrentScreen('story_select');
   };
 
   const handleNavigateHome = () => {
+    gameEngine.resetToLobby();
     setCurrentScreen('home');
   };
+
+  // Data adapter: convert GameEngine Player shape to UI PlayerData shape
+  const players: PlayerData[] = gameState.players.map((p) => ({
+    id: p.id,
+    name: p.name,
+    character: {
+      name: p.character.name,
+      profession: p.character.profession,
+      publicIdentity: p.character.publicIdentity,
+      knowledge: p.character.knowledge,
+      guilty: p.character.guilty,
+    },
+    guilty: p.guilty,
+    eliminated: p.isEliminated,
+    votedForId: p.votedForId,
+  }));
+
+  const round = gameState.currentRound;
+  const wrongVotesCount = gameState.wrongVotesCount;
+  const winner: 'innocents' | 'guilty' = gameState.winner === 'GUILTY' ? 'guilty' : 'innocents';
+  const lastVotes = gameState.votes;
+  const activeStory = (gameState.story as unknown as StoryData | null) || selectedStory;
 
   const customCount = stories.filter((s) => s.isCustom).length;
 

@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Users, UserPlus, Trash2, Shuffle, ChevronLeft, ArrowLeft, Plus, Home } from 'lucide-react';
-import { StoryData, PlayerData } from '../types';
-import { selectCastForStory } from '../data/cases';
+import { StoryData } from '../types';
 import { sound } from '../utils/audio';
 
 interface PlayerSetupScreenProps {
   story: StoryData;
-  onConfirmPlayers: (players: PlayerData[]) => void;
+  onConfirmPlayers: (playerNames: string[]) => void;
   onBack: () => void;
   onNavigateHome?: () => void;
 }
@@ -57,21 +56,23 @@ export const PlayerSetupScreen: React.FC<PlayerSetupScreenProps> = ({
 
   const handleStartGame = () => {
     sound.playClick();
+    // Validate names are non-empty and unique
     const validatedNames = names.map((n, i) => n.trim() || `لاعب ${i + 1}`);
-    const cast = selectCastForStory(story, validatedNames.length);
-
-    const players: PlayerData[] = validatedNames.map((name, idx) => {
-      const character = cast[idx];
-      return {
-        id: idx,
-        name,
-        character,
-        guilty: character.guilty,
-        eliminated: false,
-      };
+    
+    // Check uniqueness
+    const seen = new Set<string>();
+    const uniqueNames: string[] = [];
+    validatedNames.forEach((name, idx) => {
+      let uniqueName = name;
+      let counter = 2;
+      while (seen.has(uniqueName.toLowerCase())) {
+        uniqueName = `${name} ${counter++}`;
+      }
+      seen.add(uniqueName.toLowerCase());
+      uniqueNames.push(uniqueName);
     });
 
-    onConfirmPlayers(players);
+    onConfirmPlayers(uniqueNames);
   };
 
   return (

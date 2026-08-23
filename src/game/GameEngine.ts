@@ -64,6 +64,16 @@ export class GameEngine {
       throw new Error(`Player count must be between 4 and 12 (received ${playerNames.length}).`);
     }
 
+    // Validate player names: non-empty and unique
+    const trimmedNames = playerNames.map(n => n.trim()).filter(Boolean);
+    if (trimmedNames.length !== playerNames.length) {
+      throw new Error('All player names must be non-empty.');
+    }
+    const nameSet = new Set(trimmedNames.map(n => n.toLowerCase()));
+    if (nameSet.size !== trimmedNames.length) {
+      throw new Error('Duplicate player names are not allowed. Every player must have a unique name.');
+    }
+
     // Allocate characters & guilt internally
     const players = CharacterAllocator.allocateCharacters(story, playerNames, options);
 
