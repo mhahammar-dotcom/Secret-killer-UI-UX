@@ -254,10 +254,7 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                       <span>⚠️ دورك السري في اللعبة (خاص بك فقط):</span>
                     </div>
                     <p className="text-sm font-black text-white font-['Cairo'] leading-snug">
-                      أنت الطرف المدان (المذنب) في هذه الجريمة.
-                    </p>
-                    <p className="text-xs text-red-200/90 font-medium font-['Cairo'] leading-relaxed">
-                      هدفك هو تفادي كشف هويتك، تشتيت الشبهات عنك، وإقناع بقية الحاضرين بالاشتباه في شخص آخر أثناء جولات النقاش والتصويت.
+                      أنت المذنب في هذه الجريمة. لا تكشف هذه المعلومة لأي لاعب آخر.
                     </p>
                   </div>
                 )}

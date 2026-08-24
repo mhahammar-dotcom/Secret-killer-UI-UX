@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
-import { ShieldCheck, ShieldAlert, Scale, Sparkles, AlertCircle, ArrowLeft, Eye, Play, FileText, CheckCircle2, ChevronLeft, Home } from 'lucide-react';
+import { Scale, ChevronLeft, Home, ArrowLeft, Play, UserX, Eye } from 'lucide-react';
 import { StoryData, PlayerData } from '../types';
 import { VoteResult } from '../game/types';
 import { sound } from '../utils/audio';
@@ -30,8 +30,7 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
   onBack,
   onNavigateHome,
 }) => {
-  // If voteResult is provided from GameEngine, use it directly as single source of truth
-  // Otherwise, compute fallback tally from votes object
+  // If voteResult is provided from GameEngine, use it directly as authoritative single source of truth
   const voteCounts: Record<number, number> = {};
   (Object.values(votes || {}) as number[]).forEach((targetId) => {
     voteCounts[targetId] = (voteCounts[targetId] || 0) + 1;
@@ -72,18 +71,7 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
       votedForId: voteResult.eliminatedPlayer.votedForId,
     } : null);
 
-  // Extra clue reveal for ties
-  const [extraClueRevealed, setExtraClueRevealed] = useState<boolean>(false);
-  const extraClueText = story.clues && story.clues.length > 0
-    ? story.clues[Math.min(round - 1, story.clues.length - 1)]
-    : 'لم يتم العثور على أثر جديد في مسرح الجريمة.';
-
-  // Progressive wrong vote hint
-  const effectiveWrongVotesCount = voteResult?.wrongVotesCount ?? wrongVotesCount;
-  const wrongHintIndex = Math.min(effectiveWrongVotesCount, (story.wrongVoteHints?.length || 1) - 1);
-  const wrongHint = voteResult?.unlockedHint || story.wrongVoteHints?.[wrongHintIndex] || 'راجعوا الأدلة بعناية قبل التسرع في التصويت القادم.';
-
-  // Game over state
+  // Authoritative game-over evaluation from GameEngine
   const isGameOver = voteResult !== undefined && voteResult !== null
     ? voteResult.gameOver
     : (() => {
@@ -98,11 +86,6 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
   const winner: 'innocents' | 'guilty' = voteResult !== undefined && voteResult !== null
     ? (voteResult.winner === 'GUILTY' ? 'guilty' : 'innocents')
     : (eliminatedPlayer?.guilty ? 'innocents' : 'guilty');
-
-  const handleRevealExtraClue = () => {
-    sound.playRoleReveal();
-    setExtraClueRevealed(true);
-  };
 
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center bg-[#07080c] select-none text-slate-100 pb-16 pt-4 px-3 sm:px-6" dir="rtl">
@@ -162,88 +145,92 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
               </div>
 
               <div>
-                <h3 className="text-2xl sm:text-3xl font-black font-['Cairo'] text-[#f5ebd9]">
-                  ⚖️ تعادل في الأصوات!
+                <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-black/60 text-[#f3cb79] border border-[#c8923a]/40 mb-2 inline-block font-['Cairo']">
+                  تعادل في الأصوات ⚖️
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-black font-['Cairo'] text-[#f5ebd9] mt-1">
+                  لم يُحسم التصويت
                 </h3>
-                <p className="text-xs sm:text-sm text-[#c4beb3] mt-1.5 max-w-[320px] leading-relaxed font-['Cairo']">
-                  تساوت أصوات المشتبه بهم، لذلك لا يتم استبعاد أي شخص في هذه الجولة.
+                <p className="text-sm text-[#c4beb3] mt-2 max-w-[340px] leading-relaxed font-['Cairo']">
+                  تساوت أصوات المشتبه بهم، لذلك لم يتم استبعاد أي شخص في هذه الجولة. تستمر الجلسة بالنقاش والتحقيق.
                 </p>
               </div>
 
-              {/* Extra Clue Section */}
-              {!extraClueRevealed ? (
-                <button
-                  onClick={handleRevealExtraClue}
-                  className="mt-2 px-5 py-3 rounded-2xl bg-[#c8923a]/20 hover:bg-[#c8923a]/30 text-[#f3cb79] border border-[#c8923a]/60 text-xs sm:text-sm font-black font-['Cairo'] flex items-center gap-2 cursor-pointer shadow-md transition-all"
-                >
-                  <Sparkles className="w-4 h-4 text-[#f3cb79]" />
-                  <span>كشف دليل إضافي لكسر التعادل 🧩</span>
-                </button>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="w-full p-4 rounded-2xl bg-[#141724] border border-[#c8923a]/50 text-right"
-                >
-                  <span className="text-xs sm:text-sm font-black text-[#f3cb79] flex items-center gap-1.5 font-['Cairo'] mb-1">
-                    <FileText className="w-4 h-4 text-[#c8923a]" />
-                    <span>دليل إضافي جديد ظهر في مسرح الجريمة:</span>
+              {/* Vote tallies breakdown */}
+              {voteResult?.tallies && voteResult.tallies.length > 0 && (
+                <div className="w-full mt-2 pt-3 border-t border-amber-900/30 flex flex-col gap-2">
+                  <span className="text-xs text-[#a39a8c] font-bold font-['Cairo'] text-right block">
+                    توزيع الأصوات:
                   </span>
-                  <p className="text-xs sm:text-sm text-[#f5ebd9] font-medium leading-relaxed font-['Cairo']">
-                    {extraClueText}
-                  </p>
-                </motion.div>
+                  <div className="grid grid-cols-2 gap-2 text-right">
+                    {voteResult.tallies.map((tally) => (
+                      <div
+                        key={tally.playerId}
+                        className="p-2.5 rounded-xl bg-black/40 border border-[#7a5c2b]/40 flex items-center justify-between text-xs font-['Cairo']"
+                      >
+                        <span className="text-[#f5ebd9] font-bold truncate max-w-[100px]">
+                          {tally.characterName}
+                        </span>
+                        <span className="text-[#f3cb79] font-black">
+                          {tally.voteCount} أصوات
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </>
           ) : (
-            /* ELIMINATION CASE */
+            /* ELIMINATION CASE (Suspenseful - zero guilt leakage) */
             <>
-              <div
-                className={`w-20 h-20 rounded-3xl border flex items-center justify-center shadow-xl ${
-                  eliminatedPlayer?.guilty
-                    ? 'bg-[#c52222]/20 border-red-500/60 text-red-400'
-                    : 'bg-[#121520] border-[#c8923a]/50 text-[#f3cb79]'
-                }`}
-              >
-                {eliminatedPlayer?.guilty ? (
-                  <ShieldAlert className="w-10 h-10 text-red-400" />
-                ) : (
-                  <ShieldCheck className="w-10 h-10 text-[#f3cb79]" />
-                )}
+              <div className="w-20 h-20 rounded-3xl bg-red-950/25 border border-red-500/60 flex items-center justify-center text-red-400 shadow-xl">
+                <UserX className="w-10 h-10" />
               </div>
 
               <div>
                 <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-black/60 text-[#f3cb79] border border-[#c8923a]/40 mb-2 inline-block font-['Cairo']">
-                  أعلى نسبة أصوات ({maxVotes} أصوات)
+                  حُسم قرار الأغلبية ({maxVotes} أصوات)
                 </span>
                 <h3 className="text-2xl sm:text-3xl font-black font-['Cairo'] text-[#f5ebd9] mt-1">
-                  تم استبعاد: {eliminatedPlayer?.name}
+                  تم استبعاد: {eliminatedPlayer?.character.name}
                 </h3>
                 <p className="text-xs sm:text-sm text-[#e5b35a] font-bold font-['Cairo'] mt-0.5">
-                  ({eliminatedPlayer?.character.name} • {eliminatedPlayer?.character.profession})
+                  اللاعب: {eliminatedPlayer?.name} • {eliminatedPlayer?.character.profession}
                 </p>
               </div>
 
-              {/* Status Badge */}
-              <div
-                className={`w-full py-3 px-4 rounded-2xl border text-center font-black font-['Cairo'] text-sm sm:text-base ${
-                  eliminatedPlayer?.guilty
-                    ? 'bg-[#c52222]/20 border-red-500/60 text-red-300'
-                    : 'bg-[#141724] border-[#7a5c2b]/60 text-[#f5ebd9]'
-                }`}
-              >
-                {eliminatedPlayer?.guilty ? (
-                  <span>🎯 أصابت الأغلبية! هذا اللاعب كان القاتل (مذنب).</span>
-                ) : (
-                  <span>❌ خاب الظن! هذا اللاعب كان بريئاً تماماً.</span>
-                )}
+              {/* Suspenseful Status Notice (No guilt / innocence leak) */}
+              <div className="w-full py-3.5 px-4 rounded-2xl bg-black/50 border border-[#7a5c2b]/60 text-center font-medium font-['Cairo'] text-xs sm:text-sm text-[#d4cfc7] leading-relaxed">
+                <span>
+                  تم استبعاد هذا المشتبه به من جلسة التحقيق وسحب حقه في التصويت. ستتضح الحقيقة كاملة في نهاية القضية.
+                </span>
               </div>
 
-              {/* Wrong Vote Hint */}
-              {!eliminatedPlayer?.guilty && !isGameOver && (
-                <div className="w-full p-3.5 rounded-2xl bg-amber-950/30 border border-amber-500/30 text-right text-xs text-[#d4cfc7] font-['Cairo'] leading-relaxed">
-                  <span className="font-black text-[#f3cb79] block mb-0.5">💡 تلميح للمحققين:</span>
-                  {wrongHint}
+              {/* Vote tallies breakdown */}
+              {voteResult?.tallies && voteResult.tallies.length > 0 && (
+                <div className="w-full mt-1 pt-3 border-t border-amber-900/30 flex flex-col gap-2">
+                  <span className="text-xs text-[#a39a8c] font-bold font-['Cairo'] text-right block">
+                    نتائج الفرز:
+                  </span>
+                  <div className="grid grid-cols-2 gap-2 text-right">
+                    {voteResult.tallies.map((tally) => (
+                      <div
+                        key={tally.playerId}
+                        className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-['Cairo'] ${
+                          tally.playerId === eliminatedPlayerId
+                            ? 'bg-red-950/30 border-red-500/50 text-red-200'
+                            : 'bg-black/40 border-[#7a5c2b]/40 text-[#f5ebd9]'
+                        }`}
+                      >
+                        <span className="font-bold truncate max-w-[100px]">
+                          {tally.characterName}
+                        </span>
+                        <span className={`font-black ${tally.playerId === eliminatedPlayerId ? 'text-red-400' : 'text-[#f3cb79]'}`}>
+                          {tally.voteCount} أصوات
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </>
@@ -260,10 +247,10 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
                 sound.playClick();
                 onProceedToTruth(winner);
               }}
-              className="w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black font-['Cairo'] text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer"
+              className="w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-red-600 via-red-500 to-amber-600 text-white font-black font-['Cairo'] text-base sm:text-lg shadow-[0_6px_22px_rgba(220,38,38,0.35)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer"
             >
               <Eye className="w-5 h-5 stroke-[2.5]" />
-              <span>كشف الستار وإعلان الحقيقة الكاملة</span>
+              <span>انتهت الجلسة — كشف الحقيقة والنتائج</span>
             </motion.button>
           ) : (
             <motion.button
@@ -276,7 +263,7 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
               className="w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black font-['Cairo'] text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer"
             >
               <Play className="w-5 h-5 fill-slate-950 stroke-none" />
-              <span>بدء الجولة القادمة ({round + 1})</span>
+              <span>متابعة النقاش والتحقيق (الجولة {round + 1})</span>
             </motion.button>
           )}
         </div>
@@ -284,3 +271,4 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
     </div>
   );
 };
+

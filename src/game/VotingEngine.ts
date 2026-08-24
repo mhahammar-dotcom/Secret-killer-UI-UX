@@ -16,6 +16,53 @@ export interface ResolveVoteParams {
  */
 export class VotingEngine {
   /**
+   * Validates whether all alive players have submitted valid votes for living targets.
+   */
+  static validateVotes(
+    votes: Record<number, number>,
+    players: Player[]
+  ): {
+    isValid: boolean;
+    missingVoterIds: number[];
+    invalidVoters: number[];
+    invalidTargets: number[];
+  } {
+    const alivePlayers = PlayerManager.getAlivePlayers(players);
+    const aliveIds = new Set(alivePlayers.map(p => p.id));
+    const missingVoterIds: number[] = [];
+    const invalidVoters: number[] = [];
+    const invalidTargets: number[] = [];
+
+    for (const player of alivePlayers) {
+      if (!(player.id in votes)) {
+        missingVoterIds.push(player.id);
+      }
+    }
+
+    for (const [voterIdStr, targetId] of Object.entries(votes)) {
+      const voterId = Number(voterIdStr);
+      if (!aliveIds.has(voterId)) {
+        invalidVoters.push(voterId);
+      }
+      if (!aliveIds.has(targetId)) {
+        invalidTargets.push(targetId);
+      }
+    }
+
+    const isValid =
+      missingVoterIds.length === 0 &&
+      invalidVoters.length === 0 &&
+      invalidTargets.length === 0;
+
+    return {
+      isValid,
+      missingVoterIds,
+      invalidVoters,
+      invalidTargets
+    };
+  }
+
+  /**
    * Tallies cast votes and determines plurality / ties.
    */
   static tallyVotes(

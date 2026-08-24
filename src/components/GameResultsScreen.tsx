@@ -117,14 +117,18 @@ export const GameResultsScreen: React.FC<GameResultsScreenProps> = ({
 
         {/* Stats Box */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Stat 1: Killer Identity */}
+          {/* Stat 1: Guilty Identity/List */}
           <div className="p-4 rounded-[20px] bg-[#0d0f16] border border-[#7a5c2b]/50 flex flex-col items-center justify-center text-center shadow-md">
             <span className="text-xs text-[#a39a8c] font-bold mb-1 flex items-center gap-1 font-['Cairo']">
-              <Skull className="w-3.5 h-3.5 text-red-400" /> القاتل كان
+              <Skull className="w-3.5 h-3.5 text-red-400" /> {guiltyPlayers.length > 1 ? 'الجناة كانوا' : 'الجاني كان'}
             </span>
-            <span className="text-base sm:text-lg font-black font-['Cairo'] text-red-400 truncate max-w-[140px]">
-              {killer.character.name} ({killer.name})
-            </span>
+            <div className="flex flex-col gap-0.5">
+              {guiltyPlayers.map((g) => (
+                <span key={g.id} className="text-xs sm:text-sm font-black font-['Cairo'] text-red-400 truncate max-w-[140px]">
+                  {g.character.name} ({g.name})
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* Stat 2: Correct Votes */}
