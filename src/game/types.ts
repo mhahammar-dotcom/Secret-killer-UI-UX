@@ -74,6 +74,10 @@ export interface InvestigationRound {
   discussionPrompt: string;
 }
 
+export interface StoryGameRules {
+  maxWrongVotes?: number;
+}
+
 export interface Story {
   id: string;
   title: string;
@@ -93,6 +97,8 @@ export interface Story {
   solution: string;
   customEnding?: string;
   requiredGuiltyCount?: number; // Story-defined guilty count (if specified by scenario)
+  gameRules?: StoryGameRules;
+  maxWrongVotes?: number; // Optional direct access / backward compatibility
 }
 
 export interface Player {

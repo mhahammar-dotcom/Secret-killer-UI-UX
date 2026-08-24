@@ -1,4 +1,5 @@
 import { GameState, Player, WinnerSide, StoryCharacter, PublicPlayer } from './types';
+import { DEFAULT_MAX_WRONG_VOTES } from './StoryEngine';
 
 /**
  * Creates a clean default GameState
@@ -13,7 +14,7 @@ export function createInitialGameState(overrides?: Partial<GameState>): GameStat
     revealedEvidenceIds: [],
     revealedClues: [],
     wrongVotesCount: 0,
-    maxWrongVotes: 3,
+    maxWrongVotes: DEFAULT_MAX_WRONG_VOTES,
     votes: {},
     lastVoteResult: null,
     winner: 'NONE',

@@ -41,6 +41,10 @@ export interface InvestigationRoundData {
   discussionPrompt: string;
 }
 
+export interface StoryGameRulesData {
+  maxWrongVotes?: number;
+}
+
 export interface StoryData {
   id: string;
   title: string;
@@ -58,6 +62,8 @@ export interface StoryData {
   investigationRounds: InvestigationRoundData[];
   solution: string;
   customEnding?: string;
+  gameRules?: StoryGameRulesData;
+  maxWrongVotes?: number;
 }
 
 export interface PlayerData {

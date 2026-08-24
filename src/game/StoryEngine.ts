@@ -1,9 +1,33 @@
 import { Story, StoryValidationResult, InvestigationRound, EvidenceItem, EvidenceType } from './types';
 
+export const DEFAULT_MAX_WRONG_VOTES = 3;
+
 /**
  * StoryEngine handles validation, compatibility checks, and story data retrieval.
  */
 export class StoryEngine {
+  /**
+   * Resolves and validates maxWrongVotes from story configuration with fallback to default (3).
+   * Validates that maxWrongVotes is a sensible positive integer (> 0).
+   * If missing, non-numeric, NaN, <= 0, or non-integer, falls back to 3.
+   */
+  static getMaxWrongVotes(story?: Partial<Story> | null): number {
+    if (!story) return DEFAULT_MAX_WRONG_VOTES;
+
+    const rawValue = story.gameRules?.maxWrongVotes ?? story.maxWrongVotes;
+
+    if (
+      typeof rawValue === 'number' &&
+      !Number.isNaN(rawValue) &&
+      Number.isInteger(rawValue) &&
+      rawValue > 0
+    ) {
+      return rawValue;
+    }
+
+    return DEFAULT_MAX_WRONG_VOTES;
+  }
+
   /**
    * Validates a Story entity against game design constraints
    */

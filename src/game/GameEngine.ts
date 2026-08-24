@@ -94,7 +94,7 @@ export class GameEngine {
       revealedEvidenceIds: initialEvidenceIds,
       revealedClues: initialClues,
       wrongVotesCount: 0,
-      maxWrongVotes: 3,
+      maxWrongVotes: StoryEngine.getMaxWrongVotes(story),
       votes: {},
       lastVoteResult: null,
       winner: 'NONE',

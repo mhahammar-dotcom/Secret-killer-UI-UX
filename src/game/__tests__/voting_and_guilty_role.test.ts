@@ -759,6 +759,166 @@ const sampleStory = builtInStories[0];
   assert(engine.getState().winner === 'INNOCENTS', 'TEST 27: Final winner stored');
 }
 
+// =========================================================================
+// TEST 28: Phase 6.1 - Default maxWrongVotes = 3
+// =========================================================================
+{
+  const defaultStory: Story = {
+    ...sampleStory,
+    id: 'default_rules_story',
+    gameRules: undefined,
+    maxWrongVotes: undefined
+  };
+
+  const resolvedLimit = StoryEngine.getMaxWrongVotes(defaultStory);
+  assert(resolvedLimit === 3, 'TEST 28: Story with no gameRules resolves to default maxWrongVotes = 3');
+
+  const engine = new GameEngine();
+  engine.startNewGame(defaultStory, ['فارس', 'رانيا', 'طارق', 'هدى']);
+  assert(engine.getState().maxWrongVotes === 3, 'TEST 28: GameEngine initializes with default maxWrongVotes = 3');
+}
+
+// =========================================================================
+// TEST 29: Phase 6.1 - Story can configure maxWrongVotes = 2
+// =========================================================================
+{
+  const strictStory: Story = {
+    ...sampleStory,
+    id: 'strict_story_2',
+    gameRules: {
+      maxWrongVotes: 2
+    }
+  };
+
+  const resolvedLimit = StoryEngine.getMaxWrongVotes(strictStory);
+  assert(resolvedLimit === 2, 'TEST 29: StoryEngine resolves configured maxWrongVotes = 2');
+
+  const engine = new GameEngine();
+  engine.startNewGame(strictStory, ['فارس', 'رانيا', 'طارق', 'هدى']);
+  assert(engine.getState().maxWrongVotes === 2, 'TEST 29: GameEngine starts game with configured maxWrongVotes = 2');
+}
+
+// =========================================================================
+// TEST 30: Phase 6.1 - Story can configure maxWrongVotes = 4
+// =========================================================================
+{
+  const lenientStory: Story = {
+    ...sampleStory,
+    id: 'lenient_story_4',
+    gameRules: {
+      maxWrongVotes: 4
+    }
+  };
+
+  const resolvedLimit = StoryEngine.getMaxWrongVotes(lenientStory);
+  assert(resolvedLimit === 4, 'TEST 30: StoryEngine resolves configured maxWrongVotes = 4');
+
+  const engine = new GameEngine();
+  engine.startNewGame(lenientStory, ['فارس', 'رانيا', 'طارق', 'هدى']);
+  assert(engine.getState().maxWrongVotes === 4, 'TEST 30: GameEngine starts game with configured maxWrongVotes = 4');
+}
+
+// =========================================================================
+// TEST 31: Phase 6.1 - GameEngine evaluates game-over using configured maxWrongVotes = 2
+// =========================================================================
+{
+  const story2: Story = {
+    ...sampleStory,
+    id: 'story_wrong_votes_2',
+    gameRules: {
+      maxWrongVotes: 2
+    }
+  };
+
+  const engine = new GameEngine();
+  engine.startNewGame(story2, ['فارس', 'رانيا', 'طارق', 'هدى', 'سالم', 'منار']);
+  const guilty = engine.getState().players.find(p => p.guilty)!;
+  const innocents = engine.getState().players.filter(p => !p.guilty);
+
+  assert(engine.getState().maxWrongVotes === 2, 'TEST 31: Engine has maxWrongVotes = 2');
+
+  // Round 1: Wrong vote 1 (eliminate innocent 0)
+  const votesR1: Record<number, number> = {};
+  innocents.forEach(p => { votesR1[p.id] = innocents[0].id; });
+  votesR1[guilty.id] = innocents[0].id;
+
+  const resR1 = engine.resolveVotes(votesR1);
+  assert(resR1.wasGuilty === false, 'TEST 31: Round 1 innocent eliminated');
+  assert(resR1.wrongVotesCount === 1, 'TEST 31: wrongVotesCount is 1');
+  assert(resR1.gameOver === false, 'TEST 31: Game NOT over at 1 wrong vote when limit is 2');
+
+  engine.proceedAfterVoteResult();
+  assert(engine.getState().phase === 'DISCUSSION', 'TEST 31: Phase transitioned to DISCUSSION for round 2');
+
+  // Round 2: Wrong vote 2 (eliminate innocent 1) -> Reaches maxWrongVotes (2)
+  const votesR2: Record<number, number> = {};
+  const aliveInnocents = PlayerManager.getAlivePlayers(engine.getState().players).filter(p => !p.guilty);
+  aliveInnocents.forEach(p => { votesR2[p.id] = aliveInnocents[0].id; });
+  votesR2[guilty.id] = aliveInnocents[0].id;
+
+  const resR2 = engine.resolveVotes(votesR2);
+  assert(resR2.wasGuilty === false, 'TEST 31: Round 2 innocent eliminated');
+  assert(resR2.wrongVotesCount === 2, 'TEST 31: wrongVotesCount is 2');
+  assert(resR2.gameOver === true, 'TEST 31: Game IS over when reaching configured maxWrongVotes = 2');
+  assert(resR2.winner === 'GUILTY', 'TEST 31: Guilty wins on MAX_WRONG_VOTES');
+  assert(resR2.endReason === 'MAX_WRONG_VOTES', 'TEST 31: End reason is MAX_WRONG_VOTES');
+}
+
+// =========================================================================
+// TEST 32: Phase 6.1 - Missing & invalid configurations fall back to default (3)
+// =========================================================================
+{
+  // Null story
+  assert(StoryEngine.getMaxWrongVotes(null) === 3, 'TEST 32: Null story falls back to 3');
+  assert(StoryEngine.getMaxWrongVotes(undefined) === 3, 'TEST 32: Undefined story falls back to 3');
+
+  // Zero (0) is invalid
+  const zeroStory: Story = { ...sampleStory, gameRules: { maxWrongVotes: 0 } };
+  assert(StoryEngine.getMaxWrongVotes(zeroStory) === 3, 'TEST 32: maxWrongVotes = 0 falls back to 3');
+
+  // Negative number (-2) is invalid
+  const negStory: Story = { ...sampleStory, gameRules: { maxWrongVotes: -2 } };
+  assert(StoryEngine.getMaxWrongVotes(negStory) === 3, 'TEST 32: maxWrongVotes = -2 falls back to 3');
+
+  // NaN is invalid
+  const nanStory: Story = { ...sampleStory, gameRules: { maxWrongVotes: NaN } };
+  assert(StoryEngine.getMaxWrongVotes(nanStory) === 3, 'TEST 32: maxWrongVotes = NaN falls back to 3');
+
+  // Non-integer (3.5) is invalid
+  const floatStory: Story = { ...sampleStory, gameRules: { maxWrongVotes: 3.5 } };
+  assert(StoryEngine.getMaxWrongVotes(floatStory) === 3, 'TEST 32: maxWrongVotes = 3.5 (float) falls back to 3');
+
+  // Non-numeric types (e.g. string cast) fall back to 3
+  const strStory = { ...sampleStory, gameRules: { maxWrongVotes: 'five' as unknown as number } };
+  assert(StoryEngine.getMaxWrongVotes(strStory) === 3, 'TEST 32: maxWrongVotes = "five" falls back to 3');
+
+  // Engine starts with fallback 3 on invalid configuration without failing
+  const engine = new GameEngine();
+  engine.startNewGame(zeroStory, ['فارس', 'رانيا', 'طارق', 'هدى']);
+  assert(engine.getState().maxWrongVotes === 3, 'TEST 32: GameEngine initializes with 3 on invalid maxWrongVotes: 0');
+}
+
+// =========================================================================
+// TEST 33: Phase 6.1 - Custom story with configured maxWrongVotes works seamlessly
+// =========================================================================
+{
+  const customStory: Story = {
+    ...sampleStory,
+    id: 'custom_test_case_v2',
+    isCustom: true,
+    gameRules: {
+      maxWrongVotes: 4
+    }
+  };
+
+  const validation = StoryStore.saveCustomStory(customStory);
+  assert(validation.valid === true, 'TEST 33: Custom story saves successfully');
+
+  const engine = new GameEngine();
+  engine.startNewGame(customStory, ['فارس', 'رانيا', 'طارق', 'هدى']);
+  assert(engine.getState().maxWrongVotes === 4, 'TEST 33: GameEngine uses custom story maxWrongVotes = 4');
+}
+
 console.log(`\n==================================================`);
 console.log(`ALL TESTS PASSED: ${passedTests} passed, ${failedTests} failed.`);
 console.log(`==================================================\n`);
