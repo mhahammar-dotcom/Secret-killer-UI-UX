@@ -181,6 +181,7 @@ export class StoryEngine {
 
     const items: EvidenceItem[] = [];
 
+    // Compatibility layer: Map legacy investigation rounds to EvidenceItems without hardcoding gameplay behavior
     if (story.investigationRounds && story.investigationRounds.length > 0) {
       story.investigationRounds.forEach((round) => {
         items.push({
@@ -189,12 +190,14 @@ export class StoryEngine {
           description: round.description || round.publicClue,
           publicClue: round.publicClue,
           discussionPrompt: round.discussionPrompt,
-          category: this.categorizeEvidence(round.title || '', `${round.publicClue} ${round.description}`)
+          category: this.categorizeEvidence(round.title || '', `${round.publicClue} ${round.description}`),
+          availableFromRound: round.roundNumber,
+          isInitialPublic: false
         });
       });
     }
 
-    // Include any additional base clues from story.clues that aren't already represented
+    // Compatibility layer: Include additional base clues from legacy story.clues as investigation items
     if (story.clues && story.clues.length > 0) {
       story.clues.forEach((clue, idx) => {
         const alreadyCovered = items.some(item => item.publicClue === clue || item.description === clue);
@@ -204,13 +207,32 @@ export class StoryEngine {
             title: `ملاحظة جنائية #${idx + 1}`,
             description: clue,
             publicClue: clue,
-            category: this.categorizeEvidence(`ملاحظة ${idx + 1}`, clue)
+            category: this.categorizeEvidence(`ملاحظة ${idx + 1}`, clue),
+            availableFromRound: idx + 1,
+            isInitialPublic: false
           });
         }
       });
     }
 
     return items;
+  }
+
+  /**
+   * Returns explicit opening public clues, separate from unrevealed investigation evidence.
+   */
+  static getInitialPublicClues(story: Story): string[] {
+    const publicClues: string[] = [];
+    
+    // Only items explicitly marked isInitialPublic are returned at game start
+    const allEvidence = this.getStoryEvidence(story);
+    allEvidence.forEach(e => {
+      if (e.isInitialPublic && e.publicClue) {
+        publicClues.push(e.publicClue);
+      }
+    });
+
+    return publicClues;
   }
 
   /**

@@ -64,20 +64,18 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
   const [activeEvidenceIndex, setActiveEvidenceIndex] = useState<number>(0);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  // Normalize all available evidence from StoryEngine
+  // Normalize all available evidence from StoryEngine to compute counts and metadata
   const allStoryEvidence: EvidenceItem[] = StoryEngine.getStoryEvidence(story as unknown as Story);
   
-  // Filter revealed evidence based on GameState IDs or fallback to initial items
+  // Filter revealed evidence strictly based on GameState IDs (ONLY revealed items are visible)
   const revealedItems: EvidenceItem[] = allStoryEvidence.filter(e => 
     revealedEvidenceIds.includes(e.id)
   );
 
-  // If revealedItems is empty but story has evidence, show the first item as active baseline
-  const visibleEvidence: EvidenceItem[] = revealedItems.length > 0
-    ? revealedItems
-    : allStoryEvidence.slice(0, 1);
+  // Strictly ONLY revealed evidence items are accessible to the UI
+  const visibleEvidence: EvidenceItem[] = revealedItems;
 
-  const currentEvidence = visibleEvidence[activeEvidenceIndex] || visibleEvidence[0];
+  const currentEvidence = visibleEvidence[activeEvidenceIndex] || visibleEvidence[0] || null;
   const totalRevealedCount = visibleEvidence.length;
   const totalAllCount = allStoryEvidence.length;
   const currentPhoto = EVIDENCE_PHOTOS[activeEvidenceIndex % EVIDENCE_PHOTOS.length];
@@ -345,10 +343,16 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                   )}
                 </div>
               ) : (
-                <div className="rounded-[24px] bg-[#0d0f16] border border-amber-900/30 p-6 text-center text-[#b0a99c] font-['Cairo']">
-                  <FileText className="w-10 h-10 mx-auto mb-2 text-[#c8923a]/60" />
-                  <p className="text-sm font-bold text-[#f5ebd9]">لا توجد أدلة إضافية مكتشفة</p>
-                  <p className="text-xs mt-1">استندوا إلى ملف الوقائع وشهادات الحاضرين للوصول إلى الحقيقة.</p>
+                <div className="rounded-[24px] bg-[#0d0f16] border border-amber-900/30 p-6 text-center text-[#b0a99c] font-['Cairo'] flex flex-col items-center gap-2">
+                  <Search className="w-10 h-10 text-[#c8923a]/60 mb-1" />
+                  <p className="text-sm font-bold text-[#f5ebd9]">
+                    {totalAllCount === 0 ? 'لا توجد أدلة مادية إضافية في هذا الملف' : 'لم يتم فحص أي دليل مادي بعد'}
+                  </p>
+                  <p className="text-xs leading-relaxed max-w-sm">
+                    {totalAllCount === 0
+                      ? 'اعتمدوا على ملف الوقائع وإفادات الحاضرين للوصول إلى الحقيقة.'
+                      : `ملف القضية يحتوي على (${totalAllCount}) أدلة ومسارات قابلة للفحص والتحري.`}
+                  </p>
                 </div>
               )}
 
@@ -359,13 +363,12 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                   onClick={() => {
                     sound.playClick();
                     onRevealNextEvidence();
-                    // Set active index to new clue
                     setActiveEvidenceIndex(totalRevealedCount);
                   }}
                   className="w-full py-3.5 px-4 rounded-2xl bg-[#141724] border border-[#c8923a]/60 hover:border-[#f3cb79] hover:bg-[#1a1f30] text-[#f3cb79] font-black font-['Cairo'] text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
                 >
                   <Sparkles className="w-4 h-4 text-amber-400" />
-                  <span>طلب فحص دليل إضافي ({totalRevealedCount} / {totalAllCount} مكتشف)</span>
+                  <span>طلب فحص دليل إضافي ({totalRevealedCount} / {totalAllCount} مكشوف)</span>
                 </button>
               ) : totalAllCount > 0 ? (
                 <div className="w-full py-2.5 px-4 rounded-2xl bg-black/40 border border-emerald-900/30 text-emerald-300/80 font-bold font-['Cairo'] text-xs text-center flex items-center justify-center gap-2">

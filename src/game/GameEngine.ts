@@ -78,13 +78,12 @@ export class GameEngine {
     // Allocate characters & guilt internally
     const players = CharacterAllocator.allocateCharacters(story, playerNames, options);
 
-    // Initial revealed clues and evidence items for round 1
+    // Initial revealed clues and evidence items: NO auto-reveal at game start
     const allEvidence = StoryEngine.getStoryEvidence(story);
-    const initialEvidenceIds: string[] = allEvidence.length > 0 ? [allEvidence[0].id] : [];
-    const initialClues = StoryEngine.getCluesForRound(story, 1);
-    if (allEvidence.length > 0 && allEvidence[0].publicClue && !initialClues.includes(allEvidence[0].publicClue)) {
-      initialClues.push(allEvidence[0].publicClue);
-    }
+    const initialEvidenceIds: string[] = allEvidence
+      .filter(e => e.isInitialPublic === true)
+      .map(e => e.id);
+    const initialClues = StoryEngine.getInitialPublicClues(story);
 
     this.state = {
       phase: 'ROLE_PASS',
@@ -205,33 +204,67 @@ export class GameEngine {
   }
 
   /**
-   * Checks if there are more unrevealed evidence items available
+   * Checks whether a specific evidence item is currently available to be revealed
+   * based on story rules (e.g. round constraints, unlock conditions) and state.
+   */
+  public isEvidenceAvailable(evidenceId: string): boolean {
+    if (!this.state.story) return false;
+    const all = this.getAllEvidence();
+    const item = all.find(e => e.id === evidenceId);
+    if (!item) return false;
+
+    // Already revealed items are not available to be revealed again
+    const alreadyRevealed = (this.state.revealedEvidenceIds || []).includes(evidenceId);
+    if (alreadyRevealed) return false;
+
+    // Story-defined round constraint: if availableFromRound is specified, round must be >= availableFromRound
+    if (item.availableFromRound !== undefined && item.availableFromRound > this.state.currentRound) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Returns all unrevealed evidence items that are currently available to inspect/reveal
+   */
+  public getAvailableUnrevealedEvidence(): EvidenceItem[] {
+    if (!this.state.story) return [];
+    const all = this.getAllEvidence();
+    return all.filter(e => this.isEvidenceAvailable(e.id));
+  }
+
+  /**
+   * Checks if there are unrevealed evidence items currently eligible for revelation
+   */
+  public hasAvailableEvidence(): boolean {
+    return this.getAvailableUnrevealedEvidence().length > 0;
+  }
+
+  /**
+   * Checks if there are more unrevealed evidence items in total
    */
   public hasMoreEvidence(): boolean {
     return this.getUnrevealedEvidence().length > 0;
   }
 
   /**
-   * Reveals a specific evidence item by its ID through GameEngine validation
+   * Reveals a specific evidence item by its ID after validating availability rules
    */
   public revealEvidence(evidenceId: string): GameState {
     if (!this.state.story) {
       throw new Error('Cannot reveal evidence: no active story.');
     }
 
-    const all = this.getAllEvidence();
-    const item = all.find(e => e.id === evidenceId);
-    if (!item) {
-      // If evidenceId is not found, safely return current state
+    if (!this.isEvidenceAvailable(evidenceId)) {
+      // Cannot reveal: not found, already revealed, or not available yet
       return this.getState();
     }
+
+    const item = this.getAllEvidence().find(e => e.id === evidenceId);
+    if (!item) return this.getState();
 
     const currentRevealed = this.state.revealedEvidenceIds || [];
-    if (currentRevealed.includes(evidenceId)) {
-      // Already revealed, return current state (no duplicate)
-      return this.getState();
-    }
-
     const updatedRevealedIds = [...currentRevealed, evidenceId];
     const clueText = item.publicClue || item.description || item.title;
     const updatedRevealedClues = this.state.revealedClues.includes(clueText)
@@ -249,40 +282,30 @@ export class GameEngine {
   }
 
   /**
-   * Unlocks the next available unrevealed evidence item in sequence
+   * Helper to reveal the next available unrevealed evidence item
    */
   public revealNextEvidence(): GameState {
-    const unrevealed = this.getUnrevealedEvidence();
-    if (unrevealed.length === 0) {
-      // No more evidence available - do not cycle or fabricate!
+    const available = this.getAvailableUnrevealedEvidence();
+    if (available.length === 0) {
+      // No eligible evidence currently available
       return this.getState();
     }
 
-    return this.revealEvidence(unrevealed[0].id);
+    return this.revealEvidence(available[0].id);
   }
 
   /**
    * Transitions from lobby or role reveal directly to discussion
+   * Discussion begins with public story info and character statements (NO automatic evidence flood).
    */
   public startDiscussion(): GameState {
     if (!this.state.story) {
       throw new Error('Cannot start discussion: no story active.');
     }
 
-    const allEvidence = StoryEngine.getStoryEvidence(this.state.story);
-    let updatedEvidenceIds = this.state.revealedEvidenceIds || [];
-    if (updatedEvidenceIds.length === 0 && allEvidence.length > 0) {
-      updatedEvidenceIds = [allEvidence[0].id];
-    }
-
-    const roundClues = StoryEngine.getCluesForRound(this.state.story, this.state.currentRound);
-    const mergedClues = Array.from(new Set([...this.state.revealedClues, ...roundClues]));
-
     this.state = {
       ...this.state,
-      phase: 'DISCUSSION',
-      revealedEvidenceIds: updatedEvidenceIds,
-      revealedClues: mergedClues
+      phase: 'DISCUSSION'
     };
 
     this.notify();
@@ -406,26 +429,13 @@ export class GameEngine {
         phase: 'KILLER_REVEAL'
       };
     } else {
-      // Continue to next round
+      // Continue to next discussion round without hardcoded evidence IDs or auto-flood
       const nextRound = this.state.currentRound + 1;
-      const allEvidence = this.state.story ? StoryEngine.getStoryEvidence(this.state.story) : [];
-      let updatedEvidenceIds = [...(this.state.revealedEvidenceIds || [])];
-      const nextRoundEvidence = allEvidence.find(e => e.id === `ev_round_${nextRound}`);
-      if (nextRoundEvidence && !updatedEvidenceIds.includes(nextRoundEvidence.id)) {
-        updatedEvidenceIds.push(nextRoundEvidence.id);
-      }
-
-      const roundClues = this.state.story
-        ? StoryEngine.getCluesForRound(this.state.story, nextRound)
-        : [];
-      const mergedClues = Array.from(new Set([...this.state.revealedClues, ...roundClues]));
 
       this.state = {
         ...this.state,
         phase: 'DISCUSSION',
         currentRound: nextRound,
-        revealedEvidenceIds: updatedEvidenceIds,
-        revealedClues: mergedClues,
         votes: {},
         lastVoteResult: null,
         history: {

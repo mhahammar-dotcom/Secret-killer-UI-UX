@@ -60,6 +60,9 @@ export interface EvidenceItem {
   relatedCharacters?: string[];
   relatedLocation?: string;
   timelineInfo?: string;
+  isInitialPublic?: boolean;   // Explicitly public at game start
+  availableFromRound?: number; // Round at which evidence becomes available to inspect
+  unlockCondition?: string;    // Story condition description
   isRevealed?: boolean;
 }
 
