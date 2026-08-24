@@ -1,4 +1,4 @@
-import { GameState, Player, WinnerSide, StoryCharacter } from './types';
+import { GameState, Player, WinnerSide, StoryCharacter, PublicPlayer } from './types';
 
 /**
  * Creates a clean default GameState
@@ -75,10 +75,6 @@ export function getAliveInnocentPlayers(state: GameState): Player[] {
  */
 export function isGameOver(state: GameState): boolean {
   return state.phase === 'GAME_OVER' || state.winner !== 'NONE';
-}
-
-export interface PublicPlayer extends Omit<Player, 'guilty' | 'character'> {
-  character: Omit<StoryCharacter, 'guilty'>;
 }
 
 /**

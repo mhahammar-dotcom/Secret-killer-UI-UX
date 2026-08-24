@@ -339,6 +339,7 @@ export default function App() {
                 votes={lastVotes}
                 round={round}
                 wrongVotesCount={wrongVotesCount}
+                voteResult={gameState.lastVoteResult}
                 onProceedNextRound={handleProceedNextRound}
                 onProceedToTruth={handleProceedToTruth}
                 onBack={() => setCurrentScreen('voting')}

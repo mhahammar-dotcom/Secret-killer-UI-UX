@@ -1,9 +1,26 @@
-import { Player } from './types';
+import { Player, PublicPlayer } from './types';
 
 /**
  * PlayerManager provides pure functions to query and update player rosters.
  */
 export class PlayerManager {
+  /**
+   * Sanitizes the player roster for public/shared displays (removes guilty flags and private knowledge)
+   */
+  static getPublicPlayers(players: Player[]): PublicPlayer[] {
+    return players.map(p => ({
+      id: p.id,
+      name: p.name,
+      character: {
+        name: p.character.name,
+        profession: p.character.profession,
+        publicIdentity: p.character.publicIdentity,
+      },
+      isEliminated: p.isEliminated,
+      votedForId: p.votedForId,
+    }));
+  }
+
   /**
    * Returns all living (non-eliminated) players
    */

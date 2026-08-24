@@ -399,6 +399,7 @@ export class GameEngine {
       ...this.state,
       phase: 'VOTE_RESULT',
       players: updatedPlayers,
+      votes: activeVotes,
       wrongVotesCount: voteResult.wrongVotesCount,
       revealedClues: newRevealedClues,
       lastVoteResult: voteResult,

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ShieldCheck, ShieldAlert, Scale, Sparkles, AlertCircle, ArrowLeft, Eye, Play, FileText, CheckCircle2, ChevronLeft, Home } from 'lucide-react';
 import { StoryData, PlayerData } from '../types';
+import { VoteResult } from '../game/types';
 import { sound } from '../utils/audio';
 
 interface VoteResultScreenProps {
@@ -10,6 +11,7 @@ interface VoteResultScreenProps {
   votes: Record<number, number>;
   round: number;
   wrongVotesCount: number;
+  voteResult?: VoteResult | null;
   onProceedNextRound: () => void;
   onProceedToTruth: (winner: 'innocents' | 'guilty') => void;
   onBack?: () => void;
@@ -22,33 +24,53 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
   votes,
   round,
   wrongVotesCount,
+  voteResult,
   onProceedNextRound,
   onProceedToTruth,
   onBack,
   onNavigateHome,
 }) => {
-  // Compute tally
+  // If voteResult is provided from GameEngine, use it directly as single source of truth
+  // Otherwise, compute fallback tally from votes object
   const voteCounts: Record<number, number> = {};
-  (Object.values(votes) as number[]).forEach((targetId) => {
+  (Object.values(votes || {}) as number[]).forEach((targetId) => {
     voteCounts[targetId] = (voteCounts[targetId] || 0) + 1;
   });
 
-  let maxVotes = 0;
-  let topCandidateIds: number[] = [];
+  let fallbackMaxVotes = 0;
+  let fallbackTopCandidateIds: number[] = [];
 
   Object.entries(voteCounts).forEach(([idStr, count]) => {
     const id = parseInt(idStr, 10);
-    if (count > maxVotes) {
-      maxVotes = count;
-      topCandidateIds = [id];
-    } else if (count === maxVotes) {
-      topCandidateIds.push(id);
+    if (count > fallbackMaxVotes) {
+      fallbackMaxVotes = count;
+      fallbackTopCandidateIds = [id];
+    } else if (count === fallbackMaxVotes) {
+      fallbackTopCandidateIds.push(id);
     }
   });
 
-  const isTie = topCandidateIds.length !== 1 || maxVotes === 0;
-  const eliminatedPlayerId = !isTie ? topCandidateIds[0] : null;
-  const eliminatedPlayer = players.find((p) => p.id === eliminatedPlayerId);
+  const isTie = voteResult !== undefined && voteResult !== null
+    ? voteResult.isTie
+    : (fallbackTopCandidateIds.length !== 1 || fallbackMaxVotes === 0);
+
+  const maxVotes = voteResult !== undefined && voteResult !== null
+    ? (voteResult.tallies.length > 0 ? voteResult.tallies[0].voteCount : 0)
+    : fallbackMaxVotes;
+
+  const eliminatedPlayerId = voteResult !== undefined && voteResult !== null
+    ? voteResult.selectedPlayerId
+    : (!isTie ? fallbackTopCandidateIds[0] : null);
+
+  const eliminatedPlayer = players.find((p) => p.id === eliminatedPlayerId) ||
+    (voteResult?.eliminatedPlayer ? {
+      id: voteResult.eliminatedPlayer.id,
+      name: voteResult.eliminatedPlayer.name,
+      character: voteResult.eliminatedPlayer.character,
+      guilty: voteResult.eliminatedPlayer.guilty,
+      eliminated: true,
+      votedForId: voteResult.eliminatedPlayer.votedForId,
+    } : null);
 
   // Extra clue reveal for ties
   const [extraClueRevealed, setExtraClueRevealed] = useState<boolean>(false);
@@ -57,19 +79,25 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
     : 'لم يتم العثور على أثر جديد في مسرح الجريمة.';
 
   // Progressive wrong vote hint
-  const wrongHintIndex = Math.min(wrongVotesCount, (story.wrongVoteHints?.length || 1) - 1);
-  const wrongHint = story.wrongVoteHints?.[wrongHintIndex] || 'راجعوا الأدلة بعناية قبل التسرع في التصويت القادم.';
+  const effectiveWrongVotesCount = voteResult?.wrongVotesCount ?? wrongVotesCount;
+  const wrongHintIndex = Math.min(effectiveWrongVotesCount, (story.wrongVoteHints?.length || 1) - 1);
+  const wrongHint = voteResult?.unlockedHint || story.wrongVoteHints?.[wrongHintIndex] || 'راجعوا الأدلة بعناية قبل التسرع في التصويت القادم.';
 
-  // Check Game Over status
-  const updatedPlayers = players.map((p) =>
-    p.id === eliminatedPlayerId ? { ...p, eliminated: true } : p
-  );
+  // Game over state
+  const isGameOver = voteResult !== undefined && voteResult !== null
+    ? voteResult.gameOver
+    : (() => {
+        const updatedPlayers = players.map((p) =>
+          p.id === eliminatedPlayerId ? { ...p, eliminated: true } : p
+        );
+        const guiltyAlive = updatedPlayers.filter((p) => !p.eliminated && p.guilty).length;
+        const innocentAlive = updatedPlayers.filter((p) => !p.eliminated && !p.guilty).length;
+        return !isTie && (guiltyAlive === 0 || (guiltyAlive >= innocentAlive && guiltyAlive > 0));
+      })();
 
-  const guiltyAlive = updatedPlayers.filter((p) => !p.eliminated && p.guilty).length;
-  const innocentAlive = updatedPlayers.filter((p) => !p.eliminated && !p.guilty).length;
-
-  const isGameOver = !isTie && (guiltyAlive === 0 || (guiltyAlive >= innocentAlive && guiltyAlive > 0));
-  const winner: 'innocents' | 'guilty' = guiltyAlive === 0 ? 'innocents' : 'guilty';
+  const winner: 'innocents' | 'guilty' = voteResult !== undefined && voteResult !== null
+    ? (voteResult.winner === 'GUILTY' ? 'guilty' : 'innocents')
+    : (eliminatedPlayer?.guilty ? 'innocents' : 'guilty');
 
   const handleRevealExtraClue = () => {
     sound.playRoleReveal();

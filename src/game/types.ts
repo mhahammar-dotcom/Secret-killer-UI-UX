@@ -104,6 +104,18 @@ export interface Player {
   votedForId?: number;
 }
 
+export interface PublicPlayer {
+  id: number;
+  name: string;
+  character: {
+    name: string;
+    profession: string;
+    publicIdentity: string;
+  };
+  isEliminated: boolean;
+  votedForId?: number;
+}
+
 export interface VoteTally {
   playerId: number;
   playerName: string;

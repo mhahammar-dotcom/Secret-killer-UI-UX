@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Eye, Lock, ArrowLeft, User, ChevronLeft, Home, MessageSquareQuote, BadgeCheck, FileText, AlertTriangle, X } from 'lucide-react';
+import { Eye, Lock, ArrowLeft, User, ChevronLeft, Home, MessageSquareQuote, BadgeCheck, FileText, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { Player } from '../game/types';
 import { sound } from '../utils/audio';
 
@@ -242,6 +242,25 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                     {currentPlayer.character.knowledge}
                   </p>
                 </div>
+
+                {/* Private Hidden Role Notice (Strictly visible ONLY to the guilty player during private reveal) */}
+                {currentPlayer.guilty && (
+                  <div
+                    data-testid="private-guilty-indicator"
+                    className="p-4 rounded-2xl bg-[#200b0b] border-2 border-red-600/70 text-[#fecaca] shadow-[0_0_20px_rgba(220,38,38,0.2)] flex flex-col gap-1.5"
+                  >
+                    <div className="flex items-center gap-2 text-red-400 font-black text-sm font-['Cairo']">
+                      <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 animate-pulse" />
+                      <span>⚠️ دورك السري في اللعبة (خاص بك فقط):</span>
+                    </div>
+                    <p className="text-sm font-black text-white font-['Cairo'] leading-snug">
+                      أنت الطرف المدان (المذنب) في هذه الجريمة.
+                    </p>
+                    <p className="text-xs text-red-200/90 font-medium font-['Cairo'] leading-relaxed">
+                      هدفك هو تفادي كشف هويتك، تشتيت الشبهات عنك، وإقناع بقية الحاضرين بالاشتباه في شخص آخر أثناء جولات النقاش والتصويت.
+                    </p>
+                  </div>
+                )}
 
                 {/* Investigation Guidance */}
                 <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-900/30 text-xs text-[#a39a8c] font-['Cairo']">
