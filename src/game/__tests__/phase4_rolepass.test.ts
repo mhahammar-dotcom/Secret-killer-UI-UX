@@ -313,8 +313,60 @@ const sampleStory = builtInStories[0];
   }
 }
 
+// =========================================================================
+// TEST 20: Built-in story character knowledge verification (no secret missions)
+// =========================================================================
+{
+  const builtInStories = StoryStore.getBuiltInStories();
+  assert(builtInStories.length > 0, 'TEST 20: Built-in stories exist');
+
+  builtInStories.forEach((story) => {
+    const allCharacters = [...(story.guiltyPool || []), ...(story.innocentPool || []), ...(story.fixedCharacters || [])];
+    allCharacters.forEach((char) => {
+      assert(typeof char.knowledge === 'string' && char.knowledge.trim().length > 0, `TEST 20: Story [${story.id}] character [${char.name}] has knowledge testimony`);
+      
+      // Verify knowledge does NOT contain secret instructions or fake objectives
+      const lowerKnowledge = char.knowledge.toLowerCase();
+      assert(!lowerKnowledge.includes('مهمتك السرية'), `TEST 20: [${char.name}] knowledge does NOT contain "مهمتك السرية"`);
+      assert(!lowerKnowledge.includes('عليك أن تكذب'), `TEST 20: [${char.name}] knowledge does NOT contain "عليك أن تكذب"`);
+      assert(!lowerKnowledge.includes('ضلل اللاعبين'), `TEST 20: [${char.name}] knowledge does NOT contain "ضلل اللاعبين"`);
+      assert(!lowerKnowledge.includes('سر مخفي'), `TEST 20: [${char.name}] knowledge does NOT contain "سر مخفي"`);
+      assert(!lowerKnowledge.includes('your secret'), `TEST 20: [${char.name}] knowledge does NOT contain "your secret"`);
+    });
+  });
+}
+
+// =========================================================================
+// TEST 21: Protected Role-Pass Flow
+// =========================================================================
+{
+  const engine = new GameEngine();
+  const playerNames = ['لاعب_1', 'لاعب_2', 'لاعب_3', 'لاعب_4'];
+  const state = engine.startNewGame(sampleStory, playerNames);
+
+  assert(engine.getCurrentViewingPlayerIndex() === 0, 'TEST 21: Starts at index 0');
+  assert(!engine.isLastViewingPlayer(), 'TEST 21: Index 0 is not last player');
+
+  // Advance to player 2
+  engine.advanceRolePass();
+  assert(engine.getCurrentViewingPlayerIndex() === 1, 'TEST 21: Advanced to index 1');
+
+  // Advance to player 3
+  engine.advanceRolePass();
+  assert(engine.getCurrentViewingPlayerIndex() === 2, 'TEST 21: Advanced to index 2');
+
+  // Advance to player 4 (last)
+  engine.advanceRolePass();
+  assert(engine.getCurrentViewingPlayerIndex() === 3, 'TEST 21: Advanced to index 3');
+  assert(engine.isLastViewingPlayer(), 'TEST 21: Index 3 is last player in 4-player game');
+
+  // Final advance transitions to DISCUSSION
+  const finalState = engine.advanceRolePass();
+  assert(finalState.phase === 'DISCUSSION', 'TEST 21: Final advance transitions to DISCUSSION phase');
+}
+
 console.log(`\n========================================`);
-console.log(`PHASE 4 ROLE PASS: ALL 19 TEST SUITES PASSED!`);
+console.log(`PHASE 4 ROLE PASS: ALL 21 TEST SUITES PASSED!`);
 console.log(`PASSED: ${passedTests}`);
 console.log(`FAILED: ${failedTests}`);
 console.log(`========================================\n`);

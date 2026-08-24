@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Eye, Lock, ArrowLeft, User, Sparkles, ChevronLeft, Home, MessageSquareQuote, BadgeCheck, FileText } from 'lucide-react';
+import { Eye, Lock, ArrowLeft, User, ChevronLeft, Home, MessageSquareQuote, BadgeCheck, FileText, AlertTriangle, X } from 'lucide-react';
 import { Player } from '../game/types';
 import { sound } from '../utils/audio';
 
@@ -20,6 +20,8 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
   onNavigateHome,
 }) => {
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+  const [pendingAction, setPendingAction] = useState<'back' | 'home' | null>(null);
 
   const currentPlayer = players[currentViewingIndex] || players[0];
   const isLastPlayer = currentViewingIndex >= players.length - 1;
@@ -39,10 +41,47 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
   const handleGoBack = () => {
     sound.playClick();
     if (isRevealed) {
+      // Safely conceal the character without rewinding or exposing other players
       setIsRevealed(false);
+      return;
+    }
+
+    if (currentViewingIndex === 0) {
+      // Safe to return to setup before any player has completed role viewing
+      if (onBack) onBack();
+    } else {
+      // Protect active role distribution from accidental rewinds
+      setPendingAction('back');
+      setShowConfirmModal(true);
+    }
+  };
+
+  const handleHomeClick = () => {
+    sound.playClick();
+    if (currentViewingIndex === 0 && !isRevealed) {
+      if (onNavigateHome) onNavigateHome();
+    } else {
+      if (isRevealed) setIsRevealed(false);
+      setPendingAction('home');
+      setShowConfirmModal(true);
+    }
+  };
+
+  const handleConfirmAbandon = () => {
+    sound.playClick();
+    setShowConfirmModal(false);
+    setIsRevealed(false);
+    if (pendingAction === 'home' && onNavigateHome) {
+      onNavigateHome();
     } else if (onBack) {
       onBack();
     }
+  };
+
+  const handleCancelAbandon = () => {
+    sound.playClick();
+    setShowConfirmModal(false);
+    setPendingAction(null);
   };
 
   if (!currentPlayer) {
@@ -63,7 +102,7 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
           <button
             onClick={handleGoBack}
             className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
-            title="رجوع"
+            title={isRevealed ? 'إخفاء الشخصية' : 'رجوع'}
           >
             <ChevronLeft className="w-6 h-6 stroke-[2.4] rtl:rotate-180" />
           </button>
@@ -95,10 +134,7 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
             </div>
 
             <button
-              onClick={() => {
-                sound.playClick();
-                if (onNavigateHome) onNavigateHome();
-              }}
+              onClick={handleHomeClick}
               className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
               title="الرئيسية"
             >
@@ -226,7 +262,51 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Confirmation Modal to Protect Role-Pass from Accidental Rewinds */}
+        <AnimatePresence>
+          {showConfirmModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="w-full max-w-sm rounded-[28px] bg-[#0e1118] border border-[#c8923a]/60 p-6 shadow-[0_10px_40px_rgba(0,0,0,0.9)] text-center flex flex-col items-center gap-4"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                  <AlertTriangle className="w-8 h-8" />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-xl font-black font-['Cairo'] text-[#f5ebd9]">
+                    إلغاء توزيع الأدوار؟
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#b8b3a7] font-medium font-['Cairo'] leading-relaxed">
+                    بدأ بعض اللاعبين بالاطلاع على شخصياتهم بالفعل. العودة الآن ستلغي الجلسة الحالية وتتطلب إعادة توزيع الأدوار من جديد.
+                  </p>
+                </div>
+
+                <div className="w-full flex flex-col gap-2.5 mt-2">
+                  <button
+                    onClick={handleCancelAbandon}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black font-['Cairo'] text-sm hover:brightness-105 transition-all cursor-pointer"
+                  >
+                    متابعة التوزيع
+                  </button>
+
+                  <button
+                    onClick={handleConfirmAbandon}
+                    className="w-full py-3 rounded-xl bg-black/50 border border-red-900/50 text-red-400 hover:bg-red-950/40 font-bold font-['Cairo'] text-xs transition-all cursor-pointer"
+                  >
+                    تأكيد الإلغاء والرجوع
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 };
+
