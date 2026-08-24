@@ -39,6 +39,30 @@ export interface StoryCharacter {
   guilty: boolean;   // Internal state flag only - NEVER exposed as role name
 }
 
+export type EvidenceType =
+  | 'timeline'
+  | 'physical'
+  | 'witness'
+  | 'location'
+  | 'document'
+  | 'contradiction'
+  | 'relationship'
+  | 'motive'
+  | 'other';
+
+export interface EvidenceItem {
+  id: string;
+  title: string;
+  description: string;
+  category: EvidenceType;
+  publicClue?: string;
+  discussionPrompt?: string;
+  relatedCharacters?: string[];
+  relatedLocation?: string;
+  timelineInfo?: string;
+  isRevealed?: boolean;
+}
+
 export interface InvestigationRound {
   roundNumber: number;
   title: string;
@@ -62,6 +86,7 @@ export interface Story {
   clues: string[];
   wrongVoteHints: string[];
   investigationRounds: InvestigationRound[];
+  evidence?: EvidenceItem[];
   solution: string;
   customEnding?: string;
   requiredGuiltyCount?: number; // Story-defined guilty count (if specified by scenario)
@@ -117,6 +142,7 @@ export interface GameState {
   players: Player[];
   currentViewingPlayerIndex: number; // for role reveal pass
   currentRound: number;
+  revealedEvidenceIds: string[]; // Phase 5 evidence identifiers
   revealedClues: string[];
   wrongVotesCount: number;
   maxWrongVotes: number;

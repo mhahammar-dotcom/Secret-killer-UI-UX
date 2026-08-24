@@ -5,7 +5,8 @@ import {
   VoteResult,
   GamePhase,
   WinnerSide,
-  GameEndReason
+  GameEndReason,
+  EvidenceItem
 } from './types';
 import { createInitialGameState, getAlivePlayers } from './GameState';
 import { StoryEngine } from './StoryEngine';
@@ -77,8 +78,13 @@ export class GameEngine {
     // Allocate characters & guilt internally
     const players = CharacterAllocator.allocateCharacters(story, playerNames, options);
 
-    // Initial revealed clues for round 1
+    // Initial revealed clues and evidence items for round 1
+    const allEvidence = StoryEngine.getStoryEvidence(story);
+    const initialEvidenceIds: string[] = allEvidence.length > 0 ? [allEvidence[0].id] : [];
     const initialClues = StoryEngine.getCluesForRound(story, 1);
+    if (allEvidence.length > 0 && allEvidence[0].publicClue && !initialClues.includes(allEvidence[0].publicClue)) {
+      initialClues.push(allEvidence[0].publicClue);
+    }
 
     this.state = {
       phase: 'ROLE_PASS',
@@ -86,6 +92,7 @@ export class GameEngine {
       players,
       currentViewingPlayerIndex: 0,
       currentRound: 1,
+      revealedEvidenceIds: initialEvidenceIds,
       revealedClues: initialClues,
       wrongVotesCount: 0,
       maxWrongVotes: 3,
@@ -170,11 +177,102 @@ export class GameEngine {
   }
 
   /**
+   * Returns all available evidence items defined for the active story
+   */
+  public getAllEvidence(): EvidenceItem[] {
+    if (!this.state.story) return [];
+    return StoryEngine.getStoryEvidence(this.state.story);
+  }
+
+  /**
+   * Returns evidence items that have already been revealed
+   */
+  public getRevealedEvidence(): EvidenceItem[] {
+    if (!this.state.story) return [];
+    const all = this.getAllEvidence();
+    const revealedSet = new Set(this.state.revealedEvidenceIds || []);
+    return all.filter(e => revealedSet.has(e.id));
+  }
+
+  /**
+   * Returns evidence items that are not yet revealed
+   */
+  public getUnrevealedEvidence(): EvidenceItem[] {
+    if (!this.state.story) return [];
+    const all = this.getAllEvidence();
+    const revealedSet = new Set(this.state.revealedEvidenceIds || []);
+    return all.filter(e => !revealedSet.has(e.id));
+  }
+
+  /**
+   * Checks if there are more unrevealed evidence items available
+   */
+  public hasMoreEvidence(): boolean {
+    return this.getUnrevealedEvidence().length > 0;
+  }
+
+  /**
+   * Reveals a specific evidence item by its ID through GameEngine validation
+   */
+  public revealEvidence(evidenceId: string): GameState {
+    if (!this.state.story) {
+      throw new Error('Cannot reveal evidence: no active story.');
+    }
+
+    const all = this.getAllEvidence();
+    const item = all.find(e => e.id === evidenceId);
+    if (!item) {
+      // If evidenceId is not found, safely return current state
+      return this.getState();
+    }
+
+    const currentRevealed = this.state.revealedEvidenceIds || [];
+    if (currentRevealed.includes(evidenceId)) {
+      // Already revealed, return current state (no duplicate)
+      return this.getState();
+    }
+
+    const updatedRevealedIds = [...currentRevealed, evidenceId];
+    const clueText = item.publicClue || item.description || item.title;
+    const updatedRevealedClues = this.state.revealedClues.includes(clueText)
+      ? this.state.revealedClues
+      : [...this.state.revealedClues, clueText];
+
+    this.state = {
+      ...this.state,
+      revealedEvidenceIds: updatedRevealedIds,
+      revealedClues: updatedRevealedClues
+    };
+
+    this.notify();
+    return this.getState();
+  }
+
+  /**
+   * Unlocks the next available unrevealed evidence item in sequence
+   */
+  public revealNextEvidence(): GameState {
+    const unrevealed = this.getUnrevealedEvidence();
+    if (unrevealed.length === 0) {
+      // No more evidence available - do not cycle or fabricate!
+      return this.getState();
+    }
+
+    return this.revealEvidence(unrevealed[0].id);
+  }
+
+  /**
    * Transitions from lobby or role reveal directly to discussion
    */
   public startDiscussion(): GameState {
     if (!this.state.story) {
       throw new Error('Cannot start discussion: no story active.');
+    }
+
+    const allEvidence = StoryEngine.getStoryEvidence(this.state.story);
+    let updatedEvidenceIds = this.state.revealedEvidenceIds || [];
+    if (updatedEvidenceIds.length === 0 && allEvidence.length > 0) {
+      updatedEvidenceIds = [allEvidence[0].id];
     }
 
     const roundClues = StoryEngine.getCluesForRound(this.state.story, this.state.currentRound);
@@ -183,6 +281,7 @@ export class GameEngine {
     this.state = {
       ...this.state,
       phase: 'DISCUSSION',
+      revealedEvidenceIds: updatedEvidenceIds,
       revealedClues: mergedClues
     };
 
@@ -309,6 +408,13 @@ export class GameEngine {
     } else {
       // Continue to next round
       const nextRound = this.state.currentRound + 1;
+      const allEvidence = this.state.story ? StoryEngine.getStoryEvidence(this.state.story) : [];
+      let updatedEvidenceIds = [...(this.state.revealedEvidenceIds || [])];
+      const nextRoundEvidence = allEvidence.find(e => e.id === `ev_round_${nextRound}`);
+      if (nextRoundEvidence && !updatedEvidenceIds.includes(nextRoundEvidence.id)) {
+        updatedEvidenceIds.push(nextRoundEvidence.id);
+      }
+
       const roundClues = this.state.story
         ? StoryEngine.getCluesForRound(this.state.story, nextRound)
         : [];
@@ -318,6 +424,7 @@ export class GameEngine {
         ...this.state,
         phase: 'DISCUSSION',
         currentRound: nextRound,
+        revealedEvidenceIds: updatedEvidenceIds,
         revealedClues: mergedClues,
         votes: {},
         lastVoteResult: null,

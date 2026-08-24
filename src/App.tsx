@@ -115,6 +115,10 @@ export default function App() {
     }
   };
 
+  const handleRevealNextEvidence = () => {
+    gameEngine.revealNextEvidence();
+  };
+
   const handleProceedToVoting = () => {
     setCurrentScreen('voting');
   };
@@ -289,11 +293,15 @@ export default function App() {
               className="w-full"
             >
               <DiscussionEvidenceScreen
-                story={selectedStory}
+                story={activeStory}
                 players={players}
                 round={round}
+                revealedEvidenceIds={gameState.revealedEvidenceIds}
+                revealedClues={gameState.revealedClues}
+                onRevealNextEvidence={handleRevealNextEvidence}
+                hasMoreEvidence={gameEngine.hasMoreEvidence()}
                 onProceedToVoting={handleProceedToVoting}
-                onBack={() => setCurrentScreen('role_pass')}
+                onBack={handleNavigateHome}
                 onNavigateHome={handleNavigateHome}
               />
             </motion.div>

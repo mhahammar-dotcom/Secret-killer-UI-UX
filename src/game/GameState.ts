@@ -10,6 +10,7 @@ export function createInitialGameState(overrides?: Partial<GameState>): GameStat
     players: [],
     currentViewingPlayerIndex: 0,
     currentRound: 1,
+    revealedEvidenceIds: [],
     revealedClues: [],
     wrongVotesCount: 0,
     maxWrongVotes: 3,

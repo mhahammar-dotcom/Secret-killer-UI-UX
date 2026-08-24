@@ -1,4 +1,4 @@
-import { Story, StoryValidationResult, InvestigationRound } from './types';
+import { Story, StoryValidationResult, InvestigationRound, EvidenceItem, EvidenceType } from './types';
 
 /**
  * StoryEngine handles validation, compatibility checks, and story data retrieval.
@@ -136,45 +136,94 @@ export class StoryEngine {
 
   /**
    * Determines the configured guilty count for a scenario.
-   * If the story explicitly specifies requiredGuiltyCount, use it (clamped to guiltyPool.length).
-   * Otherwise defaults to 1 (or min of pool and 1).
-   * Player count NEVER automatically determines guilty count.
    */
   static getGuiltyCountForScenario(story: Story): number {
     if (story.requiredGuiltyCount !== undefined && story.requiredGuiltyCount > 0) {
       return Math.min(story.requiredGuiltyCount, story.guiltyPool.length);
     }
-    // If story defines a guilty pool, use 1 by default unless requiredGuiltyCount is set
     return Math.min(1, story.guiltyPool?.length || 1);
   }
 
   /**
-   * Gets investigation round data for a given round number
+   * Gets investigation round data for a given round number without cycling.
+   * If roundNumber exceeds available rounds, returns null (never loops or fabricates).
    */
   static getInvestigationRound(story: Story, roundNumber: number): InvestigationRound | null {
     if (!story.investigationRounds || story.investigationRounds.length === 0) {
       return null;
     }
     const found = story.investigationRounds.find(r => r.roundNumber === roundNumber);
-    if (found) return found;
-    // Fallback to cycling or last round if past end
-    const index = (roundNumber - 1) % story.investigationRounds.length;
-    return story.investigationRounds[index] || null;
+    return found || null;
   }
 
   /**
-   * Unlocks clues for the given round
+   * Determines evidence category based on title and content keywords
+   */
+  static categorizeEvidence(title: string, content: string): EvidenceType {
+    const text = `${title} ${content}`.toLowerCase();
+    if (/تناقض|تضارب|اختلاف|فارق|مريب|تناقضت|كذب/.test(text)) return 'contradiction';
+    if (/توقيت|ساعة|دقيقة|جدول|زمن|تزامن|تأخير|لحظة|منتصف الليل/.test(text)) return 'timeline';
+    if (/سجل|مستند|وثيقة|تقرير|ملف|عقد|ورق|فاتورة/.test(text)) return 'document';
+    if (/شاهد|رأى|سمع|إفادة|شهادة|حارس|خادم/.test(text)) return 'witness';
+    if (/ممر|غرفة|قاعة|موقع|نافذة|باب|دفيئة|خيمة|مقصورة|خزنة/.test(text)) return 'location';
+    if (/علاقة|صلة|قرابة|صداقة|معرفة|سر/.test(text)) return 'relationship';
+    if (/دافع|مصلحة|تأمين|مكسب|مال|انتقام/.test(text)) return 'motive';
+    return 'physical';
+  }
+
+  /**
+   * Returns all normalized EvidenceItem objects for a story
+   */
+  static getStoryEvidence(story: Story): EvidenceItem[] {
+    if (story.evidence && story.evidence.length > 0) {
+      return story.evidence;
+    }
+
+    const items: EvidenceItem[] = [];
+
+    if (story.investigationRounds && story.investigationRounds.length > 0) {
+      story.investigationRounds.forEach((round) => {
+        items.push({
+          id: `ev_round_${round.roundNumber}`,
+          title: round.title || `أثر تحقيقي #${round.roundNumber}`,
+          description: round.description || round.publicClue,
+          publicClue: round.publicClue,
+          discussionPrompt: round.discussionPrompt,
+          category: this.categorizeEvidence(round.title || '', `${round.publicClue} ${round.description}`)
+        });
+      });
+    }
+
+    // Include any additional base clues from story.clues that aren't already represented
+    if (story.clues && story.clues.length > 0) {
+      story.clues.forEach((clue, idx) => {
+        const alreadyCovered = items.some(item => item.publicClue === clue || item.description === clue);
+        if (!alreadyCovered) {
+          items.push({
+            id: `ev_clue_${idx + 1}`,
+            title: `ملاحظة جنائية #${idx + 1}`,
+            description: clue,
+            publicClue: clue,
+            category: this.categorizeEvidence(`ملاحظة ${idx + 1}`, clue)
+          });
+        }
+      });
+    }
+
+    return items;
+  }
+
+  /**
+   * Unlocks clues for the given round without repeating or cycling
    */
   static getCluesForRound(story: Story, roundNumber: number): string[] {
     const revealed: string[] = [];
-    // Include base clues up to round number
     if (story.clues && story.clues.length > 0) {
       const count = Math.min(roundNumber, story.clues.length);
       for (let i = 0; i < count; i++) {
         revealed.push(story.clues[i]);
       }
     }
-    // Add public clue from investigation round if present
     const roundData = this.getInvestigationRound(story, roundNumber);
     if (roundData && roundData.publicClue && !revealed.includes(roundData.publicClue)) {
       revealed.push(roundData.publicClue);
