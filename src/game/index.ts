@@ -4,5 +4,6 @@ export * from './StoryEngine';
 export * from './CharacterAllocator';
 export * from './PlayerManager';
 export * from './VotingEngine';
+export * from './StoryValidator';
 export * from './StoryStore';
 export * from './GameEngine';

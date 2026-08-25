@@ -177,4 +177,60 @@ export interface GameState {
 export interface StoryValidationResult {
   valid: boolean;
   errors: string[];
+  warnings?: string[];
+  report?: StoryAuditReport;
+}
+
+export type EvidenceStrength = 'DIRECT' | 'STRONG' | 'MODERATE' | 'WEAK' | 'CONTEXTUAL';
+
+export interface SuspectProfile {
+  name: string;
+  profession: string;
+  isGuilty: boolean;
+  suspicionScore: number;
+  reasons: string[];
+}
+
+export interface EvidenceClassification {
+  id: string;
+  title: string;
+  strength: EvidenceStrength;
+  category: EvidenceType;
+  reason: string;
+  implicatedCharacters: string[];
+}
+
+export interface StoryValidationIssue {
+  severity: 'ERROR' | 'WARNING';
+  code: string;
+  message: string;
+  field?: string;
+  characterName?: string;
+  evidenceId?: string;
+}
+
+export interface StoryAuditReport {
+  storyId: string;
+  storyTitle: string;
+  minPlayers: number;
+  maxPlayers: number;
+  guiltyCount: number;
+  characterCount: number;
+  evidenceCount: number;
+  suspects: SuspectProfile[];
+  evidenceBalance: {
+    DIRECT: number;
+    STRONG: number;
+    MODERATE: number;
+    WEAK: number;
+    CONTEXTUAL: number;
+  };
+  evidenceClassifications: EvidenceClassification[];
+  warnings: string[];
+  errors: string[];
+  isValid: boolean;
+  hasLegacySecrets: boolean;
+  hasLegacyRounds: boolean;
+  hasDirectKillerEvidence: boolean;
+  timelineIssues: string[];
 }
