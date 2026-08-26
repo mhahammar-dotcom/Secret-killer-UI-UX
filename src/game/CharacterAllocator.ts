@@ -84,19 +84,113 @@ export class CharacterAllocator {
 
     const allNames = Array.from(charByName.keys());
     const dependencies = new Map<string, Set<string>>();
+    allNames.forEach(name => dependencies.set(name, new Set<string>()));
 
+    // 1. Character narrative dependencies (publicIdentity & knowledge)
     allCharacters.forEach(char => {
-      const deps = new Set<string>();
+      const deps = dependencies.get(char.name)!;
       const narrativeText = `${char.publicIdentity || ''} ${char.knowledge || ''}`;
       const mentioned = this.detectReferencesInText(char.name, narrativeText, allNames);
 
       mentioned.forEach(targetName => {
-        if (charByName.has(targetName)) {
+        if (charByName.has(targetName) && targetName !== char.name) {
           deps.add(targetName);
         }
       });
+    });
 
-      dependencies.set(char.name, deps);
+    // 2. Structured Evidence and Evidence text dependencies
+    // Inspect all available evidence items (explicit story.evidence + legacy converted items)
+    const rawEvidenceList: EvidenceItem[] = [
+      ...(story.evidence || []),
+      ...StoryEngine.getStoryEvidence(story)
+    ];
+
+    // De-duplicate evidence items by id or title+description
+    const processedEvKeys = new Set<string>();
+    const uniqueEvidence: EvidenceItem[] = [];
+    for (const ev of rawEvidenceList) {
+      const key = ev.id || `${ev.title}_${ev.description}`;
+      if (!processedEvKeys.has(key)) {
+        processedEvKeys.add(key);
+        uniqueEvidence.push(ev);
+      }
+    }
+
+    // Also inspect legacy clues and investigation rounds directly if not covered
+    const additionalClueTexts: string[] = [
+      ...(story.clues || []),
+      ...(story.wrongVoteHints || [])
+    ];
+
+    uniqueEvidence.forEach(ev => {
+      const referencedChars = new Set<string>();
+
+      // A) Structured relatedCharacters
+      if (Array.isArray(ev.relatedCharacters)) {
+        ev.relatedCharacters.forEach(refName => {
+          if (refName && typeof refName === 'string') {
+            const cleanRef = this.normalizeArabic(refName);
+            for (const name of allNames) {
+              if (this.normalizeArabic(name) === cleanRef) {
+                referencedChars.add(name);
+                break;
+              }
+            }
+          }
+        });
+      }
+
+      // B) Text fields (title, description, publicClue, discussionPrompt, timelineInfo)
+      const evText = `${ev.title || ''} ${ev.description || ''} ${ev.publicClue || ''} ${ev.discussionPrompt || ''} ${ev.timelineInfo || ''}`;
+      const textMentioned = this.detectReferencesInText('', evText, allNames);
+      textMentioned.forEach(name => referencedChars.add(name));
+
+      const refArray = Array.from(referencedChars);
+      if (refArray.length > 0) {
+        // Cross-character dependencies within this evidence item
+        if (refArray.length >= 2) {
+          for (let i = 0; i < refArray.length; i++) {
+            for (let j = 0; j < refArray.length; j++) {
+              if (i !== j) {
+                dependencies.get(refArray[i])?.add(refArray[j]);
+              }
+            }
+          }
+        }
+
+        // Story/Crime evidence dependencies: all guilty candidates depend on characters referenced in story evidence
+        (story.guiltyPool || []).forEach(guiltyChar => {
+          refArray.forEach(target => {
+            if (target !== guiltyChar.name) {
+              dependencies.get(guiltyChar.name)?.add(target);
+            }
+          });
+        });
+      }
+    });
+
+    // Inspect additional clue texts
+    additionalClueTexts.forEach(text => {
+      const clueMentioned = this.detectReferencesInText('', text, allNames);
+      if (clueMentioned.length > 0) {
+        if (clueMentioned.length >= 2) {
+          for (let i = 0; i < clueMentioned.length; i++) {
+            for (let j = 0; j < clueMentioned.length; j++) {
+              if (i !== j) {
+                dependencies.get(clueMentioned[i])?.add(clueMentioned[j]);
+              }
+            }
+          }
+        }
+        (story.guiltyPool || []).forEach(guiltyChar => {
+          clueMentioned.forEach(target => {
+            if (target !== guiltyChar.name) {
+              dependencies.get(guiltyChar.name)?.add(target);
+            }
+          });
+        });
+      }
     });
 
     // Compute transitive closures

@@ -604,6 +604,29 @@ const sampleStory: Story = {
   assert(result.errors.some(e => e.includes('4-player roster')), 'TEST 22: Error identifies unsupported 4-player roster');
 }
 
+// =========================================================================
+// TEST 23: Evidence relatedCharacters pointing to invalid non-existent character fails
+// =========================================================================
+{
+  const invalidEvidenceStory: Story = {
+    ...sampleStory,
+    id: 'invalid_evidence_story',
+    evidence: [
+      {
+        id: 'ev_invalid_char',
+        title: 'دليل وهمي',
+        description: 'يشير إلى شخص غير موجود.',
+        category: 'physical',
+        relatedCharacters: ['شخص_غير_موجود']
+      }
+    ]
+  };
+
+  const result = StoryValidator.validateStory(invalidEvidenceStory);
+  assert(result.valid === false, 'TEST 23: Evidence referencing non-existent character fails validation');
+  assert(result.errors.some(e => e.includes('شخص_غير_موجود')), 'TEST 23: Error message mentions missing character name');
+}
+
 console.log(`\n==================================================`);
 console.log(`ALL VALIDATOR TESTS PASSED: ${passedTests} passed, ${failedTests} failed.`);
 console.log(`==================================================\n`);
