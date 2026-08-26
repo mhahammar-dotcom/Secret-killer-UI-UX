@@ -109,10 +109,10 @@ export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
 
             {/* Killer Name & Info */}
             <div className="relative z-10 flex flex-col items-center">
-              <h3 className="text-3xl sm:text-4xl font-black font-['Cairo'] text-[#f5ebd9] drop-shadow-md">
+              <h3 className="text-3xl sm:text-4xl font-black font-['Cairo'] text-red-500 drop-shadow-[0_2px_15px_rgba(239,68,68,0.5)]">
                 {primaryKiller.character.name}
               </h3>
-              <span className="text-xs sm:text-sm font-bold text-[#e5b35a] font-['Cairo'] mt-1">
+              <span className="text-xs sm:text-sm font-bold text-red-300/90 font-['Cairo'] mt-1">
                 ({primaryKiller.name}) • {primaryKiller.character.profession}
               </span>
 

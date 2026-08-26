@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Users, UserPlus, Trash2, Shuffle, ChevronLeft, ArrowLeft, Plus, Home } from 'lucide-react';
+import { Users, UserPlus, Trash2, ChevronLeft, ArrowLeft, Plus, Home } from 'lucide-react';
 import { StoryData } from '../types';
 import { sound } from '../utils/audio';
 
@@ -46,12 +46,6 @@ export const PlayerSetupScreen: React.FC<PlayerSetupScreenProps> = ({
     if (names.length >= maxPlayers) return;
     const nextName = DEFAULT_NAMES[names.length % DEFAULT_NAMES.length] || `لاعب ${names.length + 1}`;
     setNames([...names, nextName]);
-  };
-
-  const handleRandomizeNames = () => {
-    sound.playClick();
-    const shuffled = [...DEFAULT_NAMES].sort(() => Math.random() - 0.5);
-    setNames(shuffled.slice(0, names.length));
   };
 
   const handleStartGame = () => {
@@ -106,29 +100,18 @@ export const PlayerSetupScreen: React.FC<PlayerSetupScreenProps> = ({
             </p>
           </div>
 
-          {/* Action Buttons: Shuffle + Home */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleRandomizeNames}
-              className="px-3 py-2 rounded-xl bg-black/60 border border-[#c8923a]/60 text-[#e5b35a] hover:border-[#f3cb79] hover:text-[#f3cb79] text-xs font-bold font-['Cairo'] transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
-              title="تعبئة أسماء عشوائية"
-            >
-              <Shuffle className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">اقتراح</span>
-            </button>
-
-            <button
-              onClick={() => {
-                sound.playClick();
-                if (onNavigateHome) onNavigateHome();
-                else onBack();
-              }}
-              className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
-              title="الرئيسية"
-            >
-              <Home className="w-5 h-5" />
-            </button>
-          </div>
+          {/* Home Action Button */}
+          <button
+            onClick={() => {
+              sound.playClick();
+              if (onNavigateHome) onNavigateHome();
+              else onBack();
+            }}
+            className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
+            title="الرئيسية"
+          >
+            <Home className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Count Bar */}

@@ -201,23 +201,45 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                 {/* Header: Player badge, Character Name, Profession */}
                 <div className="flex items-center justify-between border-b border-amber-900/30 pb-4">
                   <div className="flex items-center gap-3.5">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1c2132] to-[#0d0f16] border border-[#c8923a]/60 flex items-center justify-center text-3xl shadow-md text-[#f3cb79]">
-                      <User className="w-7 h-7 text-[#f3cb79]" />
+                    <div
+                      className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-3xl shadow-md transition-all ${
+                        currentPlayer.guilty
+                          ? 'bg-gradient-to-br from-red-950/60 to-[#0d0f16] border-red-500/70 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.25)]'
+                          : 'bg-gradient-to-br from-[#1c2132] to-[#0d0f16] border-[#c8923a]/60 text-[#f3cb79]'
+                      }`}
+                    >
+                      <User className={`w-7 h-7 ${currentPlayer.guilty ? 'text-red-400' : 'text-[#f3cb79]'}`} />
                     </div>
                     <div>
-                      <h3 className="text-xl sm:text-2xl font-black text-[#f5ebd9] font-['Cairo'] leading-tight">
+                      <h3
+                        className={`text-xl sm:text-2xl font-black font-['Cairo'] leading-tight transition-colors ${
+                          currentPlayer.guilty
+                            ? 'text-red-400 drop-shadow-[0_2px_10px_rgba(239,68,68,0.35)]'
+                            : 'text-[#f5ebd9]'
+                        }`}
+                      >
                         {currentPlayer.character.name}
                       </h3>
-                      <span className="text-xs sm:text-sm text-[#e5b35a] font-bold font-['Cairo']">
+                      <span
+                        className={`text-xs sm:text-sm font-bold font-['Cairo'] ${
+                          currentPlayer.guilty ? 'text-red-300/90' : 'text-[#e5b35a]'
+                        }`}
+                      >
                         {currentPlayer.character.profession}
                       </span>
                     </div>
                   </div>
 
-                  {/* Player Indicator */}
-                  <div className="px-3 py-1.5 rounded-xl border border-[#c8923a]/50 bg-black/60 text-[#f3cb79] text-xs sm:text-sm font-bold font-['Cairo'] shadow-md flex items-center gap-1.5">
-                    <BadgeCheck className="w-4 h-4 text-[#e5b35a]" />
-                    <span>{currentPlayer.name}</span>
+                  {/* Player Indicator (Red when killer) */}
+                  <div
+                    className={`px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-bold font-['Cairo'] shadow-md flex items-center gap-1.5 transition-all ${
+                      currentPlayer.guilty
+                        ? 'border-red-500/80 bg-red-950/70 text-red-400 shadow-[0_0_12px_rgba(239,68,68,0.3)]'
+                        : 'border-[#c8923a]/50 bg-black/60 text-[#f3cb79]'
+                    }`}
+                  >
+                    <BadgeCheck className={`w-4 h-4 ${currentPlayer.guilty ? 'text-red-400' : 'text-[#e5b35a]'}`} />
+                    <span className={currentPlayer.guilty ? 'text-red-400 font-black' : ''}>{currentPlayer.name}</span>
                   </div>
                 </div>
 
