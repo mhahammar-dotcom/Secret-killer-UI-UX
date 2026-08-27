@@ -1,6 +1,6 @@
 import { Story, StoryValidationResult } from './types';
 import { StoryEngine } from './StoryEngine';
-import repoStoriesData from '../data/repoStories.json';
+import { BUILT_IN_STORIES_V2 } from '../data/stories';
 
 const CUSTOM_STORIES_STORAGE_KEY = 'secret_killer_custom_stories_v2';
 
@@ -16,7 +16,7 @@ export class StoryStore {
    */
   static getBuiltInStories(): Story[] {
     if (!this.builtInStoriesCache) {
-      this.builtInStoriesCache = (repoStoriesData as unknown as Story[]).map(story => {
+      this.builtInStoriesCache = BUILT_IN_STORIES_V2.map(story => {
         const defaultSolution = story.solution?.trim()
           ? story.solution
           : `أثبتت الأدلة والتحقيقات الجنائية تفاصيل الحادثة: ${story.introduction?.incident || story.description}.`;

@@ -90,9 +90,9 @@ export interface Story {
   guiltyPool: StoryCharacter[];
   innocentPool: StoryCharacter[];
   fixedCharacters?: StoryCharacter[];
-  clues: string[];
-  wrongVoteHints: string[];
-  investigationRounds: InvestigationRound[];
+  clues?: string[];
+  wrongVoteHints?: string[];
+  investigationRounds?: InvestigationRound[];
   evidence?: EvidenceItem[];
   solution: string;
   customEnding?: string;
