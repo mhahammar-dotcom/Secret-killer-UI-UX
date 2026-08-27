@@ -79,7 +79,6 @@ export interface PlayerData {
 export interface GameSettings {
   language: 'ar' | 'en';
   soundEnabled: boolean;
-  ambientSound: boolean;
   timerMinutes: number;
   dramaticEffects: boolean;
   secretBallotMode?: boolean;

@@ -1,9 +1,6 @@
-// Procedural Web Audio API sound effects, Resident Evil style title voice, & mystery ambiance
-
+// Procedural Web Audio API sound effects, Resident Evil style title voice
 class SoundEngine {
   private ctx: AudioContext | null = null;
-  private ambientOsc: OscillatorNode | null = null;
-  private ambientGain: GainNode | null = null;
   private isMuted: boolean = false;
   private titleAudioBuffer: AudioBuffer | null = null;
   private hasPlayedOpeningTitle: boolean = false;
@@ -18,15 +15,16 @@ class SoundEngine {
       this.ctx = new AudioCtx();
     }
     if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      this.ctx.resume().catch(() => {});
     }
   }
 
   public setMuted(muted: boolean) {
     this.isMuted = muted;
-    if (muted && this.ambientGain && this.ctx) {
-      this.ambientGain.gain.setValueAtTime(0, this.ctx.currentTime);
-    }
+  }
+
+  public isSoundMuted(): boolean {
+    return this.isMuted;
   }
 
   // Preload Resident Evil title voice audio buffer
@@ -64,7 +62,7 @@ class SoundEngine {
     }
   }
 
-  // Resident Evil style Title Voice: Deep guttural demonic voice saying "SECRET... KILLER..."
+  // Resident Evil style Title Voice: Deep guttural dramatic voice saying "SECRET... KILLER..."
   public playTitleVoice(force: boolean = false) {
     if (this.isMuted) return;
     if (!force && this.hasPlayedOpeningTitle) return;
@@ -114,7 +112,7 @@ class SoundEngine {
     const source = this.ctx.createBufferSource();
     source.buffer = buffer;
 
-    // Sub-bass resonance filter (Resident Evil signature low chest-rattle)
+    // Sub-bass resonance filter
     const bassFilter = this.ctx.createBiquadFilter();
     bassFilter.type = 'lowshelf';
     bassFilter.frequency.setValueAtTime(90, this.ctx.currentTime);
@@ -127,7 +125,7 @@ class SoundEngine {
     presenceFilter.Q.setValueAtTime(1.2, this.ctx.currentTime);
     presenceFilter.gain.setValueAtTime(2.5, this.ctx.currentTime);
 
-    // Dynamic Compressor for 90s Capcom horror mastering punch
+    // Dynamic Compressor
     const compressor = this.ctx.createDynamicsCompressor();
     compressor.threshold.setValueAtTime(-18, this.ctx.currentTime);
     compressor.knee.setValueAtTime(8, this.ctx.currentTime);
@@ -149,53 +147,7 @@ class SoundEngine {
     source.start();
   }
 
-  // Noir ambient drone
-  public startAmbient() {
-    if (this.isMuted) return;
-    try {
-      this.initCtx();
-      if (!this.ctx) return;
-      if (this.ambientOsc) return;
-
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const filter = this.ctx.createBiquadFilter();
-
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(55, this.ctx.currentTime); // Low A1
-
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(120, this.ctx.currentTime);
-
-      gain.gain.setValueAtTime(0.001, this.ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.03, this.ctx.currentTime + 2);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start();
-      this.ambientOsc = osc;
-      this.ambientGain = gain;
-    } catch {}
-  }
-
-  public stopAmbient() {
-    if (this.ambientOsc && this.ambientGain && this.ctx) {
-      try {
-        this.ambientGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
-        setTimeout(() => {
-          this.ambientOsc?.stop();
-          this.ambientOsc?.disconnect();
-          this.ambientOsc = null;
-        }, 500);
-      } catch {
-        this.ambientOsc = null;
-      }
-    }
-  }
-
-  // Click / Button sound
+  // Click / Button navigation cue
   public playClick() {
     if (this.isMuted) return;
     try {
@@ -243,7 +195,7 @@ class SoundEngine {
     } catch {}
   }
 
-  // Role Reveal dramatic whoosh / chord
+  // Role Reveal dramatic whoosh / rising mystery chord
   public playRoleReveal() {
     if (this.isMuted) return;
     try {
@@ -267,7 +219,7 @@ class SoundEngine {
     } catch {}
   }
 
-  // Vote confirmation
+  // Vote confirmation sound
   public playVoteConfirm() {
     if (this.isMuted) return;
     try {
@@ -291,7 +243,7 @@ class SoundEngine {
     } catch {}
   }
 
-  // Gong / Time End
+  // Gong / Dramatic Bell (Time End or Defeat)
   public playGong() {
     if (this.isMuted) return;
     try {
@@ -315,7 +267,7 @@ class SoundEngine {
     } catch {}
   }
 
-  // Stamp Slam (When Killer is revealed)
+  // Stamp Slam (When Killer or Verdict is revealed)
   public playStamp() {
     if (this.isMuted) return;
     try {
@@ -340,7 +292,7 @@ class SoundEngine {
     } catch {}
   }
 
-  // Victory Fanfare
+  // Victory Fanfare (Innocents win / correct verdict)
   public playVictory() {
     if (this.isMuted) return;
     try {

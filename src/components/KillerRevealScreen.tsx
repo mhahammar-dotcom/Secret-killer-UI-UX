@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronLeft, Home } from 'lucide-react';
 import { StoryData, PlayerData } from '../types';
 import { sound } from '../utils/audio';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
+import culpritRevealImg from '../assets/images/noir_culprit_reveal_1787831528598.jpg';
 
 interface KillerRevealScreenProps {
   story: StoryData;
@@ -116,7 +117,7 @@ export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
             {/* Portrait Container */}
             <div className="relative z-10 w-48 h-48 sm:w-56 sm:h-56 rounded-[22px] overflow-hidden border-2 border-[#c8923a]/70 shadow-2xl bg-black flex items-center justify-center mb-4">
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80"
+                src={culpritRevealImg}
                 alt={t.killerRole}
                 className="w-full h-full object-cover grayscale contrast-125 brightness-90"
                 referrerPolicy="no-referrer"

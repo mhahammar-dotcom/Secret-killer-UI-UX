@@ -36,17 +36,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     onUpdateSettings({ ...settings, soundEnabled: updated });
   };
 
-  const handleToggleAmbient = () => {
-    sound.playClick();
-    const updated = !settings.ambientSound;
-    if (updated) {
-      sound.startAmbient();
-    } else {
-      sound.stopAmbient();
-    }
-    onUpdateSettings({ ...settings, ambientSound: updated });
-  };
-
   const handleSetTimer = (minutes: number) => {
     sound.playClick();
     onUpdateSettings({ ...settings, timerMinutes: minutes });
@@ -137,26 +126,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div
                 className={`w-5 h-5 rounded-full bg-slate-950 transition-transform absolute top-0.5 ${
                   settings.soundEnabled ? (isRtl ? 'left-1' : 'right-1') : (isRtl ? 'left-6' : 'right-6')
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Ambient Music */}
-          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-black/40 border border-[#7a5c2b]/40">
-            <div>
-              <span className="text-sm sm:text-base font-black text-[#f5ebd9] block">{t.ambientMusic}</span>
-              <span className="text-xs text-[#a39a8c]">{t.ambientMusicDesc}</span>
-            </div>
-            <button
-              onClick={handleToggleAmbient}
-              className={`w-13 h-7 rounded-full transition-colors relative cursor-pointer border border-[#c8923a]/40 shrink-0 ${
-                settings.ambientSound ? 'bg-[#c8923a]' : 'bg-black/60'
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-full bg-slate-950 transition-transform absolute top-0.5 ${
-                  settings.ambientSound ? (isRtl ? 'left-1' : 'right-1') : (isRtl ? 'left-6' : 'right-6')
                 }`}
               />
             </button>

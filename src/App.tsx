@@ -28,14 +28,35 @@ export default function App() {
   }
   const gameEngine = gameEngineRef.current;
 
-  // Settings with Language Support
-  const [settings, setSettings] = useState<GameSettings>({
-    language: 'ar',
-    soundEnabled: true,
-    ambientSound: false,
-    timerMinutes: 4,
-    dramaticEffects: true,
+  // Settings with Language Support and LocalStorage persistence
+  const [settings, setSettings] = useState<GameSettings>(() => {
+    try {
+      const saved = localStorage.getItem('secret_killer_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          language: parsed.language || 'ar',
+          soundEnabled: parsed.soundEnabled ?? true,
+          timerMinutes: parsed.timerMinutes || 4,
+          dramaticEffects: parsed.dramaticEffects ?? true,
+          secretBallotMode: parsed.secretBallotMode ?? false,
+        };
+      }
+    } catch {}
+    return {
+      language: 'ar',
+      soundEnabled: true,
+      timerMinutes: 4,
+      dramaticEffects: true,
+    };
   });
+
+  const handleUpdateSettings = (newSettings: GameSettings) => {
+    setSettings(newSettings);
+    try {
+      localStorage.setItem('secret_killer_settings', JSON.stringify(newSettings));
+    } catch {}
+  };
 
   const language = settings.language || 'ar';
   const isEn = language === 'en';
@@ -338,6 +359,7 @@ export default function App() {
                 onBack={handleNavigateHome}
                 onNavigateHome={handleNavigateHome}
                 language={language}
+                timerMinutes={settings.timerMinutes}
               />
             </motion.div>
           )}
@@ -478,7 +500,7 @@ export default function App() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         settings={settings}
-        onUpdateSettings={setSettings}
+        onUpdateSettings={handleUpdateSettings}
       />
 
       <CustomStoryModal
