@@ -21,6 +21,7 @@ import {
 import { StoryData, PlayerData } from '../types';
 import { StoryEngine, Story, EvidenceItem, EvidenceType } from '../game';
 import { sound } from '../utils/audio';
+import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 
 interface DiscussionEvidenceScreenProps {
   story: StoryData;
@@ -33,6 +34,7 @@ interface DiscussionEvidenceScreenProps {
   onProceedToVoting: () => void;
   onBack?: () => void;
   onNavigateHome?: () => void;
+  language?: 'ar' | 'en';
 }
 
 type TabType = 'evidence' | 'suspects' | 'briefing' | 'prompts';
@@ -59,10 +61,15 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
   onProceedToVoting,
   onBack,
   onNavigateHome,
+  language = 'ar',
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('evidence');
   const [activeEvidenceIndex, setActiveEvidenceIndex] = useState<number>(0);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  const isEn = language === 'en';
+  const t = isEn ? EN_STRINGS : AR_STRINGS;
+  const isRtl = !isEn;
 
   // Normalize all available evidence from StoryEngine to compute counts and metadata
   const allStoryEvidence: EvidenceItem[] = StoryEngine.getStoryEvidence(story as unknown as Story);
@@ -97,26 +104,39 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
   const getCategoryBadge = (category: EvidenceType) => {
     switch (category) {
       case 'timeline':
-        return { label: 'جدول زمني', icon: Clock, color: 'text-amber-300 border-amber-500/40 bg-amber-950/40' };
+        return { label: isEn ? 'Timeline' : 'جدول زمني', icon: Clock, color: 'text-amber-300 border-amber-500/40 bg-amber-950/40' };
       case 'witness':
-        return { label: 'إفادة شاهد', icon: Users, color: 'text-sky-300 border-sky-500/40 bg-sky-950/40' };
+        return { label: isEn ? 'Witness Testimony' : 'إفادة شاهد', icon: Users, color: 'text-sky-300 border-sky-500/40 bg-sky-950/40' };
       case 'document':
-        return { label: 'سجلات ومستندات', icon: FileText, color: 'text-emerald-300 border-emerald-500/40 bg-emerald-950/40' };
+        return { label: isEn ? 'Records & Docs' : 'سجلات ومستندات', icon: FileText, color: 'text-emerald-300 border-emerald-500/40 bg-emerald-950/40' };
       case 'location':
-        return { label: 'موقع الحدث', icon: MapPin, color: 'text-purple-300 border-purple-500/40 bg-purple-950/40' };
+        return { label: isEn ? 'Crime Scene' : 'موقع الحدث', icon: MapPin, color: 'text-purple-300 border-purple-500/40 bg-purple-950/40' };
       case 'contradiction':
-        return { label: 'تناقض روايات', icon: AlertCircle, color: 'text-rose-300 border-rose-500/40 bg-rose-950/40' };
+        return { label: isEn ? 'Contradiction' : 'تناقض روايات', icon: AlertCircle, color: 'text-rose-300 border-rose-500/40 bg-rose-950/40' };
       case 'relationship':
-        return { label: 'علاقات ودوافع', icon: Eye, color: 'text-indigo-300 border-indigo-500/40 bg-indigo-950/40' };
+        return { label: isEn ? 'Motives & Ties' : 'علاقات ودوافع', icon: Eye, color: 'text-indigo-300 border-indigo-500/40 bg-indigo-950/40' };
       case 'motive':
-        return { label: 'شبهة دافع', icon: Sparkles, color: 'text-orange-300 border-orange-500/40 bg-orange-950/40' };
+        return { label: isEn ? 'Suspected Motive' : 'شبهة دافع', icon: Sparkles, color: 'text-orange-300 border-orange-500/40 bg-orange-950/40' };
       default:
-        return { label: 'أثر مادي', icon: Search, color: 'text-amber-200 border-[#c8923a]/50 bg-[#161a26]' };
+        return { label: isEn ? 'Physical Clue' : 'أثر مادي', icon: Search, color: 'text-amber-200 border-[#c8923a]/50 bg-[#161a26]' };
     }
   };
 
   // General open-ended discussion prompts
-  const generalPrompts = [
+  const generalPrompts = isEn ? [
+    {
+      title: 'Review the Timeline',
+      text: 'Compare the timing of the crime with the whereabouts of each person in the critical minutes. Do their stories match or are there gaps?',
+    },
+    {
+      title: 'Examine Alibis & Statements',
+      text: 'Question the suspects about what they saw or heard. Does anyone directly corroborate another suspect\'s alibi?',
+    },
+    {
+      title: 'Motives & Opportunities',
+      text: 'Who among the suspects had the strongest motive or technical means to execute the crime without drawing attention?',
+    },
+  ] : [
     {
       title: 'مراجعة الجدول الزمني',
       text: 'قارنوا بين توقيت الحادث ومواقع كل شخص في الدقائق الحرجة. هل تتطابق الشهادات أم هناك فجوات زمنية؟',
@@ -135,7 +155,7 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
     <div
       id="discussion_evidence_screen"
       className="relative min-h-screen w-full flex flex-col items-center bg-[#07080c] select-none text-slate-100 pb-24 pt-3 px-3 sm:px-6"
-      dir="rtl"
+      dir={isRtl ? 'rtl' : 'ltr'}
     >
       {/* Ambient Noir Background */}
       <div className="fixed inset-0 bg-gradient-to-b from-[#0c0e14] via-[#08090d] to-[#040507] pointer-events-none" />
@@ -153,17 +173,17 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               setShowExitConfirm(true);
             }}
             className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
-            title="رجوع"
+            title={t.back}
           >
-            <ChevronLeft className="w-6 h-6 stroke-[2.4] rtl:rotate-180" />
+            <ChevronLeft className={`w-6 h-6 stroke-[2.4] ${isRtl ? 'rotate-180' : ''}`} />
           </button>
 
           <div className="text-center px-2">
-            <h1 className="text-xl sm:text-2xl font-black font-['Cairo'] text-[#f5ebd9] tracking-wide leading-tight drop-shadow-md">
-              جلسة التحري والنقاش
+            <h1 className={`text-xl sm:text-2xl font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f5ebd9] tracking-wide leading-tight drop-shadow-md`}>
+              {t.discussionInvestigation}
             </h1>
-            <p className="text-xs text-[#b0a99c] font-medium font-['Cairo'] mt-0.5">
-              الجولة {round} • {story.title}
+            <p className={`text-xs text-[#b0a99c] font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-0.5`}>
+              {isEn ? `Round ${round} • ${story.title}` : `الجولة ${round} • ${story.title}`}
             </p>
           </div>
 
@@ -175,7 +195,7 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               setShowExitConfirm(true);
             }}
             className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
-            title="الرئيسية"
+            title={t.home}
           >
             <Home className="w-5 h-5" />
           </button>
@@ -189,14 +209,14 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               sound.playClick();
               setActiveTab('evidence');
             }}
-            className={`py-2 px-1 rounded-xl text-xs font-black font-['Cairo'] flex flex-col items-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl text-xs font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} flex flex-col items-center gap-1 transition-all cursor-pointer ${
               activeTab === 'evidence'
                 ? 'bg-gradient-to-r from-[#c8923a] to-[#d49e3d] text-slate-950 shadow-md'
                 : 'text-[#b0a99c] hover:text-[#f5ebd9] hover:bg-black/30'
             }`}
           >
             <Search className="w-4 h-4" />
-            <span>الأدلة ({visibleEvidence.length})</span>
+            <span>{t.evidenceTab} ({visibleEvidence.length})</span>
           </button>
 
           <button
@@ -205,14 +225,14 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               sound.playClick();
               setActiveTab('suspects');
             }}
-            className={`py-2 px-1 rounded-xl text-xs font-black font-['Cairo'] flex flex-col items-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl text-xs font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} flex flex-col items-center gap-1 transition-all cursor-pointer ${
               activeTab === 'suspects'
                 ? 'bg-gradient-to-r from-[#c8923a] to-[#d49e3d] text-slate-950 shadow-md'
                 : 'text-[#b0a99c] hover:text-[#f5ebd9] hover:bg-black/30'
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>المشتبه بهم ({players.length})</span>
+            <span>{t.suspectsTab} ({players.length})</span>
           </button>
 
           <button
@@ -221,14 +241,14 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               sound.playClick();
               setActiveTab('briefing');
             }}
-            className={`py-2 px-1 rounded-xl text-xs font-black font-['Cairo'] flex flex-col items-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl text-xs font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} flex flex-col items-center gap-1 transition-all cursor-pointer ${
               activeTab === 'briefing'
                 ? 'bg-gradient-to-r from-[#c8923a] to-[#d49e3d] text-slate-950 shadow-md'
                 : 'text-[#b0a99c] hover:text-[#f5ebd9] hover:bg-black/30'
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            <span>الوقائع</span>
+            <span>{t.caseBriefingTab}</span>
           </button>
 
           <button
@@ -237,14 +257,14 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               sound.playClick();
               setActiveTab('prompts');
             }}
-            className={`py-2 px-1 rounded-xl text-xs font-black font-['Cairo'] flex flex-col items-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl text-xs font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} flex flex-col items-center gap-1 transition-all cursor-pointer ${
               activeTab === 'prompts'
                 ? 'bg-gradient-to-r from-[#c8923a] to-[#d49e3d] text-slate-950 shadow-md'
                 : 'text-[#b0a99c] hover:text-[#f5ebd9] hover:bg-black/30'
             }`}
           >
             <MessageSquare className="w-4 h-4" />
-            <span>محاور النقاش</span>
+            <span>{t.discussionPromptsTab}</span>
           </button>
         </div>
 
@@ -276,28 +296,28 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                       const badge = getCategoryBadge(currentEvidence.category);
                       const BadgeIcon = badge.icon;
                       return (
-                        <div className={`absolute top-3 right-3 px-3 py-1 rounded-xl text-xs font-black font-['Cairo'] shadow-md flex items-center gap-1.5 border ${badge.color}`}>
+                        <div className={`absolute top-3 ${isRtl ? 'right-3' : 'left-3'} px-3 py-1 rounded-xl text-xs font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} shadow-md flex items-center gap-1.5 border ${badge.color}`}>
                           <BadgeIcon className="w-3.5 h-3.5" />
                           <span>{badge.label}</span>
                         </div>
                       );
                     })()}
 
-                    <div className="absolute bottom-3 right-3 px-3 py-1 rounded-xl bg-black/80 backdrop-blur-sm border border-amber-500/30 text-[#f3cb79] text-xs font-black font-['Cairo'] shadow-md">
-                      دليل تحقيقي {activeEvidenceIndex + 1} من {totalRevealedCount}
+                    <div className={`absolute bottom-3 ${isRtl ? 'right-3' : 'left-3'} px-3 py-1 rounded-xl bg-black/80 backdrop-blur-sm border border-amber-500/30 text-[#f3cb79] text-xs font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} shadow-md`}>
+                      {isEn ? `Evidence Clue ${activeEvidenceIndex + 1} of ${totalRevealedCount}` : `دليل تحقيقي ${activeEvidenceIndex + 1} من ${totalRevealedCount}`}
                     </div>
                   </div>
 
                   {/* Evidence Details */}
                   <div className="flex flex-col gap-2">
-                    <h3 className="text-lg sm:text-xl font-black font-['Cairo'] text-[#f3cb79]">
+                    <h3 className={`text-lg sm:text-xl font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f3cb79]`}>
                       {currentEvidence.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-[#f5ebd9] leading-relaxed font-semibold font-['Cairo']">
+                    <p className={`text-xs sm:text-sm text-[#f5ebd9] leading-relaxed font-semibold ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                       {currentEvidence.publicClue || currentEvidence.description}
                     </p>
                     {currentEvidence.description && currentEvidence.description !== currentEvidence.publicClue && (
-                      <p className="text-xs text-[#a39a8c] leading-relaxed font-['Cairo'] mt-1">
+                      <p className={`text-xs text-[#a39a8c] leading-relaxed ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-1`}>
                         {currentEvidence.description}
                       </p>
                     )}
@@ -305,9 +325,9 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
 
                   {/* Discussion Question */}
                   {currentEvidence.discussionPrompt && (
-                    <div className="p-3.5 rounded-2xl bg-[#141724] border border-[#c8923a]/35 text-xs sm:text-sm font-['Cairo']">
+                    <div className={`p-3.5 rounded-2xl bg-[#141724] border border-[#c8923a]/35 text-xs sm:text-sm ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                       <span className="text-[#f3cb79] font-black block mb-1">
-                        محور مطروح للنقاش والتحقق:
+                        {isEn ? 'Discussion & Inquiry Topic:' : 'محور مطروح للنقاش والتحقق:'}
                       </span>
                       <p className="text-[#d4cfc7] font-medium leading-relaxed">
                         {currentEvidence.discussionPrompt}
@@ -322,12 +342,12 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                         disabled={activeEvidenceIndex === 0}
                         onClick={handlePrevEvidence}
                         className="p-2.5 rounded-xl bg-black/60 text-[#e5b35a] hover:text-[#f3cb79] disabled:opacity-30 border border-[#7a5c2b]/50 transition-colors cursor-pointer"
-                        title="الدليل السابق"
+                        title={isEn ? 'Previous Clue' : 'الدليل السابق'}
                       >
-                        <ChevronRight className="w-5 h-5 stroke-[2.4]" />
+                        <ChevronLeft className={`w-5 h-5 stroke-[2.4] ${isRtl ? 'rotate-180' : ''}`} />
                       </button>
 
-                      <span className="text-xs font-black font-['Cairo'] text-[#f5ebd9]">
+                      <span className={`text-xs font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f5ebd9]`}>
                         {activeEvidenceIndex + 1} / {totalRevealedCount}
                       </span>
 
@@ -335,28 +355,30 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                         disabled={activeEvidenceIndex === totalRevealedCount - 1}
                         onClick={handleNextEvidence}
                         className="p-2.5 rounded-xl bg-black/60 text-[#e5b35a] hover:text-[#f3cb79] disabled:opacity-30 border border-[#7a5c2b]/50 transition-colors cursor-pointer"
-                        title="الدليل التالي"
+                        title={isEn ? 'Next Clue' : 'الدليل التالي'}
                       >
-                        <ChevronLeft className="w-5 h-5 stroke-[2.4]" />
+                        <ChevronRight className={`w-5 h-5 stroke-[2.4] ${isRtl ? 'rotate-180' : ''}`} />
                       </button>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="rounded-[24px] bg-[#0d0f16] border border-amber-900/30 p-6 text-center text-[#b0a99c] font-['Cairo'] flex flex-col items-center gap-2">
+                <div className={`rounded-[24px] bg-[#0d0f16] border border-amber-900/30 p-6 text-center text-[#b0a99c] ${isRtl ? "font-['Cairo']" : 'font-sans'} flex flex-col items-center gap-2`}>
                   <Search className="w-10 h-10 text-[#c8923a]/60 mb-1" />
                   <p className="text-sm font-bold text-[#f5ebd9]">
-                    {totalAllCount === 0 ? 'لا توجد أدلة مادية إضافية في هذا الملف' : 'لم يتم فحص أي دليل مادي بعد'}
+                    {totalAllCount === 0 
+                      ? (isEn ? 'No additional physical clues in this case file' : 'لا توجد أدلة مادية إضافية في هذا الملف') 
+                      : (isEn ? 'No physical clue has been revealed yet' : 'لم يتم فحص أي دليل مادي بعد')}
                   </p>
                   <p className="text-xs leading-relaxed max-w-sm">
                     {totalAllCount === 0
-                      ? 'اعتمدوا على ملف الوقائع وإفادات الحاضرين للوصول إلى الحقيقة.'
-                      : `ملف القضية يحتوي على (${totalAllCount}) أدلة ومسارات قابلة للفحص والتحري.`}
+                      ? (isEn ? 'Rely on the case briefing and suspects\' statements to discover the truth.' : 'اعتمدوا على ملف الوقائع وإفادات الحاضرين للوصول إلى الحقيقة.')
+                      : (isEn ? `The case file contains (${totalAllCount}) clues available for investigation.` : `ملف القضية يحتوي على (${totalAllCount}) أدلة ومسارات قابلة للفحص والتحري.`)}
                   </p>
                 </div>
               )}
 
-              {/* Reveal Next Evidence CTA (Controlled by GameEngine) */}
+              {/* Reveal Next Evidence CTA */}
               {hasMoreEvidence && onRevealNextEvidence ? (
                 <button
                   id="btn_reveal_next_evidence"
@@ -365,15 +387,15 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                     onRevealNextEvidence();
                     setActiveEvidenceIndex(totalRevealedCount);
                   }}
-                  className="w-full py-3.5 px-4 rounded-2xl bg-[#141724] border border-[#c8923a]/60 hover:border-[#f3cb79] hover:bg-[#1a1f30] text-[#f3cb79] font-black font-['Cairo'] text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                  className={`w-full py-3.5 px-4 rounded-2xl bg-[#141724] border border-[#c8923a]/60 hover:border-[#f3cb79] hover:bg-[#1a1f30] text-[#f3cb79] font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md`}
                 >
                   <Sparkles className="w-4 h-4 text-amber-400" />
-                  <span>طلب فحص دليل إضافي ({totalRevealedCount} / {totalAllCount} مكشوف)</span>
+                  <span>{isEn ? `Request Next Clue (${totalRevealedCount} / ${totalAllCount} revealed)` : `طلب فحص دليل إضافي (${totalRevealedCount} / ${totalAllCount} مكشوف)`}</span>
                 </button>
               ) : totalAllCount > 0 ? (
-                <div className="w-full py-2.5 px-4 rounded-2xl bg-black/40 border border-emerald-900/30 text-emerald-300/80 font-bold font-['Cairo'] text-xs text-center flex items-center justify-center gap-2">
+                <div className={`w-full py-2.5 px-4 rounded-2xl bg-black/40 border border-emerald-900/30 text-emerald-300/80 font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} text-xs text-center flex items-center justify-center gap-2`}>
                   <Shield className="w-4 h-4 text-emerald-400" />
-                  <span>تم الكشف عن جميع الأدلة المتاحة في ملف القضية ({totalRevealedCount})</span>
+                  <span>{isEn ? `All clues in the case file have been revealed (${totalRevealedCount})` : `تم الكشف عن جميع الأدلة المتاحة في ملف القضية (${totalRevealedCount})`}</span>
                 </div>
               ) : null}
             </motion.div>
@@ -388,8 +410,8 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               exit={{ opacity: 0, y: -10 }}
               className="flex flex-col gap-3"
             >
-              <div className="text-xs text-[#9b988f] font-medium font-['Cairo'] px-1">
-                قائمة الحاضرين في مسرح الأحداث (لا تظهر أي هويات سرية أو أدوار خاصة):
+              <div className={`text-xs text-[#9b988f] font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} px-1`}>
+                {isEn ? 'List of all persons present (secret roles and hidden identities remain concealed):' : 'قائمة الحاضرين في مسرح الأحداث (لا تظهر أي هويات سرية أو أدوار خاصة):'}
               </div>
               <div className="grid grid-cols-1 gap-2.5">
                 {players.map((p, idx) => (
@@ -400,32 +422,32 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                     } flex items-center justify-between gap-3 shadow-md`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1c2030] to-black border border-[#c8923a]/40 flex items-center justify-center text-[#f3cb79] font-black text-sm font-['Cairo']">
+                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br from-[#1c2030] to-black border border-[#c8923a]/40 flex items-center justify-center text-[#f3cb79] font-black text-sm ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                         {p.character.name.charAt(0)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-black font-['Cairo'] text-[#f5ebd9]">
+                          <h4 className={`text-sm font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f5ebd9]`}>
                             {p.character.name}
                           </h4>
-                          <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#181c2b] text-[#c8923a] border border-[#c8923a]/30 font-medium font-['Cairo']">
+                          <span className={`text-[11px] px-2 py-0.5 rounded-full bg-[#181c2b] text-[#c8923a] border border-[#c8923a]/30 font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                             {p.character.profession}
                           </span>
                         </div>
-                        <p className="text-xs text-[#9b988f] font-['Cairo'] mt-0.5">
-                          اللاعب: <span className="text-[#f5ebd9] font-bold">{p.name}</span>
+                        <p className={`text-xs text-[#9b988f] ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-0.5`}>
+                          {isEn ? 'Player: ' : 'اللاعب: '}<span className="text-[#f5ebd9] font-bold">{p.name}</span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="shrink-0 text-right">
+                    <div className={`shrink-0 ${isRtl ? 'text-right' : 'text-left'}`}>
                       {p.eliminated ? (
-                        <span className="text-[11px] font-bold font-['Cairo'] px-2 py-1 rounded-lg bg-red-950/60 text-red-400 border border-red-800/40">
-                          مستبعد
+                        <span className={`text-[11px] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} px-2 py-1 rounded-lg bg-red-950/60 text-red-400 border border-red-800/40`}>
+                          {isEn ? 'Eliminated' : 'مستبعد'}
                         </span>
                       ) : (
-                        <span className="text-[11px] font-bold font-['Cairo'] px-2 py-1 rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
-                          نشط
+                        <span className={`text-[11px] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} px-2 py-1 rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-800/40`}>
+                          {isEn ? 'Active' : 'نشط'}
                         </span>
                       )}
                     </div>
@@ -445,29 +467,29 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               className="rounded-[26px] bg-[#0d0f16] border border-[#c8923a]/40 p-5 sm:p-6 shadow-xl flex flex-col gap-4"
             >
               <div>
-                <span className="text-xs font-black text-[#c8923a] block mb-1">المكان والسياق:</span>
-                <p className="text-xs sm:text-sm text-[#f5ebd9] leading-relaxed font-semibold font-['Cairo']">
+                <span className="text-xs font-black text-[#c8923a] block mb-1">{isEn ? 'Setting & Location:' : 'المكان والسياق:'}</span>
+                <p className={`text-xs sm:text-sm text-[#f5ebd9] leading-relaxed font-semibold ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                   {story.introduction.setting}
                 </p>
               </div>
 
               <div>
-                <span className="text-xs font-black text-[#c8923a] block mb-1">الوضع القائم:</span>
-                <p className="text-xs sm:text-sm text-[#d4cfc7] leading-relaxed font-medium font-['Cairo']">
+                <span className="text-xs font-black text-[#c8923a] block mb-1">{isEn ? 'Situation:' : 'الوضع القائم:'}</span>
+                <p className={`text-xs sm:text-sm text-[#d4cfc7] leading-relaxed font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                   {story.introduction.situation}
                 </p>
               </div>
 
               <div>
-                <span className="text-xs font-black text-[#c8923a] block mb-1">الحادثة:</span>
-                <p className="text-xs sm:text-sm text-[#f5ebd9] leading-relaxed font-semibold font-['Cairo']">
+                <span className="text-xs font-black text-[#c8923a] block mb-1">{isEn ? 'Incident:' : 'الحادثة:'}</span>
+                <p className={`text-xs sm:text-sm text-[#f5ebd9] leading-relaxed font-semibold ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                   {story.introduction.incident}
                 </p>
               </div>
 
               <div>
-                <span className="text-xs font-black text-[#c8923a] block mb-1">المخاطر والرهانات:</span>
-                <p className="text-xs sm:text-sm text-[#d4cfc7] leading-relaxed font-medium font-['Cairo']">
+                <span className="text-xs font-black text-[#c8923a] block mb-1">{isEn ? 'Stakes & Risks:' : 'المخاطر والرهانات:'}</span>
+                <p className={`text-xs sm:text-sm text-[#d4cfc7] leading-relaxed font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                   {story.introduction.stakes}
                 </p>
               </div>
@@ -483,19 +505,19 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               exit={{ opacity: 0, y: -10 }}
               className="flex flex-col gap-3"
             >
-              <div className="text-xs text-[#9b988f] font-medium font-['Cairo'] px-1">
-                محاور استرشادية مفتوحة للنقاش (ليست مهام إلزامية):
+              <div className={`text-xs text-[#9b988f] font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} px-1`}>
+                {isEn ? 'Open-ended guideline questions for detective discussion:' : 'محاور استرشادية مفتوحة للنقاش (ليست مهام إلزامية):'}
               </div>
               {generalPrompts.map((prompt, idx) => (
                 <div
                   key={idx}
                   className="rounded-2xl p-4 bg-[#0d0f16] border border-[#7a5c2b]/35 shadow-md flex flex-col gap-1.5"
                 >
-                  <h4 className="text-sm font-black font-['Cairo'] text-[#f3cb79] flex items-center gap-2">
+                  <h4 className={`text-sm font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f3cb79] flex items-center gap-2`}>
                     <MessageSquare className="w-4 h-4 text-amber-400" />
                     <span>{prompt.title}</span>
                   </h4>
-                  <p className="text-xs sm:text-sm text-[#d4cfc7] leading-relaxed font-['Cairo']">
+                  <p className={`text-xs sm:text-sm text-[#d4cfc7] leading-relaxed ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                     {prompt.text}
                   </p>
                 </div>
@@ -514,10 +536,10 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               sound.playClick();
               onProceedToVoting();
             }}
-            className="w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black font-['Cairo'] text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer active:scale-95"
+            className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer active:scale-95`}
           >
             <Vote className="w-5 h-5 stroke-[2.4]" />
-            <span>الانتقال إلى جلسة التصويت السري</span>
+            <span>{t.proceedToVoting}</span>
           </motion.button>
         </div>
       </div>
@@ -530,20 +552,20 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-sm rounded-[24px] bg-[#0e111a] border-2 border-amber-500/40 p-6 text-center text-slate-100 flex flex-col gap-4 shadow-2xl"
+              className={`w-full max-w-sm rounded-[24px] bg-[#0e111a] border-2 border-amber-500/40 p-6 text-center text-slate-100 flex flex-col gap-4 shadow-2xl ${isRtl ? "font-['Cairo']" : 'font-sans'}`}
             >
-              <h3 className="text-lg font-black font-['Cairo'] text-[#f3cb79]">
-                مغادرة جلسة التحقيق؟
+              <h3 className="text-lg font-black text-[#f3cb79]">
+                {isEn ? 'Leave Investigation Session?' : 'مغادرة جلسة التحقيق؟'}
               </h3>
-              <p className="text-xs sm:text-sm text-[#b0a99c] font-['Cairo'] leading-relaxed">
-                هل أنت متأكد من رغبتك في مغادرة جلسة التحقيق الحالية والعودة إلى القائمة؟
+              <p className="text-xs sm:text-sm text-[#b0a99c] leading-relaxed">
+                {isEn ? 'Are you sure you want to leave the active investigation session and return to home?' : 'هل أنت متأكد من رغبتك في مغادرة جلسة التحقيق الحالية والعودة إلى القائمة؟'}
               </p>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowExitConfirm(false)}
-                  className="flex-1 py-3 rounded-xl bg-black/50 border border-slate-700 text-slate-300 font-bold font-['Cairo'] text-sm hover:bg-black/70 cursor-pointer"
+                  className="flex-1 py-3 rounded-xl bg-black/50 border border-slate-700 text-slate-300 font-bold text-sm hover:bg-black/70 cursor-pointer"
                 >
-                  متابعة التحقيق
+                  {isEn ? 'Continue' : 'متابعة التحقيق'}
                 </button>
                 <button
                   onClick={() => {
@@ -551,9 +573,9 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                     if (onNavigateHome) onNavigateHome();
                     else if (onBack) onBack();
                   }}
-                  className="flex-1 py-3 rounded-xl bg-red-900/80 border border-red-600 text-red-100 font-bold font-['Cairo'] text-sm hover:bg-red-800 cursor-pointer"
+                  className="flex-1 py-3 rounded-xl bg-red-900/80 border border-red-600 text-red-100 font-bold text-sm hover:bg-red-800 cursor-pointer"
                 >
-                  نعم، مغادرة
+                  {isEn ? 'Yes, Leave' : 'نعم، مغادرة'}
                 </button>
               </div>
             </motion.div>

@@ -1,10 +1,13 @@
-// Procedural Web Audio API sound effects & mystery ambiance
+// Procedural Web Audio API sound effects, Resident Evil style title voice, & mystery ambiance
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
   private ambientOsc: OscillatorNode | null = null;
   private ambientGain: GainNode | null = null;
   private isMuted: boolean = false;
+  private titleAudioBuffer: AudioBuffer | null = null;
+  private hasPlayedOpeningTitle: boolean = false;
+  private isTitleAudioLoading: boolean = false;
 
   private initCtx() {
     if (!this.ctx) {
@@ -24,6 +27,126 @@ class SoundEngine {
     if (muted && this.ambientGain && this.ctx) {
       this.ambientGain.gain.setValueAtTime(0, this.ctx.currentTime);
     }
+  }
+
+  // Preload Resident Evil title voice audio buffer
+  public preloadTitleVoice() {
+    if (this.titleAudioBuffer || this.isTitleAudioLoading) return;
+    this.isTitleAudioLoading = true;
+
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+
+      const audioUrl = '/sounds/secret_killer_title.mp3';
+      fetch(audioUrl)
+        .then((res) => res.arrayBuffer())
+        .then((data) => this.ctx?.decodeAudioData(data))
+        .then((decoded) => {
+          this.titleAudioBuffer = decoded || null;
+          this.isTitleAudioLoading = false;
+        })
+        .catch(() => {
+          // Fallback to wav if mp3 fetch failed
+          fetch('/sounds/secret_killer_title.wav')
+            .then((res) => res.arrayBuffer())
+            .then((data) => this.ctx?.decodeAudioData(data))
+            .then((decoded) => {
+              this.titleAudioBuffer = decoded || null;
+              this.isTitleAudioLoading = false;
+            })
+            .catch(() => {
+              this.isTitleAudioLoading = false;
+            });
+        });
+    } catch {
+      this.isTitleAudioLoading = false;
+    }
+  }
+
+  // Resident Evil style Title Voice: Deep guttural demonic voice saying "SECRET... KILLER..."
+  public playTitleVoice(force: boolean = false) {
+    if (this.isMuted) return;
+    if (!force && this.hasPlayedOpeningTitle) return;
+
+    this.hasPlayedOpeningTitle = true;
+
+    try {
+      this.initCtx();
+      if (!this.ctx) {
+        // Fallback to HTMLAudioElement
+        const audio = new Audio('/sounds/secret_killer_title.mp3');
+        audio.volume = 0.95;
+        audio.play().catch(() => {});
+        return;
+      }
+
+      // If audio buffer is already decoded in Web Audio API, play with cinematic DSP chain
+      if (this.titleAudioBuffer) {
+        this.playDecodedTitleBuffer(this.titleAudioBuffer);
+      } else {
+        // Fetch & decode immediately or fallback to Audio element
+        fetch('/sounds/secret_killer_title.mp3')
+          .then((res) => res.arrayBuffer())
+          .then((data) => this.ctx!.decodeAudioData(data))
+          .then((decoded) => {
+            this.titleAudioBuffer = decoded;
+            this.playDecodedTitleBuffer(decoded);
+          })
+          .catch(() => {
+            const audio = new Audio('/sounds/secret_killer_title.mp3');
+            audio.volume = 0.95;
+            audio.play().catch(() => {});
+          });
+      }
+    } catch {
+      try {
+        const audio = new Audio('/sounds/secret_killer_title.mp3');
+        audio.volume = 0.95;
+        audio.play().catch(() => {});
+      } catch {}
+    }
+  }
+
+  private playDecodedTitleBuffer(buffer: AudioBuffer) {
+    if (!this.ctx || this.isMuted) return;
+
+    const source = this.ctx.createBufferSource();
+    source.buffer = buffer;
+
+    // Sub-bass resonance filter (Resident Evil signature low chest-rattle)
+    const bassFilter = this.ctx.createBiquadFilter();
+    bassFilter.type = 'lowshelf';
+    bassFilter.frequency.setValueAtTime(90, this.ctx.currentTime);
+    bassFilter.gain.setValueAtTime(4.5, this.ctx.currentTime); // +4.5dB low punch
+
+    // Presence boost for rasp and clarity
+    const presenceFilter = this.ctx.createBiquadFilter();
+    presenceFilter.type = 'peaking';
+    presenceFilter.frequency.setValueAtTime(3200, this.ctx.currentTime);
+    presenceFilter.Q.setValueAtTime(1.2, this.ctx.currentTime);
+    presenceFilter.gain.setValueAtTime(2.5, this.ctx.currentTime);
+
+    // Dynamic Compressor for 90s Capcom horror mastering punch
+    const compressor = this.ctx.createDynamicsCompressor();
+    compressor.threshold.setValueAtTime(-18, this.ctx.currentTime);
+    compressor.knee.setValueAtTime(8, this.ctx.currentTime);
+    compressor.ratio.setValueAtTime(4.5, this.ctx.currentTime);
+    compressor.attack.setValueAtTime(0.003, this.ctx.currentTime);
+    compressor.release.setValueAtTime(0.25, this.ctx.currentTime);
+
+    // Master Gain
+    const masterGain = this.ctx.createGain();
+    masterGain.gain.setValueAtTime(1.0, this.ctx.currentTime);
+
+    // Connect Graph: Source -> Bass -> Presence -> Compressor -> MasterGain -> Destination
+    source.connect(bassFilter);
+    bassFilter.connect(presenceFilter);
+    presenceFilter.connect(compressor);
+    compressor.connect(masterGain);
+    masterGain.connect(this.ctx.destination);
+
+    source.start();
   }
 
   // Noir ambient drone

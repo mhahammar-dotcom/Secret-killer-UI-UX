@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Eye, Lock, ArrowLeft, User, ChevronLeft, Home, MessageSquareQuote, BadgeCheck, FileText, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { Player } from '../game/types';
 import { sound } from '../utils/audio';
+import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 
 interface RolePassScreenProps {
   players: Player[];
@@ -10,6 +11,7 @@ interface RolePassScreenProps {
   onAdvanceRolePass: () => void;
   onBack?: () => void;
   onNavigateHome?: () => void;
+  language?: 'ar' | 'en';
 }
 
 export const RolePassScreen: React.FC<RolePassScreenProps> = ({
@@ -18,7 +20,12 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
   onAdvanceRolePass,
   onBack,
   onNavigateHome,
+  language = 'ar',
 }) => {
+  const isEn = language === 'en';
+  const t = isEn ? EN_STRINGS : AR_STRINGS;
+  const isRtl = !isEn;
+
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [pendingAction, setPendingAction] = useState<'back' | 'home' | null>(null);
@@ -89,7 +96,7 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
   }
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center bg-[#07080c] select-none text-slate-100 pb-16 pt-4 px-3 sm:px-6" dir="rtl">
+    <div className="relative min-h-screen w-full flex flex-col items-center bg-[#07080c] select-none text-slate-100 pb-16 pt-4 px-3 sm:px-6" dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Background Subtle Gradient & Ambient Noir Vignettes */}
       <div className="fixed inset-0 bg-gradient-to-b from-[#0e1117] via-[#090b0f] to-[#050608] pointer-events-none" />
       <div className="fixed top-0 inset-x-0 h-64 bg-[radial-gradient(ellipse_at_top,rgba(200,146,58,0.08),transparent_70%)] pointer-events-none" />
@@ -102,17 +109,17 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
           <button
             onClick={handleGoBack}
             className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
-            title={isRevealed ? 'إخفاء الشخصية' : 'رجوع'}
+            title={isRevealed ? (isEn ? 'Hide character' : 'إخفاء الشخصية') : t.back}
           >
-            <ChevronLeft className="w-6 h-6 stroke-[2.4] rtl:rotate-180" />
+            <ChevronLeft className={`w-6 h-6 stroke-[2.4] ${isRtl ? 'rotate-180' : ''}`} />
           </button>
 
           <div className="text-center">
-            <h1 className="text-2xl font-black font-['Cairo'] text-[#f5ebd9] tracking-wide leading-tight drop-shadow-md">
-              بطاقة الشخصية
+            <h1 className={`text-2xl font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f5ebd9] tracking-wide leading-tight drop-shadow-md`}>
+              {t.characterCard}
             </h1>
-            <p className="text-xs sm:text-sm text-[#9b988f] font-medium font-['Cairo'] mt-0.5">
-              لاعب {currentViewingIndex + 1} من {totalPlayers}
+            <p className={`text-xs sm:text-sm text-[#9b988f] font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-0.5`}>
+              {isEn ? `Player ${currentViewingIndex + 1} of ${totalPlayers}` : `لاعب ${currentViewingIndex + 1} من ${totalPlayers}`}
             </p>
           </div>
 
@@ -136,7 +143,7 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
             <button
               onClick={handleHomeClick}
               className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
-              title="الرئيسية"
+              title={t.home}
             >
               <Home className="w-5 h-5" />
             </button>
@@ -158,36 +165,36 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                 <Lock className="w-9 h-9 text-[#f3cb79] animate-pulse" />
               </div>
 
-              <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-black/60 text-[#f3cb79] border border-[#c8923a]/40 mb-3 font-['Cairo']">
-                توزيع أدوار القصة 🔒
+              <span className={`text-xs font-bold px-3.5 py-1.5 rounded-full bg-black/60 text-[#f3cb79] border border-[#c8923a]/40 mb-3 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                {t.storyRolesDistribution}
               </span>
 
-              <h3 className="text-lg font-bold text-[#c4beb3] font-['Cairo']">
-                مرر الهاتف إلى:
+              <h3 className={`text-lg font-bold text-[#c4beb3] ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                {t.passDeviceTo}
               </h3>
 
               <div className="my-3 px-8 py-3.5 rounded-[22px] bg-gradient-to-r from-amber-500/15 via-[#c8923a]/25 to-amber-500/15 border border-[#c8923a]/70 shadow-inner">
-                <h2 className="text-3xl font-black text-[#f5ebd9] font-['Cairo'] drop-shadow-md">
+                <h2 className={`text-3xl font-black text-[#f5ebd9] ${isRtl ? "font-['Cairo']" : 'font-sans'} drop-shadow-md`}>
                   {currentPlayer.name}
                 </h2>
               </div>
 
-              <p className="text-xs sm:text-sm text-[#e2d8c7] font-medium max-w-[340px] leading-relaxed mt-2 bg-black/50 p-3.5 rounded-2xl border border-amber-900/35 font-['Cairo']">
-                ⚠️ تأكد من عدم وجود أي شخص بجانبك لرؤية الشاشة. اضغط على الزر أدناه لمعرفة هويتك في القصة.
+              <p className={`text-xs sm:text-sm text-[#e2d8c7] font-medium max-w-[340px] leading-relaxed mt-2 bg-black/50 p-3.5 rounded-2xl border border-amber-900/35 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                {t.ensureNoOneLookingCard}
               </p>
 
               <motion.button
                 whileHover={{ scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleReveal}
-                className="mt-6 w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black font-['Cairo'] text-base shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer"
+                className={`mt-6 w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer`}
               >
                 <Eye className="w-5 h-5 stroke-[2.5]" />
-                <span>كشف شخصيتي</span>
+                <span>{t.revealRole}</span>
               </motion.button>
             </motion.div>
           ) : (
-            /* Step 2: Private Character Card (Uniform dignified presentation for all players) */
+            /* Step 2: Private Character Card */
             <motion.div
               key={`revealed-${currentPlayer.id}`}
               initial={{ opacity: 0, y: 15 }}
@@ -212,7 +219,7 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                     </div>
                     <div>
                       <h3
-                        className={`text-xl sm:text-2xl font-black font-['Cairo'] leading-tight transition-colors ${
+                        className={`text-xl sm:text-2xl font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} leading-tight transition-colors ${
                           currentPlayer.guilty
                             ? 'text-red-400 drop-shadow-[0_2px_10px_rgba(239,68,68,0.35)]'
                             : 'text-[#f5ebd9]'
@@ -221,7 +228,7 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                         {currentPlayer.character.name}
                       </h3>
                       <span
-                        className={`text-xs sm:text-sm font-bold font-['Cairo'] ${
+                        className={`text-xs sm:text-sm font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} ${
                           currentPlayer.guilty ? 'text-red-300/90' : 'text-[#e5b35a]'
                         }`}
                       >
@@ -230,9 +237,9 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                     </div>
                   </div>
 
-                  {/* Player Indicator (Red when killer) */}
+                  {/* Player Indicator */}
                   <div
-                    className={`px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-bold font-['Cairo'] shadow-md flex items-center gap-1.5 transition-all ${
+                    className={`px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} shadow-md flex items-center gap-1.5 transition-all ${
                       currentPlayer.guilty
                         ? 'border-red-500/80 bg-red-950/70 text-red-400 shadow-[0_0_12px_rgba(239,68,68,0.3)]'
                         : 'border-[#c8923a]/50 bg-black/60 text-[#f3cb79]'
@@ -245,45 +252,45 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
 
                 {/* Public Identity */}
                 <div className="p-3.5 rounded-2xl bg-black/40 border border-[#7a5c2b]/40">
-                  <span className="text-xs font-black text-[#e5b35a] font-['Cairo'] flex items-center gap-1.5 mb-1">
+                  <span className={`text-xs font-black text-[#e5b35a] ${isRtl ? "font-['Cairo']" : 'font-sans'} flex items-center gap-1.5 mb-1`}>
                     <FileText className="w-3.5 h-3.5 text-[#c8923a]" />
-                    <span>هويتك المعروفة للحاضرين:</span>
+                    <span>{t.knownIdentityToAll}</span>
                   </span>
-                  <p className="text-xs sm:text-sm text-[#d4cfc7] font-medium leading-relaxed font-['Cairo']">
+                  <p className={`text-xs sm:text-sm text-[#d4cfc7] font-medium leading-relaxed ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                     {currentPlayer.character.publicIdentity}
                   </p>
                 </div>
 
                 {/* Narrative Testimony / Character Story Information */}
                 <div className="p-4 rounded-2xl bg-[#121520] border border-[#c8923a]/40 text-[#f5ebd9]">
-                  <span className="text-xs sm:text-sm font-black font-['Cairo'] flex items-center gap-1.5 mb-1.5 text-[#f3cb79]">
+                  <span className={`text-xs sm:text-sm font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} flex items-center gap-1.5 mb-1.5 text-[#f3cb79]`}>
                     <MessageSquareQuote className="w-4 h-4 text-[#c8923a]" />
-                    <span>شهادتك ومعلوماتك حول الحادثة:</span>
+                    <span>{t.testimonyAndKnowledge}</span>
                   </span>
-                  <p className="text-xs sm:text-sm text-[#d4cfc7] leading-relaxed font-normal font-['Cairo']">
+                  <p className={`text-xs sm:text-sm text-[#d4cfc7] leading-relaxed font-normal ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                     {currentPlayer.character.knowledge}
                   </p>
                 </div>
 
-                {/* Private Hidden Role Notice (Strictly visible ONLY to the guilty player during private reveal) */}
+                {/* Private Hidden Role Notice */}
                 {currentPlayer.guilty && (
                   <div
                     data-testid="private-guilty-indicator"
                     className="p-4 rounded-2xl bg-[#200b0b] border-2 border-red-600/70 text-[#fecaca] shadow-[0_0_20px_rgba(220,38,38,0.2)] flex flex-col gap-1.5"
                   >
-                    <div className="flex items-center gap-2 text-red-400 font-black text-sm font-['Cairo']">
+                    <div className={`flex items-center gap-2 text-red-400 font-black text-sm ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                       <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 animate-pulse" />
-                      <span>⚠️ دورك السري في اللعبة (خاص بك فقط):</span>
+                      <span>{t.secretRoleWarning}</span>
                     </div>
-                    <p className="text-sm font-black text-white font-['Cairo'] leading-snug">
-                      أنت المذنب في هذه الجريمة. لا تكشف هذه المعلومة لأي لاعب آخر.
+                    <p className={`text-sm font-black text-white ${isRtl ? "font-['Cairo']" : 'font-sans'} leading-snug`}>
+                      {t.youAreTheCulprit}
                     </p>
                   </div>
                 )}
 
                 {/* Investigation Guidance */}
-                <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-900/30 text-xs text-[#a39a8c] font-['Cairo']">
-                  💡 احتفظ بهذه التفاصيل واستخدمها بذكاء أثناء جولات النقاش والتحقيق مع بقية الحاضرين.
+                <div className={`p-3 rounded-xl bg-amber-950/20 border border-amber-900/30 text-xs text-[#a39a8c] ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                  {t.keepDetailsGuidance}
                 </div>
               </div>
 
@@ -292,10 +299,10 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                 whileHover={{ scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleAdvance}
-                className="w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black font-['Cairo'] text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer"
+                className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer`}
               >
-                <span>{isLastPlayer ? 'إنهاء التوزيع وبدء النقاش' : 'حفظت دوري - إخفاء وتمرير'}</span>
-                <ArrowLeft className="w-5 h-5 stroke-[2.5] rtl:rotate-0" />
+                <span>{isLastPlayer ? t.finishPassingStartDiscussion : t.iMemorizedPassDevice}</span>
+                <ArrowLeft className={`w-5 h-5 stroke-[2.5] ${isRtl ? '' : 'rotate-180'}`} />
               </motion.button>
             </motion.div>
           )}
@@ -316,27 +323,27 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-xl font-black font-['Cairo'] text-[#f5ebd9]">
-                    إلغاء توزيع الأدوار؟
+                  <h3 className={`text-xl font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f5ebd9]`}>
+                    {isEn ? 'Cancel Role Distribution?' : 'إلغاء توزيع الأدوار؟'}
                   </h3>
-                  <p className="text-xs sm:text-sm text-[#b8b3a7] font-medium font-['Cairo'] leading-relaxed">
-                    بدأ بعض اللاعبين بالاطلاع على شخصياتهم بالفعل. العودة الآن ستلغي الجلسة الحالية وتتطلب إعادة توزيع الأدوار من جديد.
+                  <p className={`text-xs sm:text-sm text-[#b8b3a7] font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} leading-relaxed`}>
+                    {isEn ? 'Some players have already seen their identities. Exiting now will cancel this session and require starting over.' : 'بدأ بعض اللاعبين بالاطلاع على شخصياتهم بالفعل. العودة الآن ستلغي الجلسة الحالية وتتطلب إعادة توزيع الأدوار من جديد.'}
                   </p>
                 </div>
 
                 <div className="w-full flex flex-col gap-2.5 mt-2">
                   <button
                     onClick={handleCancelAbandon}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black font-['Cairo'] text-sm hover:brightness-105 transition-all cursor-pointer"
+                    className={`w-full py-3 rounded-xl bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-sm hover:brightness-105 transition-all cursor-pointer`}
                   >
-                    متابعة التوزيع
+                    {isEn ? 'Continue Distribution' : 'متابعة التوزيع'}
                   </button>
 
                   <button
                     onClick={handleConfirmAbandon}
-                    className="w-full py-3 rounded-xl bg-black/50 border border-red-900/50 text-red-400 hover:bg-red-950/40 font-bold font-['Cairo'] text-xs transition-all cursor-pointer"
+                    className={`w-full py-3 rounded-xl bg-black/50 border border-red-900/50 text-red-400 hover:bg-red-950/40 font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} text-xs transition-all cursor-pointer`}
                   >
-                    تأكيد الإلغاء والرجوع
+                    {isEn ? 'Confirm & Exit' : 'تأكيد الإلغاء والرجوع'}
                   </button>
                 </div>
               </motion.div>
@@ -347,4 +354,3 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
     </div>
   );
 };
-

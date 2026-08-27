@@ -8,6 +8,7 @@ import { RatingModal } from './RatingModal';
 import { FingerprintGraphic } from './FingerprintGraphic';
 import { KillerKnifeIcon } from './KillerKnifeIcon';
 import noirBg from '../assets/images/noir_home_bg_1787348360647.jpg';
+import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 
 interface HomeScreenProps {
   onStartGame: () => void;
@@ -16,6 +17,7 @@ interface HomeScreenProps {
   onOpenRules: () => void;
   totalStories: number;
   customStoriesCount: number;
+  language?: 'ar' | 'en';
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -25,13 +27,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenRules,
   totalStories,
   customStoriesCount,
+  language = 'ar',
 }) => {
   const [showAchievements, setShowAchievements] = useState(false);
   const [showOnlineModal, setShowOnlineModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
 
+  const isEn = language === 'en';
+  const t = isEn ? EN_STRINGS : AR_STRINGS;
+  const isRtl = !isEn;
+
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-between p-3 sm:p-5 select-none bg-[#050608] overflow-hidden" dir="rtl">
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-between p-3 sm:p-5 select-none bg-[#050608] overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
       
       {/* Background Image: Full Viewport Atmospheric Noir Scene */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
@@ -49,7 +56,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* Main Container - Compact & Zoomed Out Layout */}
       <div className="relative z-10 w-full max-w-[360px] flex flex-col justify-between flex-1 py-2">
         
-        {/* 1. Top Header Bar (Settings on Left + Premium Crown on Right) */}
+        {/* 1. Top Header Bar (Settings + Premium Crown) */}
         <div className="flex items-center justify-between w-full pt-1 px-1">
           {/* Settings Circle Button */}
           <button
@@ -58,51 +65,54 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               onOpenSettings();
             }}
             className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/50 text-[#e5b35a] flex items-center justify-center hover:bg-black/80 hover:border-[#e5b35a] shadow-lg shadow-black/80 transition-all cursor-pointer active:scale-95"
-            title="الإعدادات"
+            title={t.settings}
           >
             <Settings className="w-4 h-4" />
           </button>
 
           {/* Premium Crown Badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#c8923a]/60 text-[#f3cb79] text-[11px] font-bold font-['Cairo'] shadow-lg shadow-black/80">
+          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#c8923a]/60 text-[#f3cb79] text-[11px] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} shadow-lg shadow-black/80`}>
             <Crown className="w-3.5 h-3.5 text-[#e5b35a] fill-[#e5b35a]" />
-            <span>النسخة المميزة</span>
+            <span>{t.premiumEdition}</span>
           </div>
         </div>
 
-        {/* 2. Hero Visual Area: Big Bold "SECRET KILLER" Title with ONLY Faded Fingerprint */}
+        {/* 2. Hero Visual Area: Big Bold "SECRET KILLER" Title with Faded Fingerprint */}
         <div className="flex flex-col items-center justify-center text-center my-auto py-2">
-          <div className="relative flex flex-col items-center justify-center w-full">
-            
-            {/* Faded vector fingerprint graphic behind the text */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-2 w-36 h-48 pointer-events-none flex items-center justify-center">
-              <div className="absolute w-28 h-36 bg-red-600/20 rounded-full blur-xl animate-pulse" />
+          <motion.div
+            whileTap={{ scale: 0.96 }}
+            onClick={() => sound.playTitleVoice(true)}
+            className="relative flex flex-col items-center justify-center w-full cursor-pointer select-none group"
+            title={isEn ? "Click to play title voice" : "انقر لسماع صوت اللعبة"}
+          >
+            {/* Pure Realistic Forensic Fingerprint with glowing red lighting */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-1 w-40 h-52 pointer-events-none flex items-center justify-center">
               <FingerprintGraphic
-                className="w-full h-full drop-shadow-[0_0_12px_rgba(239,68,68,0.6)]"
-                opacity={0.35}
+                className="w-full h-full group-hover:scale-105 transition-transform"
+                opacity={0.42}
               />
             </div>
 
             {/* Big Prominent Title */}
             <div className="relative z-10 flex flex-col items-center">
-              <h1 className="text-[44px] sm:text-[50px] font-black font-sans uppercase tracking-[0.18em] text-slate-100 drop-shadow-[0_6px_18px_rgba(0,0,0,1)] leading-[0.95] pl-[0.18em]">
+              <h1 className="text-[44px] sm:text-[50px] font-black font-sans uppercase tracking-[0.18em] text-slate-100 drop-shadow-[0_6px_18px_rgba(0,0,0,1)] leading-[0.95] pl-[0.18em] group-hover:text-white transition-colors">
                 SECRET
               </h1>
-              <h1 className="text-[44px] sm:text-[50px] font-black font-sans uppercase tracking-[0.24em] text-[#dc2626] drop-shadow-[0_6px_22px_rgba(220,38,38,0.95)] leading-[0.95] pl-[0.24em] mt-0.5">
+              <h1 className="text-[44px] sm:text-[50px] font-black font-sans uppercase tracking-[0.24em] text-[#dc2626] drop-shadow-[0_6px_22px_rgba(220,38,38,0.95)] leading-[0.95] pl-[0.24em] mt-0.5 group-hover:drop-shadow-[0_6px_28px_rgba(239,68,68,1)] transition-all">
                 KILLER
               </h1>
 
               {/* Tagline */}
-              <p className="text-xs text-slate-200/90 font-semibold font-['Cairo'] mt-2.5 drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
-                اكتشف الحقيقة قبل فوات الأوان
+              <p className={`text-xs text-slate-200/90 font-semibold ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-2.5 drop-shadow-[0_2px_4px_rgba(0,0,0,1)]`}>
+                {t.gameTagline}
               </p>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* 3. Action Cards Stack - Clean, Compact, Zoomed-Out */}
         <div className="flex flex-col gap-2.5 w-full my-auto">
-          {/* Card 1: العب قصة (Featured Red Card) */}
+          {/* Card 1: Play Story (Featured Red Card) */}
           <motion.button
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
@@ -118,12 +128,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
 
             {/* Title & Subtitle */}
-            <div className="text-center flex-1 pr-1">
-              <h3 className="text-base font-black font-['Cairo'] text-white group-hover:text-amber-200 transition-colors leading-tight">
-                العب قصة
+            <div className="text-center flex-1 px-1">
+              <h3 className={`text-base font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-white group-hover:text-amber-200 transition-colors leading-tight`}>
+                {isEn ? 'Play a Case' : 'العب قصة'}
               </h3>
-              <p className="text-[11px] text-amber-200/75 font-medium font-['Cairo'] mt-0.5">
-                اختر قصة وابدأ اللعبة
+              <p className={`text-[11px] text-amber-200/75 font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-0.5`}>
+                {isEn ? 'Select a mystery and begin' : 'اختر قصة وابدأ اللعبة'}
               </p>
             </div>
 
@@ -131,7 +141,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <div className="w-11 h-11 shrink-0 opacity-0" />
           </motion.button>
 
-          {/* Card 2: قصصي المخصصة */}
+          {/* Card 2: Custom Cases */}
           <motion.button
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
@@ -147,12 +157,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
 
             {/* Title & Subtitle */}
-            <div className="text-center flex-1 pr-1">
-              <h3 className="text-base font-black font-['Cairo'] text-slate-100 group-hover:text-amber-300 transition-colors leading-tight">
-                قصصي المخصصة
+            <div className="text-center flex-1 px-1">
+              <h3 className={`text-base font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-slate-100 group-hover:text-amber-300 transition-colors leading-tight`}>
+                {isEn ? 'Custom Cases' : 'قصصي المخصصة'}
               </h3>
-              <p className="text-[11px] text-slate-400 font-medium font-['Cairo'] mt-0.5">
-                أنشئ قصتك الخاصة
+              <p className={`text-[11px] text-slate-400 font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-0.5`}>
+                {isEn ? 'Create and manage your own cases' : 'أنشئ قصتك الخاصة'}
               </p>
             </div>
 
@@ -160,7 +170,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <div className="w-10 h-10 shrink-0 opacity-0" />
           </motion.button>
 
-          {/* Card 3: اللعب عبر الإنترنت */}
+          {/* Card 3: Online Multiplayer */}
           <motion.button
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
@@ -176,24 +186,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
 
             {/* Title & Subtitle */}
-            <div className="text-center flex-1 pr-1">
-              <h3 className="text-base font-black font-['Cairo'] text-slate-100 group-hover:text-amber-300 transition-colors leading-tight">
-                اللعب عبر الإنترنت
+            <div className="text-center flex-1 px-1">
+              <h3 className={`text-base font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-slate-100 group-hover:text-amber-300 transition-colors leading-tight`}>
+                {t.onlinePartyMode}
               </h3>
-              <p className="text-[11px] text-slate-400 font-medium font-['Cairo'] mt-0.5">
-                العب مع أصدقائك عن بُعد
+              <p className={`text-[11px] text-slate-400 font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-0.5`}>
+                {isEn ? 'Play remotely with friends' : 'العب مع أصدقائك عن بُعد'}
               </p>
             </div>
 
-            {/* Badge: قريباً */}
+            {/* Badge: Coming Soon */}
             <div className="w-10 h-10 flex items-center justify-center shrink-0">
-              <span className="bg-[#701616] border border-[#a82a2a]/70 text-red-100 text-[10px] px-2 py-0.5 rounded-lg font-bold font-['Cairo'] shadow-sm">
-                قريباً
+              <span className={`bg-[#701616] border border-[#a82a2a]/70 text-red-100 text-[10px] px-2 py-0.5 rounded-lg font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} shadow-sm`}>
+                {t.comingSoon}
               </span>
             </div>
           </motion.button>
 
-          {/* Card 4: إنجازاتي */}
+          {/* Card 4: Achievements */}
           <motion.button
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
@@ -209,12 +219,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
 
             {/* Title & Subtitle */}
-            <div className="text-center flex-1 pr-1">
-              <h3 className="text-base font-black font-['Cairo'] text-slate-100 group-hover:text-amber-300 transition-colors leading-tight">
-                إنجازاتي
+            <div className="text-center flex-1 px-1">
+              <h3 className={`text-base font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-slate-100 group-hover:text-amber-300 transition-colors leading-tight`}>
+                {t.achievements}
               </h3>
-              <p className="text-[11px] text-slate-400 font-medium font-['Cairo'] mt-0.5">
-                تتبع إحصائياتك وإنجازاتك
+              <p className={`text-[11px] text-slate-400 font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-0.5`}>
+                {isEn ? 'Track stats and detective badges' : 'تتبع إحصائياتك وإنجازاتك'}
               </p>
             </div>
 
@@ -225,28 +235,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* 4. Bottom Navigation / Actions Footer */}
         <div className="flex items-center justify-between gap-2.5 w-full mt-2 pt-1">
-          {/* Left Button: تقييم التطبيق */}
+          {/* Left Button: Rate Game */}
           <button
             onClick={() => {
               sound.playClick();
               setShowRatingModal(true);
             }}
-            className="flex-1 py-2 px-3 rounded-2xl bg-[#0e1017]/85 hover:bg-[#181d2c]/95 border border-slate-700/60 hover:border-[#c8923a]/50 text-slate-300 hover:text-white transition-all text-[11px] font-bold font-['Cairo'] flex items-center justify-center gap-1.5 shadow-md backdrop-blur-md cursor-pointer"
+            className={`flex-1 py-2 px-3 rounded-2xl bg-[#0e1017]/85 hover:bg-[#181d2c]/95 border border-slate-700/60 hover:border-[#c8923a]/50 text-slate-300 hover:text-white transition-all text-[11px] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} flex items-center justify-center gap-1.5 shadow-md backdrop-blur-md cursor-pointer`}
           >
             <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-            <span>تقييم التطبيق</span>
+            <span>{t.rateGame}</span>
           </button>
 
-          {/* Right Button: كيف تلعب؟ */}
+          {/* Right Button: How to Play */}
           <button
             onClick={() => {
               sound.playClick();
               onOpenRules();
             }}
-            className="flex-1 py-2 px-3 rounded-2xl bg-[#0e1017]/85 hover:bg-[#181d2c]/95 border border-slate-700/60 hover:border-[#c8923a]/50 text-slate-300 hover:text-white transition-all text-[11px] font-bold font-['Cairo'] flex items-center justify-center gap-1.5 shadow-md backdrop-blur-md cursor-pointer"
+            className={`flex-1 py-2 px-3 rounded-2xl bg-[#0e1017]/85 hover:bg-[#181d2c]/95 border border-slate-700/60 hover:border-[#c8923a]/50 text-slate-300 hover:text-white transition-all text-[11px] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} flex items-center justify-center gap-1.5 shadow-md backdrop-blur-md cursor-pointer`}
           >
             <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
-            <span>كيف تلعب؟</span>
+            <span>{t.howToPlay}</span>
           </button>
         </div>
 
@@ -270,3 +280,4 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     </div>
   );
 };
+

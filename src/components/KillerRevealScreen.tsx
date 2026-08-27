@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Swords, Eye, ArrowLeft, Skull, ShieldAlert, ChevronLeft, Home } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, Home } from 'lucide-react';
 import { StoryData, PlayerData } from '../types';
 import { sound } from '../utils/audio';
+import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 
 interface KillerRevealScreenProps {
   story: StoryData;
@@ -11,6 +12,7 @@ interface KillerRevealScreenProps {
   onProceedToExplanation: () => void;
   onBack?: () => void;
   onNavigateHome?: () => void;
+  language?: 'ar' | 'en';
 }
 
 export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
@@ -20,13 +22,18 @@ export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
   onProceedToExplanation,
   onBack,
   onNavigateHome,
+  language = 'ar',
 }) => {
+  const isEn = language === 'en';
+  const t = isEn ? EN_STRINGS : AR_STRINGS;
+  const isRtl = !isEn;
+
   const guiltyPlayers = players.filter((p) => p.guilty);
   const primaryKiller = guiltyPlayers[0] || {
-    name: 'نادر',
+    name: isEn ? 'Nader' : 'نادر',
     character: {
-      name: 'نادر',
-      profession: 'مبرمج الـ Core الرئيسي',
+      name: isEn ? 'Nader' : 'نادر',
+      profession: isEn ? 'Lead Core Programmer' : 'مبرمج الـ Core الرئيسي',
     },
   };
 
@@ -34,8 +41,25 @@ export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
     sound.playRoleReveal();
   }, []);
 
+  const getConfession = () => {
+    if (isEn) {
+      if (story.id === 'dreams') {
+        return 'I disabled the systems and accessed the chamber to purge the memory logs!';
+      } else if (story.id === 'gala_toast') {
+        return 'I slipped the poison into Murad\'s glass while everyone was distracted by the toast!';
+      }
+      return 'I orchestrated the crime and deceived everyone throughout the investigation!';
+    }
+    if (story.id === 'dreams') {
+      return 'لقد عطلت الأنظمة وفتحت الممر السري لمسح سجلات الذاكرة!';
+    } else if (story.id === 'gala_toast') {
+      return 'لقد دسست السم في كأس مراد أثناء انشغال الجميع بالحفل!';
+    }
+    return 'لقد نفذت الجريمة وضللت أصابع الاتهام طوال الجلسة!';
+  };
+
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center bg-[#07080c] select-none text-slate-100 pb-16 pt-4 px-3 sm:px-6" dir="rtl">
+    <div className="relative min-h-screen w-full flex flex-col items-center bg-[#07080c] select-none text-slate-100 pb-16 pt-4 px-3 sm:px-6" dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Background Subtle Gradient & Ambient Noir Vignettes */}
       <div className="fixed inset-0 bg-gradient-to-b from-[#0e1117] via-[#090b0f] to-[#050608] pointer-events-none" />
       <div className="fixed top-0 inset-x-0 h-64 bg-[radial-gradient(ellipse_at_top,rgba(200,146,58,0.08),transparent_70%)] pointer-events-none" />
@@ -51,17 +75,17 @@ export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
               if (onBack) onBack();
             }}
             className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
-            title="رجوع"
+            title={t.back}
           >
-            <ChevronLeft className="w-6 h-6 stroke-[2.4] rtl:rotate-180" />
+            <ChevronLeft className={`w-6 h-6 stroke-[2.4] ${isRtl ? 'rotate-180' : ''}`} />
           </button>
 
           <div className="text-center">
-            <h1 className="text-2xl font-black font-['Cairo'] text-[#f5ebd9] tracking-wide leading-tight drop-shadow-md">
-              كشف القاتل
+            <h1 className={`text-2xl font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f5ebd9] tracking-wide leading-tight drop-shadow-md`}>
+              {t.killerReveal}
             </h1>
-            <p className="text-xs sm:text-sm text-[#9b988f] font-medium font-['Cairo'] mt-0.5">
-              {winner === 'innocents' ? '🏆 فاز الأبرياء' : '☠️ فاز القاتل'}
+            <p className={`text-xs sm:text-sm text-[#9b988f] font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-0.5`}>
+              {winner === 'innocents' ? `🏆 ${t.innocentsWon}` : `☠️ ${t.killerWon}`}
             </p>
           </div>
 
@@ -72,7 +96,7 @@ export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
               if (onNavigateHome) onNavigateHome();
             }}
             className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
-            title="الرئيسية"
+            title={t.home}
           >
             <Home className="w-5 h-5" />
           </button>
@@ -93,7 +117,7 @@ export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
             <div className="relative z-10 w-48 h-48 sm:w-56 sm:h-56 rounded-[22px] overflow-hidden border-2 border-[#c8923a]/70 shadow-2xl bg-black flex items-center justify-center mb-4">
               <img
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80"
-                alt="القاتل"
+                alt={t.killerRole}
                 className="w-full h-full object-cover grayscale contrast-125 brightness-90"
                 referrerPolicy="no-referrer"
               />
@@ -101,28 +125,24 @@ export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
 
               {/* Skewed Red STAMP */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="stamp-killer text-2xl sm:text-3xl font-black tracking-widest">
-                  القاتل
+                <span className="stamp-killer text-2xl sm:text-3xl font-black tracking-widest uppercase">
+                  {t.killerRole}
                 </span>
               </div>
             </div>
 
             {/* Killer Name & Info */}
             <div className="relative z-10 flex flex-col items-center">
-              <h3 className="text-3xl sm:text-4xl font-black font-['Cairo'] text-red-500 drop-shadow-[0_2px_15px_rgba(239,68,68,0.5)]">
+              <h3 className={`text-3xl sm:text-4xl font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-red-500 drop-shadow-[0_2px_15px_rgba(239,68,68,0.5)]`}>
                 {primaryKiller.character.name}
               </h3>
-              <span className="text-xs sm:text-sm font-bold text-red-300/90 font-['Cairo'] mt-1">
+              <span className={`text-xs sm:text-sm font-bold text-red-300/90 ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-1`}>
                 ({primaryKiller.name}) • {primaryKiller.character.profession}
               </span>
 
               {/* Short confession */}
-              <div className="mt-4 px-4 py-2.5 rounded-2xl bg-[#141724] border border-[#c8923a]/40 text-[#f5ebd9] text-xs sm:text-sm font-bold font-['Cairo'] leading-relaxed">
-                {story.id === 'dreams'
-                  ? 'لقد عطلت الأنظمة وفتحت الممر السري لمسح سجلات الذاكرة!'
-                  : story.id === 'gala_toast'
-                  ? 'لقد دسست السم في كأس مراد أثناء انشغال الجميع بالحفل!'
-                  : 'لقد نفذت الجريمة وضللت أصابع الاتهام طوال الجلسة!'}
+              <div className={`mt-4 px-4 py-2.5 rounded-2xl bg-[#141724] border border-[#c8923a]/40 text-[#f5ebd9] text-xs sm:text-sm font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} leading-relaxed`}>
+                {getConfession()}
               </div>
             </div>
           </motion.div>
@@ -137,10 +157,10 @@ export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
               sound.playClick();
               onProceedToExplanation();
             }}
-            className="w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black font-['Cairo'] text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer"
+            className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer`}
           >
-            <span>عرض التفاصيل وشرح الجريمة</span>
-            <ArrowLeft className="w-5 h-5 stroke-[2.5] rtl:rotate-0" />
+            <span>{t.howCrimeCommitted}</span>
+            <ArrowLeft className={`w-5 h-5 stroke-[2.5] ${isRtl ? '' : 'rotate-180'}`} />
           </motion.button>
         </div>
       </div>

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Vote, Lock, CheckCircle2, ChevronLeft, ArrowLeft, Home, UserX, AlertCircle } from 'lucide-react';
+import { Vote, Lock, CheckCircle2, ChevronLeft, ArrowLeft, Home, AlertCircle } from 'lucide-react';
 import { PlayerData } from '../types';
 import { sound } from '../utils/audio';
+import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 
 interface VotingScreenProps {
   players: PlayerData[];
@@ -10,6 +11,7 @@ interface VotingScreenProps {
   onCompleteVoting: (votes: Record<number, number>) => void;
   onBack?: () => void;
   onNavigateHome?: () => void;
+  language?: 'ar' | 'en';
 }
 
 export const VotingScreen: React.FC<VotingScreenProps> = ({
@@ -18,7 +20,12 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
   onCompleteVoting,
   onBack,
   onNavigateHome,
+  language = 'ar',
 }) => {
+  const isEn = language === 'en';
+  const t = isEn ? EN_STRINGS : AR_STRINGS;
+  const isRtl = !isEn;
+
   // Only living (non-eliminated) players participate in voting
   const activePlayers = players.filter((p) => !p.eliminated);
   const [currentVoterIdx, setCurrentVoterIdx] = useState<number>(0);
@@ -99,7 +106,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
   }
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center bg-[#07080c] select-none text-slate-100 pb-16 pt-4 px-3 sm:px-6" dir="rtl">
+    <div className="relative min-h-screen w-full flex flex-col items-center bg-[#07080c] select-none text-slate-100 pb-16 pt-4 px-3 sm:px-6" dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Background Subtle Gradient & Ambient Noir Vignettes */}
       <div className="fixed inset-0 bg-gradient-to-b from-[#0e1117] via-[#090b0f] to-[#050608] pointer-events-none" />
       <div className="fixed top-0 inset-x-0 h-64 bg-[radial-gradient(ellipse_at_top,rgba(200,146,58,0.08),transparent_70%)] pointer-events-none" />
@@ -112,17 +119,19 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
           <button
             onClick={handleGoBack}
             className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
-            title="رجوع"
+            title={t.back}
           >
-            <ChevronLeft className="w-6 h-6 stroke-[2.4] rtl:rotate-180" />
+            <ChevronLeft className={`w-6 h-6 stroke-[2.4] ${isRtl ? 'rotate-180' : ''}`} />
           </button>
 
           <div className="text-center">
-            <h1 className="text-2xl font-black font-['Cairo'] text-[#f5ebd9] tracking-wide leading-tight drop-shadow-md">
-              جلسة التصويت والاتهام
+            <h1 className={`text-2xl font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f5ebd9] tracking-wide leading-tight drop-shadow-md`}>
+              {t.votingAccusation}
             </h1>
-            <p className="text-xs sm:text-sm text-[#9b988f] font-medium font-['Cairo'] mt-0.5">
-              صوت {currentVoterIdx + 1} من {activePlayers.length} • الجولة {round}
+            <p className={`text-xs sm:text-sm text-[#9b988f] font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-0.5`}>
+              {isEn 
+                ? `Vote ${currentVoterIdx + 1} of ${activePlayers.length} • Round ${round}` 
+                : `صوت ${currentVoterIdx + 1} من ${activePlayers.length} • الجولة ${round}`}
             </p>
           </div>
 
@@ -133,7 +142,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
               if (onNavigateHome) onNavigateHome();
             }}
             className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
-            title="الرئيسية"
+            title={t.home}
           >
             <Home className="w-5 h-5" />
           </button>
@@ -154,39 +163,39 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                 <Lock className="w-9 h-9 text-[#f3cb79]" />
               </div>
 
-              <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-black/60 text-[#f3cb79] border border-[#c8923a]/40 mb-3 font-['Cairo']">
-                صندوق الاقتراع السري 🗳️
+              <span className={`text-xs font-bold px-3.5 py-1.5 rounded-full bg-black/60 text-[#f3cb79] border border-[#c8923a]/40 mb-3 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                {t.secretBallot}
               </span>
 
-              <h3 className="text-lg font-bold text-[#c4beb3] font-['Cairo']">
-                مرر الهاتف إلى المصوت:
+              <h3 className={`text-lg font-bold text-[#c4beb3] ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                {t.passDeviceToVoter}
               </h3>
 
               <div className="my-3 px-8 py-3.5 rounded-[22px] bg-gradient-to-r from-amber-500/15 via-[#c8923a]/25 to-amber-500/15 border border-[#c8923a]/70 shadow-inner">
-                <h2 className="text-3xl font-black text-[#f5ebd9] font-['Cairo'] drop-shadow-md">
+                <h2 className={`text-3xl font-black text-[#f5ebd9] ${isRtl ? "font-['Cairo']" : 'font-sans'} drop-shadow-md`}>
                   {currentVoter.name}
                 </h2>
-                <span className="text-xs text-[#e5b35a] font-bold font-['Cairo'] mt-1 block">
+                <span className={`text-xs text-[#e5b35a] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-1 block`}>
                   ({currentVoter.character.name} • {currentVoter.character.profession})
                 </span>
               </div>
 
-              <p className="text-xs sm:text-sm text-[#a39a8c] font-medium max-w-[320px] leading-relaxed mt-2 font-['Cairo']">
-                تأكد من عدم وجود أي شخص بجانبك يشاهد اختيارك في التصويت.
+              <p className={`text-xs sm:text-sm text-[#a39a8c] font-medium max-w-[320px] leading-relaxed mt-2 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                {t.ensureNoOneLooking}
               </p>
 
               <motion.button
                 whileHover={{ scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleStartVote}
-                className="mt-6 w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black font-['Cairo'] text-base shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer"
+                className={`mt-6 w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer`}
               >
                 <Vote className="w-5 h-5 stroke-[2.5]" />
-                <span>أنا جاهز للإدلاء بصوتي</span>
+                <span>{t.readyToVote}</span>
               </motion.button>
             </motion.div>
           ) : isConfirming && selectedTarget ? (
-            /* Step 3: Vote Confirmation (Phase 6 requirement) */
+            /* Step 3: Vote Confirmation */
             <motion.div
               key="vote-confirm"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -198,27 +207,29 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                 <AlertCircle className="w-8 h-8 text-red-400" />
               </div>
 
-              <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-black/60 text-[#f3cb79] border border-[#c8923a]/40 mb-2 font-['Cairo']">
-                تأكيد الاتهام النهائي ⚖️
+              <span className={`text-xs font-bold px-3.5 py-1.5 rounded-full bg-black/60 text-[#f3cb79] border border-[#c8923a]/40 mb-2 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                {isEn ? 'Final Accusation Confirmation ⚖️' : 'تأكيد الاتهام النهائي ⚖️'}
               </span>
 
-              <h3 className="text-sm sm:text-base font-bold text-[#c4beb3] font-['Cairo']">
-                اتهامك الرسمي موجه ضد:
+              <h3 className={`text-sm sm:text-base font-bold text-[#c4beb3] ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                {isEn ? 'Your formal accusation is aimed at:' : 'اتهامك الرسمي موجه ضد:'}
               </h3>
 
               {/* Accused Target Card */}
               <div className="my-4 w-full p-4 rounded-[22px] bg-red-950/20 border-2 border-red-500/60 flex flex-col items-center">
-                <span className="text-xs text-red-400 font-bold font-['Cairo'] mb-1">المشتبه به المختار:</span>
-                <h2 className="text-2xl sm:text-3xl font-black text-[#f5ebd9] font-['Cairo']">
+                <span className={`text-xs text-red-400 font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} mb-1`}>
+                  {t.selectedSuspect}
+                </span>
+                <h2 className={`text-2xl sm:text-3xl font-black text-[#f5ebd9] ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                   {selectedTarget.character.name}
                 </h2>
-                <span className="text-xs sm:text-sm text-[#e5b35a] font-bold font-['Cairo'] mt-1">
-                  اللاعب: {selectedTarget.name} • {selectedTarget.character.profession}
+                <span className={`text-xs sm:text-sm text-[#e5b35a] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} mt-1`}>
+                  {isEn ? `Player: ${selectedTarget.name} • ${selectedTarget.character.profession}` : `اللاعب: ${selectedTarget.name} • ${selectedTarget.character.profession}`}
                 </span>
               </div>
 
-              <p className="text-xs text-[#a39a8c] font-medium max-w-[320px] leading-relaxed mb-6 font-['Cairo']">
-                هل أنت متأكد من تثبيت هذا الاتهام؟ بمجرد التأكيد لن تتمكن من تغيير صوتك.
+              <p className={`text-xs text-[#a39a8c] font-medium max-w-[320px] leading-relaxed mb-6 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                {t.voteLockWarning}
               </p>
 
               {/* Action Buttons: Confirm vs Change Vote */}
@@ -227,20 +238,20 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                   whileHover={{ scale: 1.015 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleFinalConfirmVote}
-                  className="w-full rounded-[22px] py-3.5 px-6 bg-gradient-to-r from-red-600 via-red-500 to-amber-600 text-white font-black font-['Cairo'] text-base shadow-[0_6px_22px_rgba(220,38,38,0.35)] hover:brightness-105 flex items-center justify-center gap-2 cursor-pointer"
+                  className={`w-full rounded-[22px] py-3.5 px-6 bg-gradient-to-r from-red-600 via-red-500 to-amber-600 text-white font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base shadow-[0_6px_22px_rgba(220,38,38,0.35)] hover:brightness-105 flex items-center justify-center gap-2 cursor-pointer`}
                 >
                   <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-                  <span>تأكيد الصوت نهائياً</span>
+                  <span>{t.confirmVoteFinal}</span>
                 </motion.button>
 
                 <motion.button
                   whileHover={{ scale: 1.015 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleChangeVote}
-                  className="w-full rounded-[22px] py-3 px-6 bg-black/60 border border-[#c8923a]/60 hover:border-[#f3cb79] text-[#f3cb79] font-bold font-['Cairo'] text-sm flex items-center justify-center gap-2 cursor-pointer"
+                  className={`w-full rounded-[22px] py-3 px-6 bg-black/60 border border-[#c8923a]/60 hover:border-[#f3cb79] text-[#f3cb79] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} text-sm flex items-center justify-center gap-2 cursor-pointer`}
                 >
-                  <ChevronLeft className="w-4 h-4 rtl:rotate-180" />
-                  <span>تغيير الاختيار</span>
+                  <ChevronLeft className={`w-4 h-4 ${isRtl ? 'rotate-180' : ''}`} />
+                  <span>{t.changeSelection}</span>
                 </motion.button>
               </div>
             </motion.div>
@@ -254,11 +265,11 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
               className="my-auto flex flex-col gap-4"
             >
               {/* Current voter indicator */}
-              <div className="p-3.5 rounded-2xl bg-[#0d0f16] border border-[#c8923a]/40 flex items-center justify-between text-xs sm:text-sm font-['Cairo']">
+              <div className={`p-3.5 rounded-2xl bg-[#0d0f16] border border-[#c8923a]/40 flex items-center justify-between text-xs sm:text-sm ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                 <span className="font-black text-[#f3cb79]">
-                  دور: {currentVoter.name} ({currentVoter.character.name})
+                  {isEn ? `Voter: ${currentVoter.name} (${currentVoter.character.name})` : `دور: ${currentVoter.name} (${currentVoter.character.name})`}
                 </span>
-                <span className="text-xs text-[#a39a8c] font-medium">تصويت سري 🔒</span>
+                <span className="text-xs text-[#a39a8c] font-medium">{t.secretVoteIndicator}</span>
               </div>
 
               {/* Suspects list */}
@@ -288,10 +299,10 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                           👤
                         </div>
                         <div>
-                          <h4 className="text-base sm:text-lg font-black font-['Cairo'] text-[#f5ebd9] leading-tight">
+                          <h4 className={`text-base sm:text-lg font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f5ebd9] leading-tight`}>
                             {target.name}
                           </h4>
-                          <span className="text-xs text-[#e5b35a] font-bold font-['Cairo']">
+                          <span className={`text-xs text-[#e5b35a] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                             {target.character.name} • {target.character.profession}
                           </span>
                         </div>
@@ -317,10 +328,10 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                 whileHover={{ scale: selectedTargetId !== null ? 1.015 : 1 }}
                 whileTap={{ scale: selectedTargetId !== null ? 0.98 : 1 }}
                 onClick={handleProceedToConfirmation}
-                className="w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black font-['Cairo'] text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 transition-all cursor-pointer"
+                className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 transition-all cursor-pointer`}
               >
-                <span>متابعة لتأكيد الاتهام</span>
-                <ArrowLeft className="w-5 h-5 stroke-[2.5] rtl:rotate-0" />
+                <span>{t.proceedToConfirm}</span>
+                <ArrowLeft className={`w-5 h-5 stroke-[2.5] ${isRtl ? '' : 'rotate-180'}`} />
               </motion.button>
             </motion.div>
           )}
@@ -329,4 +340,5 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
     </div>
   );
 };
+
 

@@ -1,5 +1,6 @@
 import storiesJson from './repoStories.json';
 import { StoryData, StoryCharacterData } from '../types';
+import { ENGLISH_STORIES } from './englishStories';
 
 // Enriched solutions for scalable stories to provide an amazing climax for every story
 const STORY_SOLUTIONS: Record<string, string> = {
@@ -250,4 +251,84 @@ export function selectCastForStory(story: StoryData, playerCount: number): Story
 
   // Shuffle final cast
   return cast.sort(() => Math.random() - 0.5);
+}
+
+// Localize story based on selected language
+export function localizeStory(story: StoryData, language: 'ar' | 'en'): StoryData {
+  if (language === 'ar' || story.isCustom) {
+    return story;
+  }
+
+  const enOverride = ENGLISH_STORIES[story.id];
+  if (!enOverride) {
+    return story;
+  }
+
+  // Merge guiltyPool 1-to-1 so count is guaranteed
+  const guiltyPool = (story.guiltyPool || []).map((char, idx) => {
+    const enChar = enOverride.guiltyPool?.[idx];
+    if (enChar) {
+      return {
+        ...char,
+        name: enChar.name || char.name,
+        profession: enChar.profession || char.profession,
+        publicIdentity: enChar.publicIdentity || char.publicIdentity,
+        knowledge: enChar.knowledge || char.knowledge,
+        guilty: true
+      };
+    }
+    return char;
+  });
+
+  // Merge innocentPool 1-to-1 so count is guaranteed
+  const innocentPool = (story.innocentPool || []).map((char, idx) => {
+    const enChar = enOverride.innocentPool?.[idx];
+    if (enChar) {
+      return {
+        ...char,
+        name: enChar.name || char.name,
+        profession: enChar.profession || char.profession,
+        publicIdentity: enChar.publicIdentity || char.publicIdentity,
+        knowledge: enChar.knowledge || char.knowledge,
+        guilty: false
+      };
+    }
+    return char;
+  });
+
+  // Merge fixedCharacters if present
+  const fixedCharacters = story.fixedCharacters
+    ? story.fixedCharacters.map((char, idx) => {
+        const enChar = enOverride.fixedCharacters?.[idx];
+        if (enChar) {
+          return {
+            ...char,
+            name: enChar.name || char.name,
+            profession: enChar.profession || char.profession,
+            publicIdentity: enChar.publicIdentity || char.publicIdentity,
+            knowledge: enChar.knowledge || char.knowledge,
+            guilty: char.guilty
+          };
+        }
+        return char;
+      })
+    : (enOverride.fixedCharacters || story.fixedCharacters);
+
+  return {
+    ...story,
+    title: enOverride.title || story.title,
+    description: enOverride.description || story.description,
+    introduction: enOverride.introduction ? { ...story.introduction, ...enOverride.introduction } : story.introduction,
+    solution: enOverride.solution || story.solution,
+    guiltyPool: guiltyPool.length > 0 ? guiltyPool : (enOverride.guiltyPool || story.guiltyPool),
+    innocentPool: innocentPool.length > 0 ? innocentPool : (enOverride.innocentPool || story.innocentPool),
+    fixedCharacters,
+    investigationRounds: enOverride.investigationRounds || story.investigationRounds,
+    clues: enOverride.clues || story.clues,
+    wrongVoteHints: enOverride.wrongVoteHints || story.wrongVoteHints,
+  };
+}
+
+export function localizeStories(storiesList: StoryData[], language: 'ar' | 'en'): StoryData[] {
+  return storiesList.map(s => localizeStory(s, language));
 }

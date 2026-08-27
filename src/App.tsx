@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GameScreen, StoryData, PlayerData, GameSettings } from './types';
-import { BUILT_IN_STORIES, loadCustomStories, saveCustomStory } from './data/cases';
+import { BUILT_IN_STORIES, loadCustomStories, saveCustomStory, localizeStory, localizeStories } from './data/cases';
 import { GameEngine, StoryEngine, Story, GameState } from './game';
 import { HomeScreen } from './components/HomeScreen';
 import { StorySelectScreen } from './components/StorySelectScreen';
@@ -28,6 +28,19 @@ export default function App() {
   }
   const gameEngine = gameEngineRef.current;
 
+  // Settings with Language Support
+  const [settings, setSettings] = useState<GameSettings>({
+    language: 'ar',
+    soundEnabled: true,
+    ambientSound: false,
+    timerMinutes: 4,
+    dramaticEffects: true,
+  });
+
+  const language = settings.language || 'ar';
+  const isEn = language === 'en';
+  const isRtl = !isEn;
+
   // Subscribe React to GameEngine state
   const [gameState, setGameState] = useState<GameState>(() => gameEngine.getState());
 
@@ -45,27 +58,39 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showCustomStoryModal, setShowCustomStoryModal] = useState(false);
 
-  // Settings
-  const [settings, setSettings] = useState<GameSettings>({
-    soundEnabled: true,
-    ambientSound: false,
-    timerMinutes: 4,
-    dramaticEffects: true,
-  });
-
-  // Load custom stories on startup
+  // Load custom stories & preload/trigger opening title voice on startup
   useEffect(() => {
+    sound.preloadTitleVoice();
+
     const custom = loadCustomStories();
     if (custom && custom.length > 0) {
       setStories([...custom, ...BUILT_IN_STORIES]);
     }
+
+    // Play iconic Resident Evil title voice on initial user gesture (due to browser autoplay policies)
+    const handleFirstUserInteraction = () => {
+      sound.playTitleVoice();
+      window.removeEventListener('pointerdown', handleFirstUserInteraction);
+      window.removeEventListener('keydown', handleFirstUserInteraction);
+      window.removeEventListener('touchstart', handleFirstUserInteraction);
+    };
+
+    window.addEventListener('pointerdown', handleFirstUserInteraction, { passive: true });
+    window.addEventListener('keydown', handleFirstUserInteraction, { passive: true });
+    window.addEventListener('touchstart', handleFirstUserInteraction, { passive: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstUserInteraction);
+      window.removeEventListener('keydown', handleFirstUserInteraction);
+      window.removeEventListener('touchstart', handleFirstUserInteraction);
+    };
   }, []);
 
   // Save new custom story with StoryEngine validation
   const handleSaveCustomStory = (story: StoryData) => {
     const validation = StoryEngine.validateStory(story as unknown as Story);
     if (!validation.valid) {
-      alert(`لا يمكن حفظ القصة: ${validation.errors.join('\n')}`);
+      alert(isEn ? `Cannot save story:\n${validation.errors.join('\n')}` : `لا يمكن حفظ القصة:\n${validation.errors.join('\n')}`);
       return;
     }
     saveCustomStory(story);
@@ -84,7 +109,7 @@ export default function App() {
     const validation = StoryEngine.validateStory(story as unknown as Story);
     if (!validation.valid) {
       console.error('Invalid story rejected by StoryEngine:', validation.errors);
-      alert(`هذه القصة غير صالحة:\n${validation.errors.join('\n')}`);
+      alert(isEn ? `Invalid story:\n${validation.errors.join('\n')}` : `هذه القصة غير صالحة:\n${validation.errors.join('\n')}`);
       return;
     }
     setSelectedStory(story);
@@ -98,13 +123,14 @@ export default function App() {
   // Start new game via GameEngine
   const handleConfirmPlayers = (playerNames: string[]) => {
     try {
-      const newState = gameEngine.startNewGame(selectedStory as unknown as Story, playerNames);
+      const localizedStory = localizeStory(selectedStory, language);
+      const newState = gameEngine.startNewGame(localizedStory as unknown as Story, playerNames);
       if (newState.phase === 'ROLE_PASS') {
         setCurrentScreen('role_pass');
       }
     } catch (error: any) {
       console.error('Failed to start game via GameEngine:', error);
-      alert(error?.message || 'تعذر بدء اللعبة، يرجى التأكد من صحة إعدادات اللاعبين');
+      alert(error?.message || (isEn ? 'Failed to start game. Please verify player settings.' : 'تعذر بدء اللعبة، يرجى التأكد من صحة إعدادات اللاعبين'));
     }
   };
 
@@ -183,12 +209,15 @@ export default function App() {
   const wrongVotesCount = gameState.wrongVotesCount;
   const winner: 'innocents' | 'guilty' = gameState.winner === 'GUILTY' ? 'guilty' : 'innocents';
   const lastVotes = gameState.votes;
-  const activeStory = (gameState.story as unknown as StoryData | null) || selectedStory;
+  
+  const rawStory = (gameState.story as unknown as StoryData | null) || selectedStory;
+  const activeStory = localizeStory(rawStory, language);
+  const localizedStoriesList = localizeStories(stories, language);
 
   const customCount = stories.filter((s) => s.isCustom).length;
 
   return (
-    <div className="min-h-screen bg-[#07080c] text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 font-['Cairo',sans-serif]" dir="rtl">
+    <div className={`min-h-screen bg-[#07080c] text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 ${isRtl ? "font-['Cairo',sans-serif]" : "font-sans"}`} dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Main Screen Views */}
       <main className="flex-1 flex flex-col justify-center">
         <AnimatePresence mode="wait">
@@ -207,6 +236,7 @@ export default function App() {
                 onOpenRules={() => setShowRules(true)}
                 totalStories={stories.length}
                 customStoriesCount={customCount}
+                language={language}
               />
             </motion.div>
           )}
@@ -220,11 +250,12 @@ export default function App() {
               className="w-full"
             >
               <StorySelectScreen
-                stories={stories}
+                stories={localizedStoriesList}
                 onSelectStory={handleSelectStory}
                 onOpenCustomStoryModal={() => setShowCustomStoryModal(true)}
                 onBack={() => setCurrentScreen('home')}
                 onNavigateHome={handleNavigateHome}
+                language={language}
               />
             </motion.div>
           )}
@@ -238,10 +269,11 @@ export default function App() {
               className="w-full"
             >
               <CaseIntroScreen
-                story={selectedStory}
+                story={activeStory}
                 onProceedToSetup={handleProceedToSetup}
                 onBack={() => setCurrentScreen('story_select')}
                 onNavigateHome={handleNavigateHome}
+                language={language}
               />
             </motion.div>
           )}
@@ -255,10 +287,11 @@ export default function App() {
               className="w-full"
             >
               <PlayerSetupScreen
-                story={selectedStory}
+                story={activeStory}
                 onConfirmPlayers={handleConfirmPlayers}
                 onBack={() => setCurrentScreen('story_intro')}
                 onNavigateHome={handleNavigateHome}
+                language={language}
               />
             </motion.div>
           )}
@@ -280,6 +313,7 @@ export default function App() {
                   setCurrentScreen('player_setup');
                 }}
                 onNavigateHome={handleNavigateHome}
+                language={language}
               />
             </motion.div>
           )}
@@ -303,6 +337,7 @@ export default function App() {
                 onProceedToVoting={handleProceedToVoting}
                 onBack={handleNavigateHome}
                 onNavigateHome={handleNavigateHome}
+                language={language}
               />
             </motion.div>
           )}
@@ -321,6 +356,7 @@ export default function App() {
                 onCompleteVoting={handleCompleteVoting}
                 onBack={() => setCurrentScreen('free_discussion')}
                 onNavigateHome={handleNavigateHome}
+                language={language}
               />
             </motion.div>
           )}
@@ -334,7 +370,7 @@ export default function App() {
               className="w-full"
             >
               <VoteResultScreen
-                story={selectedStory}
+                story={activeStory}
                 players={players}
                 votes={lastVotes}
                 round={round}
@@ -344,6 +380,7 @@ export default function App() {
                 onProceedToTruth={handleProceedToTruth}
                 onBack={() => setCurrentScreen('voting')}
                 onNavigateHome={handleNavigateHome}
+                language={language}
               />
             </motion.div>
           )}
@@ -357,12 +394,13 @@ export default function App() {
               className="w-full"
             >
               <KillerRevealScreen
-                story={selectedStory}
+                story={activeStory}
                 players={players}
                 winner={winner}
                 onProceedToExplanation={handleProceedToExplanation}
                 onBack={() => setCurrentScreen('vote_result')}
                 onNavigateHome={handleNavigateHome}
+                language={language}
               />
             </motion.div>
           )}
@@ -376,11 +414,12 @@ export default function App() {
               className="w-full"
             >
               <CrimeExplanationScreen
-                story={selectedStory}
+                story={activeStory}
                 players={players}
                 onProceedToResults={handleProceedToTruthReveal}
                 onBack={() => setCurrentScreen('killer_reveal')}
                 onNavigateHome={handleNavigateHome}
+                language={language}
               />
             </motion.div>
           )}
@@ -394,12 +433,13 @@ export default function App() {
               className="w-full"
             >
               <RevealTruthScreen
-                story={selectedStory}
+                story={activeStory}
                 players={players}
                 winner={winner}
                 onProceedToResults={handleProceedToResults}
                 onBack={() => setCurrentScreen('crime_explanation')}
                 onNavigateHome={handleNavigateHome}
+                language={language}
               />
             </motion.div>
           )}
@@ -413,13 +453,14 @@ export default function App() {
               className="w-full"
             >
               <GameResultsScreen
-                story={selectedStory}
+                story={activeStory}
                 players={players}
                 winner={winner}
                 votes={lastVotes}
                 onPlayAgain={handlePlayAgain}
                 onNavigateHome={handleNavigateHome}
                 onBack={() => setCurrentScreen('reveal_truth')}
+                language={language}
               />
             </motion.div>
           )}
@@ -430,6 +471,7 @@ export default function App() {
       <RulesModal
         isOpen={showRules}
         onClose={() => setShowRules(false)}
+        language={language}
       />
 
       <SettingsModal
@@ -443,6 +485,7 @@ export default function App() {
         isOpen={showCustomStoryModal}
         onClose={() => setShowCustomStoryModal(false)}
         onSaveStory={handleSaveCustomStory}
+        language={language}
       />
     </div>
   );

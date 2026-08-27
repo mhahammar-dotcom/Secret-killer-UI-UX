@@ -59,7 +59,8 @@ export interface StoryData {
   fixedCharacters?: StoryCharacterData[];
   clues: string[];
   wrongVoteHints: string[];
-  investigationRounds: InvestigationRoundData[];
+  investigationRounds?: InvestigationRoundData[];
+  evidence?: any[];
   solution: string;
   customEnding?: string;
   gameRules?: StoryGameRulesData;
@@ -76,10 +77,12 @@ export interface PlayerData {
 }
 
 export interface GameSettings {
+  language: 'ar' | 'en';
   soundEnabled: boolean;
   ambientSound: boolean;
   timerMinutes: number;
   dramaticEffects: boolean;
+  secretBallotMode?: boolean;
 }
 
 export interface GameStats {
