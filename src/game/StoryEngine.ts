@@ -1,4 +1,5 @@
 import { Story, StoryValidationResult, InvestigationRound, EvidenceItem, EvidenceType } from './types';
+import { getKillerCount } from './PlayerManager';
 
 export const DEFAULT_MAX_WRONG_VOTES = 3;
 
@@ -6,6 +7,13 @@ export const DEFAULT_MAX_WRONG_VOTES = 3;
  * StoryEngine handles validation, compatibility checks, and story data retrieval.
  */
 export class StoryEngine {
+  /**
+   * Authoritative killer count resolver based on player count
+   */
+  static getKillerCount(playerCount: number): number {
+    return getKillerCount(playerCount);
+  }
+
   /**
    * Resolves and validates maxWrongVotes from story configuration with fallback to default (3).
    * Validates that maxWrongVotes is a sensible positive integer (> 0).

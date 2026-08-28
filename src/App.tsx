@@ -18,6 +18,9 @@ import { GameResultsScreen } from './components/GameResultsScreen';
 import { RulesModal } from './components/RulesModal';
 import { SettingsModal } from './components/SettingsModal';
 import { CustomStoryModal } from './components/CustomStoryModal';
+import { BannerAd } from './components/ads/BannerAd';
+import { InterstitialAdModal } from './components/ads/InterstitialAdModal';
+import { adService } from './services/adService';
 import { sound } from './utils/audio';
 
 export default function App() {
@@ -40,6 +43,7 @@ export default function App() {
           timerMinutes: parsed.timerMinutes || 4,
           dramaticEffects: parsed.dramaticEffects ?? true,
           secretBallotMode: parsed.secretBallotMode ?? false,
+          fastVotingMode: parsed.fastVotingMode ?? false,
         };
       }
     } catch {}
@@ -180,12 +184,16 @@ export default function App() {
   };
 
   const handleProceedNextRound = () => {
-    gameEngine.proceedAfterVoteResult();
-    setCurrentScreen('free_discussion');
+    adService.requestInterstitial('round_transition', () => {
+      gameEngine.proceedAfterVoteResult();
+      setCurrentScreen('free_discussion');
+    });
   };
 
   const handleProceedToTruth = (determinedWinner: 'innocents' | 'guilty') => {
-    setCurrentScreen('killer_reveal');
+    adService.requestInterstitial('game_end', () => {
+      setCurrentScreen('killer_reveal');
+    });
   };
 
   const handleProceedToExplanation = () => {
@@ -379,6 +387,8 @@ export default function App() {
                 onBack={() => setCurrentScreen('free_discussion')}
                 onNavigateHome={handleNavigateHome}
                 language={language}
+                secretBallotMode={settings.secretBallotMode}
+                fastVotingMode={settings.fastVotingMode}
               />
             </motion.div>
           )}
@@ -403,6 +413,7 @@ export default function App() {
                 onBack={() => setCurrentScreen('voting')}
                 onNavigateHome={handleNavigateHome}
                 language={language}
+                secretBallotMode={settings.secretBallotMode}
               />
             </motion.div>
           )}
@@ -509,6 +520,9 @@ export default function App() {
         onSaveStory={handleSaveCustomStory}
         language={language}
       />
+
+      {/* Google AdMob Full-screen Interstitial Ad Modal */}
+      <InterstitialAdModal language={language} />
     </div>
   );
 }

@@ -1,9 +1,48 @@
 import { Player, PublicPlayer } from './types';
 
 /**
+ * Calculates the exact killer count based on player count according to the core Secret Killer rules:
+ * - 4 to 6 players: 1 Killer
+ * - 7 to 9 players: 2 Killers
+ * - 10 to 12 players: 3 Killers
+ *
+ * Throws an Error for invalid player counts (< 4 or > 12).
+ */
+export function getKillerCount(playerCount: number): number {
+  if (typeof playerCount !== 'number' || Number.isNaN(playerCount) || !Number.isInteger(playerCount)) {
+    throw new Error(`Invalid player count: ${playerCount}. Must be an integer between 4 and 12.`);
+  }
+
+  if (playerCount < 4 || playerCount > 12) {
+    throw new Error(`Invalid player count: ${playerCount}. Supported player count is between 4 and 12.`);
+  }
+
+  if (playerCount >= 4 && playerCount <= 6) {
+    return 1;
+  }
+
+  if (playerCount >= 7 && playerCount <= 9) {
+    return 2;
+  }
+
+  if (playerCount >= 10 && playerCount <= 12) {
+    return 3;
+  }
+
+  throw new Error(`Invalid player count: ${playerCount}. Must be between 4 and 12.`);
+}
+
+/**
  * PlayerManager provides pure functions to query and update player rosters.
  */
 export class PlayerManager {
+  /**
+   * Authoritative killer count resolver based on player count
+   */
+  static getKillerCount(playerCount: number): number {
+    return getKillerCount(playerCount);
+  }
+
   /**
    * Sanitizes the player roster for public/shared displays (removes guilty flags and private knowledge)
    */

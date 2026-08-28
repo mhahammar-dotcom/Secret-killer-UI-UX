@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Vote, Lock, CheckCircle2, ChevronLeft, ArrowLeft, Home, AlertCircle } from 'lucide-react';
+import { Vote, Lock, CheckCircle2, ChevronLeft, ArrowLeft, Home, AlertCircle, Zap } from 'lucide-react';
 import { PlayerData } from '../types';
 import { sound } from '../utils/audio';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
@@ -12,6 +12,8 @@ interface VotingScreenProps {
   onBack?: () => void;
   onNavigateHome?: () => void;
   language?: 'ar' | 'en';
+  secretBallotMode?: boolean;
+  fastVotingMode?: boolean;
 }
 
 export const VotingScreen: React.FC<VotingScreenProps> = ({
@@ -21,6 +23,8 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
   onBack,
   onNavigateHome,
   language = 'ar',
+  secretBallotMode = false,
+  fastVotingMode = false,
 }) => {
   const isEn = language === 'en';
   const t = isEn ? EN_STRINGS : AR_STRINGS;
@@ -49,8 +53,28 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
   };
 
   const handleSelectSuspect = (targetId: number) => {
-    sound.playClick();
-    setSelectedTargetId(targetId);
+    if (fastVotingMode) {
+      if (!currentVoter) return;
+      sound.playVoteConfirm();
+
+      const newVotes = {
+        ...collectedVotes,
+        [currentVoter.id]: targetId,
+      };
+      setCollectedVotes(newVotes);
+
+      if (isLastVoter) {
+        onCompleteVoting(newVotes);
+      } else {
+        setIsPassReady(false);
+        setIsConfirming(false);
+        setSelectedTargetId(null);
+        setCurrentVoterIdx((prev) => prev + 1);
+      }
+    } else {
+      sound.playClick();
+      setSelectedTargetId(targetId);
+    }
   };
 
   const handleProceedToConfirmation = () => {
@@ -163,9 +187,17 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                 <Lock className="w-9 h-9 text-[#f3cb79]" />
               </div>
 
-              <span className={`text-xs font-bold px-3.5 py-1.5 rounded-full bg-black/60 text-[#f3cb79] border border-[#c8923a]/40 mb-3 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
-                {t.secretBallot}
-              </span>
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+                <span className={`text-xs font-bold px-3.5 py-1.5 rounded-full bg-black/60 text-[#f3cb79] border border-[#c8923a]/40 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                  {secretBallotMode ? t.secretBallotActiveBadge : t.publicBallotActiveBadge}
+                </span>
+                {fastVotingMode && (
+                  <span className={`text-xs font-bold px-3.5 py-1.5 rounded-full bg-amber-500/20 text-[#f3cb79] border border-amber-500/50 flex items-center gap-1 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>{t.fastVoting}</span>
+                  </span>
+                )}
+              </div>
 
               <h3 className={`text-lg font-bold text-[#c4beb3] ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                 {t.passDeviceToVoter}
@@ -262,15 +294,32 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              className="my-auto flex flex-col gap-4"
+              className="my-auto flex flex-col gap-3.5"
             >
               {/* Current voter indicator */}
               <div className={`p-3.5 rounded-2xl bg-[#0d0f16] border border-[#c8923a]/40 flex items-center justify-between text-xs sm:text-sm ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
                 <span className="font-black text-[#f3cb79]">
                   {isEn ? `Voter: ${currentVoter.name} (${currentVoter.character.name})` : `دور: ${currentVoter.name} (${currentVoter.character.name})`}
                 </span>
-                <span className="text-xs text-[#a39a8c] font-medium">{t.secretVoteIndicator}</span>
+                <span className="text-xs text-[#a39a8c] font-medium flex items-center gap-1">
+                  {fastVotingMode ? (
+                    <span className="text-[#f3cb79] font-bold flex items-center gap-1">
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>{t.fastVoting}</span>
+                    </span>
+                  ) : (
+                    <span>{secretBallotMode ? t.secretVoteIndicator : t.publicVoteIndicator}</span>
+                  )}
+                </span>
               </div>
+
+              {/* Fast Vote Banner when active */}
+              {fastVotingMode && (
+                <div className={`px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-[#f3cb79] font-bold flex items-center gap-2 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                  <Zap className="w-4 h-4 shrink-0" />
+                  <span>{t.fastVoteOneTapHint}</span>
+                </div>
+              )}
 
               {/* Suspects list */}
               <div className="flex flex-col gap-2.5 max-h-[48vh] overflow-y-auto pr-1 custom-scrollbar">
@@ -308,31 +357,40 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                         </div>
                       </div>
 
-                      <div
-                        className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all ${
-                          isSelected
-                            ? 'bg-red-600 border-red-400 text-white'
-                            : 'border-slate-700 bg-black/40'
-                        }`}
-                      >
-                        {isSelected && <CheckCircle2 className="w-4 h-4 stroke-[3]" />}
-                      </div>
+                      {fastVotingMode ? (
+                        <div className={`px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-600/30 to-amber-600/30 border border-red-500/50 hover:border-amber-400 text-xs font-black text-[#f3cb79] flex items-center gap-1.5 shadow-sm transition-all ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                          <Vote className="w-3.5 h-3.5" />
+                          <span>{isEn ? 'Vote' : 'تصويت'}</span>
+                        </div>
+                      ) : (
+                        <div
+                          className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all ${
+                            isSelected
+                              ? 'bg-red-600 border-red-400 text-white'
+                              : 'border-slate-700 bg-black/40'
+                          }`}
+                        >
+                          {isSelected && <CheckCircle2 className="w-4 h-4 stroke-[3]" />}
+                        </div>
+                      )}
                     </motion.div>
                   );
                 })}
               </div>
 
-              {/* Proceed to Confirmation CTA */}
-              <motion.button
-                disabled={selectedTargetId === null}
-                whileHover={{ scale: selectedTargetId !== null ? 1.015 : 1 }}
-                whileTap={{ scale: selectedTargetId !== null ? 0.98 : 1 }}
-                onClick={handleProceedToConfirmation}
-                className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 transition-all cursor-pointer`}
-              >
-                <span>{t.proceedToConfirm}</span>
-                <ArrowLeft className={`w-5 h-5 stroke-[2.5] ${isRtl ? '' : 'rotate-180'}`} />
-              </motion.button>
+              {/* Proceed to Confirmation CTA (Only shown when fast voting is OFF) */}
+              {!fastVotingMode && (
+                <motion.button
+                  disabled={selectedTargetId === null}
+                  whileHover={{ scale: selectedTargetId !== null ? 1.015 : 1 }}
+                  whileTap={{ scale: selectedTargetId !== null ? 0.98 : 1 }}
+                  onClick={handleProceedToConfirmation}
+                  className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 transition-all cursor-pointer`}
+                >
+                  <span>{t.proceedToConfirm}</span>
+                  <ArrowLeft className={`w-5 h-5 stroke-[2.5] ${isRtl ? '' : 'rotate-180'}`} />
+                </motion.button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

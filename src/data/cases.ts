@@ -1,6 +1,7 @@
 import storiesJson from './repoStories.json';
 import { StoryData, StoryCharacterData } from '../types';
 import { ENGLISH_STORIES } from './englishStories';
+import { getKillerCount } from '../game/PlayerManager';
 
 // Enriched solutions for scalable stories to provide an amazing climax for every story
 const STORY_SOLUTIONS: Record<string, string> = {
@@ -224,16 +225,8 @@ export function selectCastForStory(story: StoryData, playerCount: number): Story
     }
   }
 
-  // Scalable stories
-  let guiltyCount = 1;
-  if (story.id === 'dreams') {
-    guiltyCount = playerCount <= 5 ? 1 : playerCount <= 7 ? 2 : 3;
-  } else if (story.id === 'museum') {
-    guiltyCount = playerCount <= 6 ? 1 : playerCount <= 9 ? 2 : 3;
-  } else {
-    guiltyCount = playerCount <= 5 ? 1 : playerCount <= 8 ? 2 : 3;
-  }
-
+  // Centralized authoritative killer count scaling (4-6: 1, 7-9: 2, 10-12: 3)
+  const guiltyCount = getKillerCount(playerCount);
   const guilty = Math.min(guiltyCount, story.guiltyPool.length);
   const cast: StoryCharacterData[] = [];
 
@@ -241,10 +234,16 @@ export function selectCastForStory(story: StoryData, playerCount: number): Story
     cast.push({ ...story.guiltyPool[i], guilty: true });
   }
 
+  const extraGuiltyNeeded = guiltyCount - guilty;
   const shuffledInnocents = [...story.innocentPool].sort(() => Math.random() - 0.5);
-  const needed = playerCount - guilty;
 
-  for (let i = 0; i < needed; i++) {
+  for (let i = 0; i < extraGuiltyNeeded; i++) {
+    const baseInnocent = shuffledInnocents[i];
+    cast.push({ ...baseInnocent, guilty: true });
+  }
+
+  const innocentsNeeded = playerCount - guiltyCount;
+  for (let i = extraGuiltyNeeded; i < extraGuiltyNeeded + innocentsNeeded; i++) {
     const baseInnocent = shuffledInnocents[i % shuffledInnocents.length];
     cast.push({ ...baseInnocent, guilty: false });
   }

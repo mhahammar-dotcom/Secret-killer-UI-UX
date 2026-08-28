@@ -82,6 +82,7 @@ export interface GameSettings {
   timerMinutes: number;
   dramaticEffects: boolean;
   secretBallotMode?: boolean;
+  fastVotingMode?: boolean;
 }
 
 export interface GameStats {

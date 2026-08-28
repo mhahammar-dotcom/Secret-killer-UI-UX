@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Scale, ChevronLeft, Home, Play, UserX, Eye } from 'lucide-react';
+import { Scale, ChevronLeft, Home, Play, UserX, Eye, EyeOff, Lock, Users } from 'lucide-react';
 import { StoryData, PlayerData } from '../types';
 import { VoteResult } from '../game/types';
 import { sound } from '../utils/audio';
@@ -18,6 +18,7 @@ interface VoteResultScreenProps {
   onBack?: () => void;
   onNavigateHome?: () => void;
   language?: 'ar' | 'en';
+  secretBallotMode?: boolean;
 }
 
 export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
@@ -32,10 +33,22 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
   onBack,
   onNavigateHome,
   language = 'ar',
+  secretBallotMode = false,
 }) => {
   const isEn = language === 'en';
   const t = isEn ? EN_STRINGS : AR_STRINGS;
   const isRtl = !isEn;
+
+  // Local state to toggle voter identities reveal (initialized based on secretBallotMode)
+  const [revealIdentities, setRevealIdentities] = useState<boolean>(!secretBallotMode);
+
+  // Helper to find all players who cast their vote for a specific target suspect
+  const getVotersForPlayer = (targetPlayerId: number): PlayerData[] => {
+    return Object.entries(votes || {})
+      .filter(([_, targetId]) => Number(targetId) === targetPlayerId)
+      .map(([voterIdStr]) => players.find((p) => p.id === Number(voterIdStr)))
+      .filter((p): p is PlayerData => Boolean(p));
+  };
 
   // If voteResult is provided from GameEngine, use it directly as authoritative single source of truth
   const voteCounts: Record<number, number> = {};
@@ -93,6 +106,36 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
   const winner: 'innocents' | 'guilty' = voteResult !== undefined && voteResult !== null
     ? (voteResult.winner === 'GUILTY' ? 'guilty' : 'innocents')
     : (eliminatedPlayer?.guilty ? 'innocents' : 'guilty');
+
+  // Render voter chips helper
+  const renderVoterChips = (targetPlayerId: number) => {
+    const voters = getVotersForPlayer(targetPlayerId);
+    if (!revealIdentities) return null;
+
+    return (
+      <div className="w-full mt-2 pt-2 border-t border-amber-900/30 flex flex-wrap items-center gap-1.5">
+        <span className="text-[11px] text-[#a39a8c] font-bold me-1">
+          {t.votedBy}
+        </span>
+        {voters.length > 0 ? (
+          voters.map((voter) => (
+            <span
+              key={voter.id}
+              className="text-[11px] px-2 py-0.5 rounded-lg bg-black/60 border border-[#c8923a]/40 text-[#f5ebd9] font-medium inline-flex items-center gap-1 shadow-sm"
+            >
+              <span className="text-[#f3cb79]">👤</span>
+              <span className="font-bold">{voter.name}</span>
+              <span className="text-[#a39a8c] text-[10px]">({voter.character.name})</span>
+            </span>
+          ))
+        ) : (
+          <span className="text-[10px] text-[#7a7469] italic">
+            {t.noVotesForSuspect}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center bg-[#07080c] select-none text-slate-100 pb-16 pt-4 px-3 sm:px-6" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -165,22 +208,50 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
 
               {/* Vote tallies breakdown */}
               {voteResult?.tallies && voteResult.tallies.length > 0 && (
-                <div className="w-full mt-2 pt-3 border-t border-amber-900/30 flex flex-col gap-2">
-                  <span className={`text-xs text-[#a39a8c] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} ${isRtl ? 'text-right' : 'text-left'} block`}>
-                    {t.voteDistribution}
-                  </span>
-                  <div className={`grid grid-cols-2 gap-2 ${isRtl ? 'text-right' : 'text-left'}`}>
+                <div className="w-full mt-2 pt-4 border-t border-amber-900/30 flex flex-col gap-3">
+                  {/* Header with Mode Badge & Interactive Reveal Toggle */}
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs text-[#a39a8c] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                        {t.voteDistribution}
+                      </span>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-black/70 border border-[#c8923a]/50 text-[#f3cb79]">
+                        {secretBallotMode ? t.secretBallotActiveBadge : t.publicBallotActiveBadge}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        sound.playClick();
+                        setRevealIdentities(!revealIdentities);
+                      }}
+                      className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-xl bg-black/70 border border-[#c8923a]/50 hover:border-[#f3cb79] text-[#f3cb79] transition-all cursor-pointer shadow-sm active:scale-95"
+                    >
+                      {revealIdentities ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      <span>{revealIdentities ? t.hideVoterIdentities : t.revealVoterIdentities}</span>
+                    </button>
+                  </div>
+
+                  <div className={`grid ${revealIdentities ? 'grid-cols-1' : 'grid-cols-2'} gap-2.5 ${isRtl ? 'text-right' : 'text-left'}`}>
                     {voteResult.tallies.map((tally) => (
                       <div
                         key={tally.playerId}
-                        className={`p-2.5 rounded-xl bg-black/40 border border-[#7a5c2b]/40 flex items-center justify-between text-xs ${isRtl ? "font-['Cairo']" : 'font-sans'}`}
+                        className={`p-3 rounded-2xl bg-black/50 border border-[#7a5c2b]/50 flex flex-col text-xs ${isRtl ? "font-['Cairo']" : 'font-sans'}`}
                       >
-                        <span className="text-[#f5ebd9] font-bold truncate max-w-[100px]">
-                          {tally.characterName}
-                        </span>
-                        <span className="text-[#f3cb79] font-black">
-                          {isEn ? `${tally.voteCount} votes` : `${tally.voteCount} أصوات`}
-                        </span>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex flex-col">
+                            <span className="text-[#f5ebd9] font-bold text-sm">
+                              {tally.characterName}
+                            </span>
+                            <span className="text-[11px] text-[#a39a8c]">
+                              {tally.playerName}
+                            </span>
+                          </div>
+                          <span className="text-[#f3cb79] font-black text-sm px-2.5 py-1 rounded-lg bg-[#c8923a]/15 border border-[#c8923a]/40">
+                            {isEn ? `${tally.voteCount} votes` : `${tally.voteCount} أصوات`}
+                          </span>
+                        </div>
+                        {renderVoterChips(tally.playerId)}
                       </div>
                     ))}
                   </div>
@@ -215,26 +286,58 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
 
               {/* Vote tallies breakdown */}
               {voteResult?.tallies && voteResult.tallies.length > 0 && (
-                <div className="w-full mt-1 pt-3 border-t border-amber-900/30 flex flex-col gap-2">
-                  <span className={`text-xs text-[#a39a8c] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} ${isRtl ? 'text-right' : 'text-left'} block`}>
-                    {t.tallyResults}
-                  </span>
-                  <div className={`grid grid-cols-2 gap-2 ${isRtl ? 'text-right' : 'text-left'}`}>
+                <div className="w-full mt-1 pt-4 border-t border-amber-900/30 flex flex-col gap-3">
+                  {/* Header with Mode Badge & Interactive Reveal Toggle */}
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs text-[#a39a8c] font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                        {t.tallyResults}
+                      </span>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-black/70 border border-[#c8923a]/50 text-[#f3cb79]">
+                        {secretBallotMode ? t.secretBallotActiveBadge : t.publicBallotActiveBadge}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        sound.playClick();
+                        setRevealIdentities(!revealIdentities);
+                      }}
+                      className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-xl bg-black/70 border border-[#c8923a]/50 hover:border-[#f3cb79] text-[#f3cb79] transition-all cursor-pointer shadow-sm active:scale-95"
+                    >
+                      {revealIdentities ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      <span>{revealIdentities ? t.hideVoterIdentities : t.revealVoterIdentities}</span>
+                    </button>
+                  </div>
+
+                  <div className={`grid ${revealIdentities ? 'grid-cols-1' : 'grid-cols-2'} gap-2.5 ${isRtl ? 'text-right' : 'text-left'}`}>
                     {voteResult.tallies.map((tally) => (
                       <div
                         key={tally.playerId}
-                        className={`p-2.5 rounded-xl border flex items-center justify-between text-xs ${isRtl ? "font-['Cairo']" : 'font-sans'} ${
+                        className={`p-3 rounded-2xl border flex flex-col text-xs transition-all ${isRtl ? "font-['Cairo']" : 'font-sans'} ${
                           tally.playerId === eliminatedPlayerId
-                            ? 'bg-red-950/30 border-red-500/50 text-red-200'
-                            : 'bg-black/40 border-[#7a5c2b]/40 text-[#f5ebd9]'
+                            ? 'bg-red-950/30 border-red-500/60 text-red-200 shadow-md'
+                            : 'bg-black/50 border-[#7a5c2b]/50 text-[#f5ebd9]'
                         }`}
                       >
-                        <span className="font-bold truncate max-w-[100px]">
-                          {tally.characterName}
-                        </span>
-                        <span className={`font-black ${tally.playerId === eliminatedPlayerId ? 'text-red-400' : 'text-[#f3cb79]'}`}>
-                          {isEn ? `${tally.voteCount} votes` : `${tally.voteCount} أصوات`}
-                        </span>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-sm">
+                              {tally.characterName}
+                            </span>
+                            <span className="text-[11px] text-[#a39a8c]">
+                              {tally.playerName}
+                            </span>
+                          </div>
+                          <span className={`font-black text-sm px-2.5 py-1 rounded-lg ${
+                            tally.playerId === eliminatedPlayerId
+                              ? 'bg-red-500/20 border border-red-500/50 text-red-400'
+                              : 'bg-[#c8923a]/15 border border-[#c8923a]/40 text-[#f3cb79]'
+                          }`}>
+                            {isEn ? `${tally.voteCount} votes` : `${tally.voteCount} أصوات`}
+                          </span>
+                        </div>
+                        {renderVoterChips(tally.playerId)}
                       </div>
                     ))}
                   </div>

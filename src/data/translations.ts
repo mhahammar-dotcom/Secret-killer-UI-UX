@@ -46,6 +46,16 @@ export interface UIStrings {
   minShort: string;
   secretBallot: string;
   secretBallotDesc: string;
+  fastVoting: string;
+  fastVotingDesc: string;
+  fastVotingActiveBadge: string;
+  fastVoteOneTapHint: string;
+  adsAndMonetization: string;
+  adsAndMonetizationDesc: string;
+  adMobStatus: string;
+  testAdPreview: string;
+  interstitialAdBadge: string;
+  bannerAdBadge: string;
 
   // Story Select Screen
   caseArchive: string;
@@ -176,6 +186,13 @@ export interface UIStrings {
   confirmVoteFinal: string;
   changeSelection: string;
   secretVoteIndicator: string;
+  publicVoteIndicator: string;
+  secretBallotActiveBadge: string;
+  publicBallotActiveBadge: string;
+  votedBy: string;
+  noVotesForSuspect: string;
+  revealVoterIdentities: string;
+  hideVoterIdentities: string;
   proceedToConfirm: string;
   voterTurn: string;
   selectSuspectToAccuse: string;
@@ -319,6 +336,16 @@ export const AR_STRINGS: UIStrings = {
   minShort: 'د',
   secretBallot: 'نمط الاقتراع السري',
   secretBallotDesc: 'إخفاء هوية المصوتين أثناء فرز الأصوات',
+  fastVoting: 'نمط التصويت السريع',
+  fastVotingDesc: 'تخطي نافذة تأكيد الاتهام للتصويت المباشر بلمسة واحدة وتسريع الجولة',
+  fastVotingActiveBadge: '⚡ تصويت سريع (مباشر بلمسة واحدة)',
+  fastVoteOneTapHint: 'انقر على المشتبه به لتسجيل صوتك فوراً دون تأكيد',
+  adsAndMonetization: 'إعلانات Google AdMob',
+  adsAndMonetizationDesc: 'تفعيل وحدات إعلانات البانر والإعلانات البينية بين الجولات',
+  adMobStatus: 'حالة AdMob: متصل وجاهز',
+  testAdPreview: 'معاينة إعلان تجريبي',
+  interstitialAdBadge: 'إعلان بيني',
+  bannerAdBadge: 'إعلان بانر',
 
   caseArchive: 'أرشيف القضايا الجنائية',
   selectStoryTitle: 'أرشيف القضايا',
@@ -442,6 +469,13 @@ export const AR_STRINGS: UIStrings = {
   confirmVoteFinal: 'تأكيد التصويت النهائي',
   changeSelection: 'تغيير الاختيار',
   secretVoteIndicator: 'تصويت سري • مرر الهاتف بين اللاعبين',
+  publicVoteIndicator: 'تصويت علني • ستُعلن هوية المصوتين عند فرز النتائج',
+  secretBallotActiveBadge: '🔒 اقتراع سري (الهويات محجوبة)',
+  publicBallotActiveBadge: '📢 اقتراع علني (كشف هوية المصوتين)',
+  votedBy: 'صوّت له:',
+  noVotesForSuspect: 'لم يتلقَّ أصواتاً',
+  revealVoterIdentities: 'كشف هوية المصوتين',
+  hideVoterIdentities: 'إخفاء هوية المصوتين',
   proceedToConfirm: 'متابعة وتأكيد الصوت',
   voterTurn: 'دور اللاعب في التصويت:',
   selectSuspectToAccuse: 'توجيه الاتهام إلى:',
@@ -578,6 +612,16 @@ export const EN_STRINGS: UIStrings = {
   minShort: 'm',
   secretBallot: 'Secret Ballot Mode',
   secretBallotDesc: 'Hide voter identities when tallying accusations',
+  fastVoting: 'Fast Voting Mode',
+  fastVotingDesc: 'Skip confirmation modal to cast your accusation with a single tap and speed up the round',
+  fastVotingActiveBadge: '⚡ Fast Vote (Single Tap)',
+  fastVoteOneTapHint: 'Tap a suspect to cast your vote instantly without confirmation',
+  adsAndMonetization: 'Google AdMob Monetization',
+  adsAndMonetizationDesc: 'Enable Banner ads and Interstitial transitions between rounds',
+  adMobStatus: 'AdMob Status: Configured & Active',
+  testAdPreview: 'Preview Test Ad',
+  interstitialAdBadge: 'Interstitial Ad',
+  bannerAdBadge: 'Banner Ad',
 
   caseArchive: 'Criminal Case Archive',
   selectStoryTitle: 'Criminal Cases Archive',
@@ -701,6 +745,13 @@ export const EN_STRINGS: UIStrings = {
   confirmVoteFinal: 'Confirm Final Accusation',
   changeSelection: 'Change Selection',
   secretVoteIndicator: 'Secret Ballot • Pass device between players',
+  publicVoteIndicator: 'Public Ballot • Voter identities will be announced in tally',
+  secretBallotActiveBadge: '🔒 Secret Ballot (Identities hidden)',
+  publicBallotActiveBadge: '📢 Public Ballot (Identities revealed)',
+  votedBy: 'Voted by:',
+  noVotesForSuspect: 'No votes received',
+  revealVoterIdentities: 'Reveal Voter Identities',
+  hideVoterIdentities: 'Hide Voter Identities',
   proceedToConfirm: 'Proceed to Confirm Vote',
   voterTurn: 'Current Voter:',
   selectSuspectToAccuse: 'Accuse Suspect:',

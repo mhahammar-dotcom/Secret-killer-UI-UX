@@ -7,6 +7,7 @@ import { OnlineComingSoonModal } from './OnlineComingSoonModal';
 import { RatingModal } from './RatingModal';
 import { FingerprintGraphic } from './FingerprintGraphic';
 import { KillerKnifeIcon } from './KillerKnifeIcon';
+import { BannerAd } from './ads/BannerAd';
 import noirBg from '../assets/images/noir_home_bg_1787348360647.jpg';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 
@@ -259,6 +260,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <span>{t.howToPlay}</span>
           </button>
         </div>
+
+        {/* Google AdMob Banner Ad */}
+        <BannerAd language={language} className="mt-2" />
 
       </div>
 

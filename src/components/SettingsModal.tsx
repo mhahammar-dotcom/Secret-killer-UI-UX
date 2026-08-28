@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { X, Volume2, VolumeX, Clock, ShieldCheck, Sparkles, Settings, Globe } from 'lucide-react';
+import { X, Volume2, VolumeX, Clock, ShieldCheck, Sparkles, Settings, Globe, Zap, ShieldAlert, Eye } from 'lucide-react';
 import { GameSettings } from '../types';
 import { sound } from '../utils/audio';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
+import { adService } from '../services/adService';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -44,6 +45,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleToggleSecretBallot = () => {
     sound.playClick();
     onUpdateSettings({ ...settings, secretBallotMode: !settings.secretBallotMode });
+  };
+
+  const handleToggleFastVoting = () => {
+    sound.playClick();
+    onUpdateSettings({ ...settings, fastVotingMode: !settings.fastVotingMode });
+  };
+
+  const [adConfig, setAdConfig] = useState(adService.getConfig());
+
+  const handleToggleAds = () => {
+    sound.playClick();
+    const updated = !adConfig.adsEnabled;
+    adService.updateConfig({ adsEnabled: updated });
+    setAdConfig(adService.getConfig());
+  };
+
+  const handleTriggerTestAd = () => {
+    sound.playClick();
+    onClose();
+    setTimeout(() => {
+      adService.requestInterstitial('manual', () => {});
+    }, 150);
   };
 
   return (
@@ -172,6 +195,70 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 }`}
               />
             </button>
+          </div>
+
+          {/* Fast voting mode */}
+          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-black/40 border border-[#7a5c2b]/40">
+            <div>
+              <span className="text-sm sm:text-base font-black text-[#f5ebd9] block">{t.fastVoting}</span>
+              <span className="text-xs text-[#a39a8c]">{t.fastVotingDesc}</span>
+            </div>
+            <button
+              onClick={handleToggleFastVoting}
+              className={`w-13 h-7 rounded-full transition-colors relative cursor-pointer border border-[#c8923a]/40 shrink-0 ${
+                settings.fastVotingMode ? 'bg-[#c8923a]' : 'bg-black/60'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-slate-950 transition-transform absolute top-0.5 ${
+                  settings.fastVotingMode ? (isRtl ? 'left-1' : 'right-1') : (isRtl ? 'left-6' : 'right-6')
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Google AdMob Ads Configuration */}
+          <div className="p-3.5 rounded-2xl bg-[#07090e] border border-amber-500/30 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-[#f3cb79]">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-sm sm:text-base font-black text-[#f5ebd9] block">{t.adsAndMonetization}</span>
+                  <span className="text-xs text-[#a39a8c]">{t.adsAndMonetizationDesc}</span>
+                </div>
+              </div>
+              <button
+                onClick={handleToggleAds}
+                className={`w-13 h-7 rounded-full transition-colors relative cursor-pointer border border-[#c8923a]/40 shrink-0 ${
+                  adConfig.adsEnabled ? 'bg-[#c8923a]' : 'bg-black/60'
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 rounded-full bg-slate-950 transition-transform absolute top-0.5 ${
+                    adConfig.adsEnabled ? (isRtl ? 'left-1' : 'right-1') : (isRtl ? 'left-6' : 'right-6')
+                  }`}
+                />
+              </button>
+            </div>
+
+            {adConfig.adsEnabled && (
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between flex-wrap gap-2 text-xs">
+                <span className="text-[11px] text-[#f3cb79] font-bold flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>{t.adMobStatus}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleTriggerTestAd}
+                  className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-slate-700 text-[#d4cfc7] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{t.testAdPreview}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

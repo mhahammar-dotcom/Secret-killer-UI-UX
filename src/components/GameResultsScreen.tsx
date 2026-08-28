@@ -4,6 +4,7 @@ import { Trophy, RotateCcw, Home, Skull, CheckCircle, ChevronLeft } from 'lucide
 import { StoryData, PlayerData } from '../types';
 import { sound } from '../utils/audio';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
+import { BannerAd } from './ads/BannerAd';
 
 interface GameResultsScreenProps {
   story: StoryData;
@@ -177,6 +178,9 @@ export const GameResultsScreen: React.FC<GameResultsScreenProps> = ({
             <Home className="w-4 h-4" />
             <span>{t.returnToMainMenu}</span>
           </motion.button>
+
+          {/* Banner Ad */}
+          <BannerAd language={language} className="pt-2" />
         </div>
       </div>
     </div>

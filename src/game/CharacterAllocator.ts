@@ -1,5 +1,6 @@
 import { Story, StoryCharacter, Player, EvidenceItem } from './types';
 import { StoryEngine } from './StoryEngine';
+import { getKillerCount } from './PlayerManager';
 
 export interface AllocatorOptions {
   shuffle?: boolean;
@@ -251,15 +252,10 @@ export class CharacterAllocator {
     // 1. Determine target guilty count
     const targetGuiltyCount = options?.guiltyCount !== undefined
       ? options.guiltyCount
-      : StoryEngine.getGuiltyCountForScenario(story);
+      : getKillerCount(playerCount);
 
     if (targetGuiltyCount < 1) {
       throw new Error('At least 1 guilty character is required.');
-    }
-    if (targetGuiltyCount > (story.guiltyPool?.length || 0)) {
-      throw new Error(
-        `Requested ${targetGuiltyCount} guilty characters, but story guiltyPool only contains ${story.guiltyPool?.length || 0}.`
-      );
     }
     if (targetGuiltyCount >= playerCount) {
       throw new Error(
@@ -322,7 +318,22 @@ export class CharacterAllocator {
     random: () => number
   ): StoryCharacter[] | null {
     const guiltyPool = story.guiltyPool || [];
-    const guiltyCombinations = this.getCombinations(guiltyPool, targetGuiltyCount);
+    let guiltyCombinations: StoryCharacter[][];
+
+    if (guiltyPool.length >= targetGuiltyCount) {
+      guiltyCombinations = this.getCombinations(guiltyPool, targetGuiltyCount);
+    } else {
+      // If guiltyPool has fewer characters than targetGuiltyCount, draw all available guilty
+      // characters and select remaining guilty characters from innocentPool
+      const innocentPool = story.innocentPool || [];
+      const neededExtra = targetGuiltyCount - guiltyPool.length;
+      if (neededExtra <= innocentPool.length) {
+        const extraCombinations = this.getCombinations(innocentPool, neededExtra);
+        guiltyCombinations = extraCombinations.map(extra => [...guiltyPool, ...extra]);
+      } else {
+        guiltyCombinations = [];
+      }
+    }
 
     const shuffledCombinations = doShuffle
       ? this.shuffleArray(guiltyCombinations, random)

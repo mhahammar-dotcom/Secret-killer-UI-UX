@@ -125,7 +125,7 @@ const sampleStory = stories[0];
     title: 'قصة بشريكين متواطئين',
     description: 'قضية تتضمن فاعلين اثنين متآمرين محددين من القصة.',
     minPlayers: 4,
-    maxPlayers: 6,
+    maxPlayers: 8,
     requiredGuiltyCount: 2,
     introduction: {
       setting: 'المعمل الكيميائي',
@@ -177,6 +177,20 @@ const sampleStory = stories[0];
         publicIdentity: 'تديرين مستودع العينات المبردة.',
         knowledge: 'تؤكدين أن عينات التجربة كانت سليمة قبل ساعة من الحادث.',
         guilty: false
+      },
+      {
+        name: 'مازن',
+        profession: 'فني الصيانة الإلكترونية',
+        publicIdentity: 'تراجع كفاءة التوصيلات والمولدات.',
+        knowledge: 'فحصت لوحة التحكم قبل بداية الاختبار وكانت سليمة.',
+        guilty: false
+      },
+      {
+        name: 'لمى',
+        profession: 'باحثة بيولوجية',
+        publicIdentity: 'تجرين التحليلات الحيوية في الغرفة الزجاجية.',
+        knowledge: 'سمعت صافرة التنبيه الأولى قبيل الإغلاق بدقائق.',
+        guilty: false
       }
     ],
     clues: ['صمام الضغط مفصول يدوياً'],
@@ -195,11 +209,11 @@ const sampleStory = stories[0];
 
   const players = CharacterAllocator.allocateCharacters(
     multiGuiltyStory,
-    ['لاعب 1', 'لاعب 2', 'لاعب 3', 'لاعب 4', 'لاعب 5']
+    ['لاعب 1', 'لاعب 2', 'لاعب 3', 'لاعب 4', 'لاعب 5', 'لاعب 6', 'لاعب 7']
   );
   const guiltyPlayers = players.filter(p => p.guilty);
 
-  assert(guiltyPlayers.length === 2, 'Story with requiredGuiltyCount = 2 assigns exactly 2 guilty players');
+  assert(guiltyPlayers.length === 2, 'Story with 7 players assigns exactly 2 guilty players');
   const guiltyNames = guiltyPlayers.map(p => p.character.name);
   assert(guiltyNames.includes('كمال') && guiltyNames.includes('روان'), 'Both allocated guilty players are authentic story characters');
 }
