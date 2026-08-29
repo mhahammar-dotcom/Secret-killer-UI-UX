@@ -120,27 +120,27 @@ export const ENGLISH_STORIES: Record<string, Partial<StoryData>> = {
       "stakes": "The masterpiece is insured for tens of millions, but the museum’s global reputation will be destroyed if an insider theft is proven.",
       "objective": "Before morning detectives arrive, discover who among the present staff holds the key to the truth."
     },
-    "solution": "Who is the Culprit?\nYoussef (Master Art Restorer), aided by accomplices in the security wing.\n\nWhat did they do?\nUnlocked the masterpiece safe using bypass codes, replaced the original canvas with a forged decoy, and sanitized digital logs.\n\nWhy did they do it?\nTo sell the authentic masterpiece to an illicit private antiquities syndicate to cover crippling debts.\n\nHow was the crime committed?\nExploited scheduled conservation maintenance to disable the frame alarm and slipped the canvas into a drafting tube during the camera reboot.\n\nWhich clues pointed to them?\nMicroscopic velvet fibers on the frame, surgical cut marks on the canvas border, and authorized console access timestamps.",
+    "solution": "Who is the Culprit?\nOmar (Surveillance Operator), Mansour (Night Security Supervisor), and Salma (Restoration Specialist), working together or independently exploiting their clearances.\n\nWhat did they do?\nBypassed the Royal Hall security feeds during a programmed 4-minute power outage, disabled the magnetic locking system on the showcase, and extracted the royal crown.\n\nWhy did they do it?\nTo smuggle the invaluable historic artifact to an international private collector in exchange for a massive illicit payout.\n\nHow was the crime committed?\nExploited control room override credentials to mask camera feeds while utilizing the restoration workshop's magnetic bypass tool to release the glass case cleanly.\n\nWhich clues pointed to them?\nThe 4-minute blackout window, control room console telemetry, and the magnetic bypass tool traces.",
     "guiltyPool": [
       {
         "name": "Omar",
-        "profession": "Equipment & Vault Custodian",
-        "publicIdentity": "You are Omar, serving as the Equipment & Vault Custodian.",
-        "knowledge": "In-universe testimony regarding the incident: تعلم أن سلمى تركت مفاتيح الخزانة في صندوق الأمانات عند 1:45 ص، ورأيت منصور يبدأ جولته في الجناح الشرقي.",
+        "profession": "Surveillance & Control Room Operator",
+        "publicIdentity": "You are Omar, serving as the Surveillance & Control Room Operator.",
+        "knowledge": "You know Salma left the vault keys in the security box at 1:45 AM, and you saw Mansour start his patrol in the eastern gallery.",
         "guilty": true
       },
       {
         "name": "Mansour",
         "profession": "Night Security Supervisor",
         "publicIdentity": "You are Mansour, serving as the Night Security Supervisor.",
-        "knowledge": "In-universe testimony regarding the incident: سمعت صوتاً معدنياً خافتاً قرب فتحة التهوية في القاعة الملكية عند 2:02 ص، ورأيت سلمى تنزل الدرج بسرعة بعد الإنذار.",
+        "knowledge": "You heard a faint metallic sound near the ventilation duct in the Royal Hall at 2:02 AM, and you saw Salma rush down the stairs after the alarm.",
         "guilty": true
       },
       {
         "name": "Salma",
         "profession": "Restoration & Relics Specialist",
         "publicIdentity": "You are Salma, serving as the Restoration & Relics Specialist.",
-        "knowledge": "In-universe testimony regarding the incident: رأيت عمر يتفقد موزع طاقة الكاميرات عند 1:30 ص، وتعلمين أن فتح الفاترينة يحتاج شفرة فصل مغناطيسية.",
+        "knowledge": "You saw Omar checking the camera power distributor at 1:30 AM, and you know opening the showcase requires a magnetic bypass tool.",
         "guilty": true
       }
     ],
@@ -149,63 +149,63 @@ export const ENGLISH_STORIES: Record<string, Partial<StoryData>> = {
         "name": "Khaled",
         "profession": "Archive & Documentation Assistant",
         "publicIdentity": "You are Khaled, serving as the Archive & Documentation Assistant.",
-        "knowledge": "In-universe testimony regarding the incident: لاحظت فتح صندوق الأمانات في غرفة الحراسة عند 1:50 ص، وظننت أنه تبديل روتيني للمفاتيح.",
+        "knowledge": "You noticed the security lockbox opened in the guard room at 1:50 AM, assuming it was a routine key exchange.",
         "guilty": false
       },
       {
         "name": "Fatima",
         "profession": "Exhibition Coordinator",
         "publicIdentity": "You are Fatima, serving as the Exhibition Coordinator.",
-        "knowledge": "In-universe testimony regarding the incident: تلقى المتحف استفساراً خاصاً حول تقييم التاج قبل ثلاثة أيام من جهة غير معلنة.",
+        "knowledge": "The museum received an undisclosed private inquiry regarding the valuation of the crown three days prior.",
         "guilty": false
       },
       {
         "name": "Rami",
         "profession": "Electrical & Backup Power Tech",
         "publicIdentity": "You are Rami, serving as the Electrical & Backup Power Tech.",
-        "knowledge": "In-universe testimony regarding the incident: انقطاع الكهرباء نجم عن مؤقت حراري مبرمج مسبقاً على القاطع رقم 3 قبل نصف ساعة من الحادثة.",
+        "knowledge": "The power outage was triggered by a pre-programmed thermal timer set on breaker 3 half an hour before the incident.",
         "guilty": false
       },
       {
         "name": "Nadia",
-        "profession": "Museum Educator & Docent",
-        "publicIdentity": "You are Nadia, serving as the Museum Educator & Docent.",
-        "knowledge": "In-universe testimony regarding the incident: حاجز الليزر تم تعطيله عبر إدخال شفرة إلغاء من لوحة التحكم الرئيسية دون قطع الأسلاك.",
+        "profession": "Laser Security Systems Specialist",
+        "publicIdentity": "You are Nadia, serving as the Laser Security Systems Specialist.",
+        "knowledge": "The laser grid was disabled by entering an override code from the main console rather than cutting signal cables.",
         "guilty": false
       },
       {
         "name": "Tariq",
-        "profession": "EEG Systems Technician",
-        "publicIdentity": "You are Tariq, serving as the EEG Systems Technician.",
-        "knowledge": "In-universe testimony regarding the incident: لم تدخل أو تخرج أي سيارة من بوابات المتحف الخارجية طوال ساعات الليل.",
+        "profession": "Sanitation & Evening Services Specialist",
+        "publicIdentity": "You are Tariq, serving as the Sanitation & Evening Services Specialist.",
+        "knowledge": "No vehicles entered or exited through the museum exterior gates throughout the entire night.",
         "guilty": false
       },
       {
         "name": "Zeinab",
-        "profession": "Gift Shop & Inventory Manager",
-        "publicIdentity": "You are Zeinab, serving as the Gift Shop & Inventory Manager.",
-        "knowledge": "In-universe testimony regarding the incident: زجاج الفاترينة لم يتعرض لأي خدش أو كسر، وفُتح عبر آلية السحب الهيدروليكية النظيفة.",
+        "profession": "Historic Gem & Jewelry Appraiser",
+        "publicIdentity": "You are Zeinab, serving as the Historic Gem & Jewelry Appraiser.",
+        "knowledge": "The showcase glass had zero scratches or breaks, having been opened via its clean hydraulic mechanism.",
         "guilty": false
       },
       {
         "name": "Said",
-        "profession": "Loading Dock & Delivery Guard",
-        "publicIdentity": "You are Said, serving as the Loading Dock & Delivery Guard.",
-        "knowledge": "In-universe testimony regarding the incident: عثرت على عربة تنظيف متروكة مع حافظة قماشية فارغة قرب مصعد الخدمة في القبو.",
+        "profession": "Sanitation & Service Corridors Supervisor",
+        "publicIdentity": "You are Said, serving as the Sanitation & Service Corridors Supervisor.",
+        "knowledge": "You found an abandoned cleaning cart with an empty padded bag near the basement service elevator.",
         "guilty": false
       },
       {
         "name": "Mona",
-        "profession": "Executive Administrative Secretary",
-        "publicIdentity": "You are Mona, serving as the Executive Administrative Secretary.",
-        "knowledge": "In-universe testimony regarding the incident: شروط بوليصة التأمين كانت تفرض وجود حارسين معاً في غرفة المراقبة بعد منتصف الليل.",
+        "profession": "Public Relations & Media Director",
+        "publicIdentity": "You are Mona, serving as the Public Relations & Media Director.",
+        "knowledge": "Insurance policy stipulations mandated that two guards must always be present together in the control room after midnight.",
         "guilty": false
       },
       {
         "name": "Ziad",
-        "profession": "Display Lighting Tech",
-        "publicIdentity": "You are Ziad, serving as the Display Lighting Tech.",
-        "knowledge": "In-universe testimony regarding the incident: صناديق نقل المعروضات الخاصة بالمعرض كانت مجهزة قرب منطقة التحميل منذ المساء.",
+        "profession": "Logistics & Artifacts Transport Lead",
+        "publicIdentity": "You are Ziad, serving as the Logistics & Artifacts Transport Lead.",
+        "knowledge": "The exhibition transport crates had been staged near the loading dock area since early evening.",
         "guilty": false
       }
     ],

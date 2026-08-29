@@ -13,6 +13,7 @@ import {
 import { StoryEngine, DEFAULT_MAX_WRONG_VOTES } from './StoryEngine';
 import { CharacterAllocator } from './CharacterAllocator';
 import { getKillerCount } from './PlayerManager';
+import { StorySolutionEngine, STORY_DEDUCTION_DATABASE } from './StorySolutionEngine';
 
 /**
  * StoryValidator enforces story quality, structural integrity, fairness, and balance.
@@ -43,6 +44,7 @@ export class StoryValidator {
     this.validatePlayerCounts(story, issues);
     this.validateIntroductionAndSolution(story, issues);
     this.validateCharacters(story, issues);
+    this.validateGuiltyProfiles(story, issues);
     this.validateGameRules(story, issues);
     this.validateRosterCompatibility(story, issues);
 
@@ -383,6 +385,34 @@ export class StoryValidator {
           code: 'GUILTY_COUNT_EXCEEDS_PLAYERS',
           message: `Guilty count (${story.requiredGuiltyCount}) must be less than minPlayers (${story.minPlayers}).`,
           field: 'requiredGuiltyCount'
+        });
+      }
+    }
+  }
+
+  private static validateGuiltyProfiles(story: Story, issues: StoryValidationIssue[]): void {
+    if (!story.guiltyPool || story.guiltyPool.length === 0) return;
+    const caseData = STORY_DEDUCTION_DATABASE[story.id];
+    if (!caseData && !story.isBuiltInFixed) {
+      return; // Custom mock/user-created story without static deduction DB entry
+    }
+
+    const result = StorySolutionEngine.checkStoryProfiles(story);
+    if (!result.valid) {
+      if (result.missingProfiles.length > 0) {
+        issues.push({
+          severity: 'ERROR',
+          code: 'MISSING_GUILTY_PROFILE',
+          message: `Story "${story.id}" guiltyPool character(s) [${result.missingProfiles.join(', ')}] have no corresponding GuiltyProfile in STORY_DEDUCTION_DATABASE.`,
+          field: 'guiltyPool'
+        });
+      }
+      if (result.extraProfiles.length > 0) {
+        issues.push({
+          severity: 'ERROR',
+          code: 'EXTRA_GUILTY_PROFILE',
+          message: `Story "${story.id}" GuiltyProfile(s) [${result.extraProfiles.join(', ')}] in STORY_DEDUCTION_DATABASE do not correspond to any character in story.guiltyPool.`,
+          field: 'guiltyPool'
         });
       }
     }

@@ -81,53 +81,53 @@ export const STORY_DEDUCTION_DATABASE: Record<string, StoryCaseDeduction> = {
   museum: {
     storyId: 'museum',
     culprits: {
-      'بسام': {
-        name: 'بسام',
-        nameEn: 'Bassam',
-        professionAr: 'مسؤول التوثيق والأرشفة',
-        professionEn: 'Archivist & Documentation Head',
-        actionAr: 'استبدل اللوحة الأثرية بنسخة مقلدة بدقة عالية ومرر الأصلية عبر ممر الطوارئ.',
-        actionEn: 'Substituted the authentic masterpiece with a forged replica and moved the original into the service corridor.',
-        motiveAr: 'تغطية ديون مالية متراكمة عبر بيع التحفة لجامع آثار في السوق السوداء.',
-        motiveEn: 'Settle heavy personal debts by trafficking the priceless artifact to an illicit collector.',
-        methodAr: 'استغل صلاحية جرد المعروضات وعطل حساس الإطار باستخدام بطانة مخملية عازلة.',
-        methodEn: 'Exploited inventory inspection privileges to disable the frame pressure sensor with velvet lining.',
-        cluesAr: 'ألياف القفازات المخملية خلف إطار اللوحة وتطابق مسار خروجه مع توقيت التبديل.',
-        cluesEn: 'Velvet glove fibers found behind the frame and his exit log matching the substitution window.'
+      'عمر': {
+        name: 'عمر',
+        nameEn: 'Omar',
+        professionAr: 'مشغل أنظمة المراقبة والتحكم',
+        professionEn: 'Surveillance & Control Room Operator',
+        actionAr: 'جمّد بث كاميرات القاعة الملكية على تسجيل مكرر لمدة 4 دقائق أثناء انقطاع الكهرباء ومرر شفرة الإنذار.',
+        actionEn: 'Looped security camera footage of the Royal Hall for 4 minutes during the blackout and bypassed alarm feeds.',
+        motiveAr: 'الحصول على حصة مالية مجزية لتسديد ديون متراكمة وتأمين عملية نقل التاج دون توثيق صور المشتبه بهم.',
+        motiveEn: 'Secure a massive financial payout to clear debts by ensuring an unrecorded window for the crown extraction.',
+        methodAr: 'استغل صلاحياته داخل غرفة التحكم المركزية لتجاوز مجسات الليزر وتغذية الشاشات بتسجيل وهمي.',
+        methodEn: 'Used central control room clearances to override laser sensors and feed loop footage to display monitors.',
+        cluesAr: 'سجل التعديل اليدوي على موزع طاقة الكاميرات وبصمات أصابعه على وحدة التحكم الاحتياطية.',
+        cluesEn: 'Manual power redistribution logs on the camera terminal and his fingerprints on the backup console.'
       },
       'منصور': {
         name: 'منصور',
         nameEn: 'Mansour',
-        professionAr: 'مشرف عمليات الأمن',
-        professionEn: 'Security Operations Supervisor',
-        actionAr: 'أوقف تغذية كاميرات المراقبة لمدة 3 دقائق بحجة إعادة تشغيل النظام الدوري.',
-        actionEn: 'Froze security camera feeds for 3 minutes under the guise of a scheduled system reboot.',
-        motiveAr: 'الحصول على حصة مالية مجزية لتأمين ممر هروب آمن وتغطية مسار التسلل.',
-        motiveEn: 'Received a guaranteed cut to provide a blind spot and ensure an unmonitored extraction route.',
-        methodAr: 'استخدم مفتاح التحكم الرئيسي لغرفة المراقبة وألغى تسجيلات كاميرات الجناح الشرقي.',
-        methodEn: 'Used master console override keys to suppress recording across the eastern exhibition gallery.',
-        cluesAr: 'سجل إعادة تشغيل الكاميرات اليدوي وتطابق الانقطاع مع لحظة نزع اللوحة.',
-        cluesEn: 'Manual reboot logs on the master console coinciding with the exact removal moment.'
+        professionAr: 'حارس الوردية الليلية الرئيسي',
+        professionEn: 'Night Security Supervisor',
+        actionAr: 'عطّل دورية الحراسة في الجناح الشرقي وفتح البوابة الجانبية لخروج التاج.',
+        actionEn: 'Delayed the eastern wing security patrol and opened the side exit gate for the crown extraction.',
+        motiveAr: 'تلقى رشوة كبيرة لتأمين ممر آمن وتغطية مسار الهروب دون تفتيش.',
+        motiveEn: 'Received a hefty bribe to provide an unmonitored escape corridor and skip standard exit checks.',
+        methodAr: 'استخدم المفتاح الرئيسي لغرفة الحراسة لفتح مسار الطوارئ الخلفي أثناء انقطاع الكهرباء.',
+        methodEn: 'Used the guard station master key to unlock the rear emergency exit during the blackout.',
+        cluesAr: 'سجل فتح البوابة الجانبية في توقيت الانقطاع وآثار أقدامه في الممر غير المخصص لدوريته.',
+        cluesEn: 'Side gate unlock timestamps during the power outage and boot prints in the off-route corridor.'
       },
       'سلمى': {
         name: 'سلمى',
         nameEn: 'Salma',
-        professionAr: 'أخصائية الترميم والتأطير',
-        professionEn: 'Restoration & Framing Specialist',
-        actionAr: 'جهّزت الصندوق المبطن المقاوم للصدمات لنقل اللوحة وإخفاء التباين في وزن النسخة المزيفة.',
-        actionEn: 'Prepared the shock-resistant padded transport case and calibrated the replica weight.',
-        motiveAr: 'استعادة اللوحة التي تعتبرها إرثاً عائلياً صودر ظلماً وتأمين تهريبها للخارج.',
-        motiveEn: 'Reclaim an artwork she believed was unjustly seized from her family estate.',
-        methodAr: 'استغلت ورشة الترميم لتغليف اللوحة الأصلية وإخفائها داخل شحنة مواد الترميم المسترجعة.',
-        methodEn: 'Used the restoration lab to package the genuine painting disguised as outgoing supply crates.',
-        cluesAr: 'مواد التثبيت الكيميائية الخاصة بورشة الترميم المتبقية على المشابك الجدارية.',
-        cluesEn: 'Traces of specialized chemical mounting adhesive unique to the restoration workshop.'
+        professionAr: 'أمينة الترميم والمقتنيات الملكية',
+        professionEn: 'Restoration & Relics Specialist',
+        actionAr: 'استخدمت شفرة الفصل المغناطيسي لفتح فاترينة التاج ونقلته داخل حقيبة العينات المبطنة.',
+        actionEn: 'Used the magnetic bypass tool to open the crown showcase and concealed the artifact in a padded case.',
+        motiveAr: 'تهريب التاج لبيعه لجامع تحف أجنبي بذريعة نقله للمعالجة الكيميائية المخبرية.',
+        motiveEn: 'Smuggle the crown to a foreign private collector under the pretense of lab chemical conservation.',
+        methodAr: 'استغلت خبرتها في آليات أقفال الفاترينات الزجاجية لفصل القفل المغناطيسي دون كسر الزجاج.',
+        methodEn: 'Leveraged specialist expertise in showcase locking mechanisms to detach the magnetic seal cleanly.',
+        cluesAr: 'شفرة الفصل المغناطيسي الخاصة بورشة الترميم وألياف الحقيبة المبطنة داخل الفاترينة.',
+        cluesEn: 'Specialized magnetic bypass tool from the restoration lab and padded case fabric fibers inside the case.'
       }
     },
-    innocentsExplanationAr: 'باقي العاملين مثل عمر وخالد وفاطمة ورامي كانوا يقومون بمهامهم الرسمية، وتواجدهم في القاعات كان مسجلاً وفق جدول الحراسة والتنظيف المعتاد دون أي تدخل في أنظمة الأمان.',
-    innocentsExplanationEn: 'The other staff (Omar, Khaled, Fatima, Rami) performed routine duties, and their presence in the galleries aligned with verified cleaning and patrol schedules without security tampering.',
-    sharedEvidenceAr: 'فجوة الدقائق الثلاث في سجل المراقبة، وألياف القماش العازل، والمطابقة الدقيقة لوزن الإطار.',
-    sharedEvidenceEn: 'The 3-minute camera blindspot, insulating fabric fibers, and exact frame weight telemetry.'
+    innocentsExplanationAr: 'باقي العاملين مثل خالد وفاطمة ورامي ونادية وطارق وزينب وسعيد ومنى وزياد كانوا يقومون بمهامهم الرسمية، وتواجدهم في القاعات كان مسجلاً وفق جدول الحراسة والصيانة والتنظيف المعتاد دون أي تدخل في أنظمة الأمان أو فاترينة التاج.',
+    innocentsExplanationEn: 'The other staff (Khaled, Fatima, Rami, Nadia, Tariq, Zeinab, Said, Mona, Ziad) performed routine duties, and their presence aligned with verified schedules without security tampering or unauthorized access to the crown showcase.',
+    sharedEvidenceAr: 'انقطاع التيار الكهربائي لمدة 4 دقائق، وبصمات غرفة التحكم، وشفرة الفصل المغناطيسي.',
+    sharedEvidenceEn: 'The 4-minute blackout window, control room console telemetry, and the magnetic bypass tool trace.'
   },
 
   train: {
@@ -738,21 +738,10 @@ export class StorySolutionEngine {
       if (foundKey) {
         culpritsData.push(caseData.culprits[foundKey]);
       } else {
-        // Generic fallback profile for custom or unmatched character
-        culpritsData.push({
-          name: p.character.name,
-          nameEn: p.character.name,
-          professionAr: p.character.profession,
-          professionEn: p.character.profession,
-          actionAr: `شارك في تنفيذ الحادثة واستغل صلاحيات وظيفته كـ (${p.character.profession}).`,
-          actionEn: `Participated in the crime exploiting access as (${p.character.profession}).`,
-          motiveAr: 'تحقيق مكاسب شخصية والتستر على خروقات سابقة.',
-          motiveEn: 'Personal gain and concealing prior operational breaches.',
-          methodAr: 'استغل ثغرة في إجراءات السلامة والمراقبة.',
-          methodEn: 'Exploited a gap in security and surveillance procedures.',
-          cluesAr: 'تناقض الأقوال وتطابق التوقيت مع مسار الحادثة.',
-          cluesEn: 'Conflicting testimony and timeline matching the incident.'
-        });
+        // Strict error: no generic fallback allowed in production
+        throw new Error(
+          `Story ${story.id}: selected guilty character "${p.character.name}" has no GuiltyProfile in STORY_DEDUCTION_DATABASE.`
+        );
       }
     });
 
@@ -832,5 +821,115 @@ ${cluesText}
 لماذا كان باقي المشتبه بهم أبرياء؟
 ${caseData.innocentsExplanationAr}`;
     }
+  }
+
+  /**
+   * Normalizes Arabic text for robust name matching
+   */
+  public static normalizeArabic(text: string): string {
+    if (!text) return '';
+    return text
+      .trim()
+      .replace(/[\u064B-\u065F\u0670]/g, '') // Remove tashkeel/diacritics
+      .replace(/[إأآا]/g, 'ا')               // Normalize Alef variations
+      .replace(/ة/g, 'ه')                    // Normalize Ta Marbuta
+      .replace(/ى/g, 'ي')                    // Normalize Alef Maksura
+      .replace(/[\s\-_]+/g, ' ')             // Normalize spaces/dashes
+      .toLowerCase();
+  }
+
+  /**
+   * Validates that every guiltyPool candidate has a corresponding GuiltyProfile,
+   * and that every GuiltyProfile in STORY_DEDUCTION_DATABASE corresponds to a guiltyPool candidate.
+   * Throws an Error if any mismatch is found.
+   */
+  static validateStoryProfiles(story: Story | StoryData): void {
+    const caseData = STORY_DEDUCTION_DATABASE[story.id];
+    if (!caseData) {
+      throw new Error(`Story "${story.id}" has no entry in STORY_DEDUCTION_DATABASE.`);
+    }
+
+    const guiltyNames = (story.guiltyPool || []).map(g => g.name);
+    const profileKeys = Object.keys(caseData.culprits);
+
+    const missingProfiles: string[] = [];
+    for (const gName of guiltyNames) {
+      const hasMatch = profileKeys.some(
+        pk => pk === gName ||
+              StorySolutionEngine.normalizeArabic(pk) === StorySolutionEngine.normalizeArabic(gName) ||
+              caseData.culprits[pk]?.nameEn.toLowerCase() === gName.toLowerCase()
+      );
+      if (!hasMatch) {
+        missingProfiles.push(gName);
+      }
+    }
+
+    const extraProfiles: string[] = [];
+    for (const pk of profileKeys) {
+      const prof = caseData.culprits[pk];
+      const hasMatch = guiltyNames.some(
+        gn => gn === pk ||
+              StorySolutionEngine.normalizeArabic(gn) === StorySolutionEngine.normalizeArabic(pk) ||
+              prof.nameEn.toLowerCase() === gn.toLowerCase()
+      );
+      if (!hasMatch) {
+        extraProfiles.push(pk);
+      }
+    }
+
+    if (missingProfiles.length > 0 || extraProfiles.length > 0) {
+      const parts: string[] = [];
+      if (missingProfiles.length > 0) {
+        parts.push(`guiltyPool character(s) without profile: [${missingProfiles.join(', ')}]`);
+      }
+      if (extraProfiles.length > 0) {
+        parts.push(`GuiltyProfile(s) without guiltyPool character: [${extraProfiles.join(', ')}]`);
+      }
+      throw new Error(`Story "${story.id}" has GuiltyProfile mismatch: ${parts.join('; ')}`);
+    }
+  }
+
+  /**
+   * Non-throwing checker that returns mismatch details.
+   */
+  static checkStoryProfiles(story: Story | StoryData): {
+    valid: boolean;
+    missingProfiles: string[];
+    extraProfiles: string[];
+  } {
+    const caseData = STORY_DEDUCTION_DATABASE[story.id];
+    if (!caseData) {
+      return {
+        valid: false,
+        missingProfiles: (story.guiltyPool || []).map(g => g.name),
+        extraProfiles: []
+      };
+    }
+
+    const guiltyNames = (story.guiltyPool || []).map(g => g.name);
+    const profileKeys = Object.keys(caseData.culprits);
+
+    const missingProfiles = guiltyNames.filter(gName => {
+      return !profileKeys.some(
+        pk => pk === gName ||
+              StorySolutionEngine.normalizeArabic(pk) === StorySolutionEngine.normalizeArabic(gName) ||
+              caseData.culprits[pk]?.nameEn.toLowerCase() === gName.toLowerCase()
+      );
+    });
+
+    const extraProfiles = profileKeys.filter(pk => {
+      const prof = caseData.culprits[pk];
+      return !guiltyNames.some(
+        gn => gn === pk ||
+              StorySolutionEngine.normalizeArabic(gn) === StorySolutionEngine.normalizeArabic(pk) ||
+              prof.nameEn.toLowerCase() === gn.toLowerCase()
+      );
+    });
+
+    return {
+      valid: missingProfiles.length === 0 && extraProfiles.length === 0,
+      missingProfiles,
+      extraProfiles
+    };
   }
 }
