@@ -102,6 +102,16 @@ export class StoryEngine {
       errors.push(`Story maxPlayers (${story.maxPlayers}) exceeds total unique characters in pool (${totalCharacters}).`);
     }
 
+    const effectiveMax = typeof story.maxPlayers === 'number' && story.maxPlayers >= 4 && story.maxPlayers <= 12
+      ? story.maxPlayers
+      : (typeof story.maxPlayers === 'number' && story.maxPlayers > 12 ? 12 : 4);
+    const maxKillersNeeded = getKillerCount(effectiveMax);
+    if ((story.guiltyPool?.length || 0) < maxKillersNeeded) {
+      errors.push(
+        `Story supports up to ${story.maxPlayers || 12} players which requires ${maxKillersNeeded} killers, but guiltyPool only has ${story.guiltyPool?.length || 0} characters.`
+      );
+    }
+
     // Validate guilty count configuration
     if (story.requiredGuiltyCount !== undefined) {
       if (story.requiredGuiltyCount < 1) {
@@ -169,9 +179,12 @@ export class StoryEngine {
   /**
    * Determines the configured guilty count for a scenario.
    */
-  static getGuiltyCountForScenario(story: Story): number {
+  static getGuiltyCountForScenario(story: Story, playerCount?: number): number {
     if (story.requiredGuiltyCount !== undefined && story.requiredGuiltyCount > 0) {
       return Math.min(story.requiredGuiltyCount, story.guiltyPool.length);
+    }
+    if (playerCount !== undefined) {
+      return getKillerCount(playerCount);
     }
     return Math.min(1, story.guiltyPool?.length || 1);
   }

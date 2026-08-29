@@ -2,6 +2,7 @@ import { Story, StoryCharacter, Player, EvidenceItem } from '../types';
 import { CharacterAllocator } from '../CharacterAllocator';
 import { StoryStore } from '../StoryStore';
 import { StoryEngine } from '../StoryEngine';
+import { getKillerCount } from '../PlayerManager';
 
 let passedTests = 0;
 let failedTests = 0;
@@ -676,13 +677,14 @@ const testStory14: Story = {
     const min = story.minPlayers || 4;
     const max = story.maxPlayers || 12;
     const totalPoolChars = (story.guiltyPool?.length || 0) + (story.innocentPool?.length || 0);
-    const targetGuiltyCount = StoryEngine.getGuiltyCountForScenario(story);
     const storyEvidence = StoryEngine.getStoryEvidence(story);
 
     for (let count = 4; count <= 12; count++) {
       if (count < min || count > max || count > totalPoolChars) {
         continue;
       }
+
+      const targetGuiltyCount = getKillerCount(count);
 
       let validCount = 0;
       let unsupportedReason = '';

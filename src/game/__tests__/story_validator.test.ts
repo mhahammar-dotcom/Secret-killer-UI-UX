@@ -122,7 +122,8 @@ const sampleStory: Story = {
   const twelveChars: StoryCharacter[] = [
     { name: 'جاني 1', profession: 'طبيب', publicIdentity: 'طبيب العائلة', knowledge: 'خلاف مالي', guilty: true },
     { name: 'جاني 2', profession: 'شريك', publicIdentity: 'شريك تجاري', knowledge: 'ديون متراكمة', guilty: true },
-    ...Array.from({ length: 10 }, (_, i) => ({
+    { name: 'جاني 3', profession: 'محام', publicIdentity: 'محامي الشركة', knowledge: 'عقود سرية', guilty: true },
+    ...Array.from({ length: 9 }, (_, i) => ({
       name: `بريء ${i + 1}`,
       profession: `مهنة ${i + 1}`,
       publicIdentity: `الهوية العامة ${i + 1}`,
@@ -136,8 +137,8 @@ const sampleStory: Story = {
     id: 'story_12_players',
     minPlayers: 4,
     maxPlayers: 12,
-    guiltyPool: twelveChars.slice(0, 2),
-    innocentPool: twelveChars.slice(2),
+    guiltyPool: twelveChars.slice(0, 3),
+    innocentPool: twelveChars.slice(3),
     evidence: []
   };
 

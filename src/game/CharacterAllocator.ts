@@ -263,6 +263,13 @@ export class CharacterAllocator {
       );
     }
 
+    const availableGuiltyCount = story.guiltyPool?.length || 0;
+    if (targetGuiltyCount > availableGuiltyCount) {
+      throw new Error(
+        `Story "${story.title || story.id}" does not support ${targetGuiltyCount} killers. Guilty pool contains ${availableGuiltyCount} candidates, but ${targetGuiltyCount} are required for ${playerCount} players.`
+      );
+    }
+
     // 2. Build dependency graph
     const graph = this.buildDependencyGraph(story);
 
@@ -318,22 +325,11 @@ export class CharacterAllocator {
     random: () => number
   ): StoryCharacter[] | null {
     const guiltyPool = story.guiltyPool || [];
-    let guiltyCombinations: StoryCharacter[][];
-
-    if (guiltyPool.length >= targetGuiltyCount) {
-      guiltyCombinations = this.getCombinations(guiltyPool, targetGuiltyCount);
-    } else {
-      // If guiltyPool has fewer characters than targetGuiltyCount, draw all available guilty
-      // characters and select remaining guilty characters from innocentPool
-      const innocentPool = story.innocentPool || [];
-      const neededExtra = targetGuiltyCount - guiltyPool.length;
-      if (neededExtra <= innocentPool.length) {
-        const extraCombinations = this.getCombinations(innocentPool, neededExtra);
-        guiltyCombinations = extraCombinations.map(extra => [...guiltyPool, ...extra]);
-      } else {
-        guiltyCombinations = [];
-      }
+    if (guiltyPool.length < targetGuiltyCount) {
+      return null;
     }
+
+    const guiltyCombinations = this.getCombinations(guiltyPool, targetGuiltyCount);
 
     const shuffledCombinations = doShuffle
       ? this.shuffleArray(guiltyCombinations, random)

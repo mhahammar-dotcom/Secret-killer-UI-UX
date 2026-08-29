@@ -227,25 +227,35 @@ export function selectCastForStory(story: StoryData, playerCount: number): Story
 
   // Centralized authoritative killer count scaling (4-6: 1, 7-9: 2, 10-12: 3)
   const guiltyCount = getKillerCount(playerCount);
-  const guilty = Math.min(guiltyCount, story.guiltyPool.length);
+  const guiltyPool = story.guiltyPool || [];
+
+  if (guiltyPool.length < guiltyCount) {
+    throw new Error(
+      `Story "${story.title || story.id}" does not support ${guiltyCount} killers. Guilty pool contains ${guiltyPool.length} candidates, but ${guiltyCount} are required for ${playerCount} players.`
+    );
+  }
+
+  // Shuffle guilty pool and pick exactly guiltyCount killers
+  const shuffledGuilty = [...guiltyPool].sort(() => Math.random() - 0.5);
+  const selectedGuilty = shuffledGuilty.slice(0, guiltyCount);
+  const remainingGuilty = shuffledGuilty.slice(guiltyCount);
+
   const cast: StoryCharacterData[] = [];
+  selectedGuilty.forEach((c) => {
+    cast.push({ ...c, guilty: true });
+  });
 
-  for (let i = 0; i < guilty; i++) {
-    cast.push({ ...story.guiltyPool[i], guilty: true });
-  }
+  // Remaining candidates come from remaining unselected guilty pool (as innocents) and innocent pool
+  const candidateInnocents = [
+    ...remainingGuilty.map((c) => ({ ...c, guilty: false })),
+    ...(story.innocentPool || []).map((c) => ({ ...c, guilty: false }))
+  ];
 
-  const extraGuiltyNeeded = guiltyCount - guilty;
-  const shuffledInnocents = [...story.innocentPool].sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < extraGuiltyNeeded; i++) {
-    const baseInnocent = shuffledInnocents[i];
-    cast.push({ ...baseInnocent, guilty: true });
-  }
-
+  const shuffledInnocents = candidateInnocents.sort(() => Math.random() - 0.5);
   const innocentsNeeded = playerCount - guiltyCount;
-  for (let i = extraGuiltyNeeded; i < extraGuiltyNeeded + innocentsNeeded; i++) {
-    const baseInnocent = shuffledInnocents[i % shuffledInnocents.length];
-    cast.push({ ...baseInnocent, guilty: false });
+
+  for (let i = 0; i < innocentsNeeded; i++) {
+    cast.push(shuffledInnocents[i % shuffledInnocents.length]);
   }
 
   // Shuffle final cast

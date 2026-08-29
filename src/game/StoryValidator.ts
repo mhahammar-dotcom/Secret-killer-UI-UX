@@ -12,6 +12,7 @@ import {
 } from './types';
 import { StoryEngine, DEFAULT_MAX_WRONG_VOTES } from './StoryEngine';
 import { CharacterAllocator } from './CharacterAllocator';
+import { getKillerCount } from './PlayerManager';
 
 /**
  * StoryValidator enforces story quality, structural integrity, fairness, and balance.
@@ -343,6 +344,20 @@ export class StoryValidator {
         });
       }
     });
+
+    // Validate that guiltyPool has enough characters for maxPlayers killer scaling
+    const effectiveMax = typeof story.maxPlayers === 'number' && story.maxPlayers >= 4 && story.maxPlayers <= 12
+      ? story.maxPlayers
+      : (typeof story.maxPlayers === 'number' && story.maxPlayers > 12 ? 12 : 4);
+    const maxKillersNeeded = getKillerCount(effectiveMax);
+    if (guiltyPool.length < maxKillersNeeded) {
+      issues.push({
+        severity: 'ERROR',
+        code: 'INSUFFICIENT_GUILTY_POOL',
+        message: `Story supports up to ${story.maxPlayers || 12} players which requires ${maxKillersNeeded} killers, but guiltyPool only has ${guiltyPool.length} characters.`,
+        field: 'guiltyPool'
+      });
+    }
 
     // Validate guilty count configuration
     if (story.requiredGuiltyCount !== undefined) {

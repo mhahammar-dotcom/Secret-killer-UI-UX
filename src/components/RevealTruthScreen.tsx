@@ -4,6 +4,7 @@ import { Sparkles, Trophy, ChevronLeft, Home } from 'lucide-react';
 import { StoryData, PlayerData } from '../types';
 import { sound } from '../utils/audio';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
+import { StorySolutionEngine } from '../game/StorySolutionEngine';
 
 interface RevealTruthScreenProps {
   story: StoryData;
@@ -28,7 +29,14 @@ export const RevealTruthScreen: React.FC<RevealTruthScreenProps> = ({
   const t = isEn ? EN_STRINGS : AR_STRINGS;
   const isRtl = !isEn;
 
-  const solutionText = story.solution || (isEn ? 'The culprit has been exposed and the case is officially closed.' : 'تم كشف الفاعل وإغلاق ملف التحقيق بنجاح.');
+  const guiltyPlayers = players.filter((p) => p.guilty);
+  const innocentPlayers = players.filter((p) => !p.guilty);
+  const solutionText = StorySolutionEngine.generateSolution(
+    story,
+    guiltyPlayers,
+    innocentPlayers,
+    language
+  );
 
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center bg-[#07080c] select-none text-slate-100 pb-16 pt-4 px-3 sm:px-6" dir={isRtl ? 'rtl' : 'ltr'}>
