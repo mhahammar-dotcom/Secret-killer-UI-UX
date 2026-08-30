@@ -172,6 +172,132 @@ export const dreamsStory: Story = {
       "relatedCharacters": [
         "د. فراس"
       ]
+    },
+    {
+      "id": "ev_dreams_6",
+      "title": "تقرير المعاينة التكميلي رقم 6",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (معهد أبحاث متقدم مجهز بمختبرات عازلة للصوت وغرفة خوادم مركزية مشفرة.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "physical",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #6 في مسرح القضية.",
+      "associatedSuspect": "د. فراس",
+      "relatedCharacters": [
+        "د. فراس"
+      ],
+      "titleEn": "Supplemental Inspection Item #6",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (معهد أبحاث النوم والأحلام).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_dreams_7",
+      "title": "تقرير المعاينة التكميلي رقم 7",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (معهد أبحاث متقدم مجهز بمختبرات عازلة للصوت وغرفة خوادم مركزية مشفرة.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "document",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #7 في مسرح القضية.",
+      "associatedSuspect": "كريم",
+      "relatedCharacters": [
+        "كريم"
+      ],
+      "titleEn": "Supplemental Inspection Item #7",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (معهد أبحاث النوم والأحلام).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_dreams_8",
+      "title": "تقرير المعاينة التكميلي رقم 8",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (معهد أبحاث متقدم مجهز بمختبرات عازلة للصوت وغرفة خوادم مركزية مشفرة.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "witness",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #8 في مسرح القضية.",
+      "associatedSuspect": "ياسمين",
+      "relatedCharacters": [
+        "ياسمين"
+      ],
+      "titleEn": "Supplemental Inspection Item #8",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (معهد أبحاث النوم والأحلام).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_dreams_9",
+      "title": "تقرير المعاينة التكميلي رقم 9",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (معهد أبحاث متقدم مجهز بمختبرات عازلة للصوت وغرفة خوادم مركزية مشفرة.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "timeline",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #9 في مسرح القضية.",
+      "associatedSuspect": "د. فراس",
+      "relatedCharacters": [
+        "د. فراس"
+      ],
+      "titleEn": "Supplemental Inspection Item #9",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (معهد أبحاث النوم والأحلام).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_dreams_10",
+      "title": "تقرير المعاينة التكميلي رقم 10",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (معهد أبحاث متقدم مجهز بمختبرات عازلة للصوت وغرفة خوادم مركزية مشفرة.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "motive",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #10 في مسرح القضية.",
+      "associatedSuspect": "كريم",
+      "relatedCharacters": [
+        "كريم"
+      ],
+      "titleEn": "Supplemental Inspection Item #10",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (معهد أبحاث النوم والأحلام).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_dreams_11",
+      "title": "تقرير المعاينة التكميلي رقم 11",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (معهد أبحاث متقدم مجهز بمختبرات عازلة للصوت وغرفة خوادم مركزية مشفرة.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "physical",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #11 في مسرح القضية.",
+      "associatedSuspect": "ياسمين",
+      "relatedCharacters": [
+        "ياسمين"
+      ],
+      "titleEn": "Supplemental Inspection Item #11",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (معهد أبحاث النوم والأحلام).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_dreams_12",
+      "title": "تقرير المعاينة التكميلي رقم 12",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (معهد أبحاث متقدم مجهز بمختبرات عازلة للصوت وغرفة خوادم مركزية مشفرة.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "document",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #12 في مسرح القضية.",
+      "associatedSuspect": "د. فراس",
+      "relatedCharacters": [
+        "د. فراس"
+      ],
+      "titleEn": "Supplemental Inspection Item #12",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (معهد أبحاث النوم والأحلام).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
     }
   ],
   "solution": "قام د. فراس باستغلال محطة التحكم المفتوحة في الممر لتنفيذ مسح البيانات بعد نسخها لبيعه خارج المعهد، وأغلق صمام التبريد لإحداث ارتباك وتغطية السرقة، محاولاً التستر وراء حجة معايرة وهمية في الغرفة رقم 4 التي أثبتت السجلات خلوها التام."

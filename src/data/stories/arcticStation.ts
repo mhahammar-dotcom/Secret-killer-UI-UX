@@ -172,6 +172,132 @@ export const arcticStationStory: Story = {
       "relatedCharacters": [
         "د. مروان"
       ]
+    },
+    {
+      "id": "ev_arctic_station_6",
+      "title": "تقرير المعاينة التكميلي رقم 6",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (محطة أبحاث قطبية معزولة وسط عاصفة ثلجية عاتية تحاصر الفريق داخل المجمع.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "physical",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #6 في مسرح القضية.",
+      "associatedSuspect": "د. مروان",
+      "relatedCharacters": [
+        "د. مروان"
+      ],
+      "titleEn": "Supplemental Inspection Item #6",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (محطة الجليد الأخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_arctic_station_7",
+      "title": "تقرير المعاينة التكميلي رقم 7",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (محطة أبحاث قطبية معزولة وسط عاصفة ثلجية عاتية تحاصر الفريق داخل المجمع.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "document",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #7 في مسرح القضية.",
+      "associatedSuspect": "ديمتري",
+      "relatedCharacters": [
+        "ديمتري"
+      ],
+      "titleEn": "Supplemental Inspection Item #7",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (محطة الجليد الأخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_arctic_station_8",
+      "title": "تقرير المعاينة التكميلي رقم 8",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (محطة أبحاث قطبية معزولة وسط عاصفة ثلجية عاتية تحاصر الفريق داخل المجمع.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "witness",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #8 في مسرح القضية.",
+      "associatedSuspect": "كاتيا",
+      "relatedCharacters": [
+        "كاتيا"
+      ],
+      "titleEn": "Supplemental Inspection Item #8",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (محطة الجليد الأخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_arctic_station_9",
+      "title": "تقرير المعاينة التكميلي رقم 9",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (محطة أبحاث قطبية معزولة وسط عاصفة ثلجية عاتية تحاصر الفريق داخل المجمع.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "timeline",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #9 في مسرح القضية.",
+      "associatedSuspect": "د. مروان",
+      "relatedCharacters": [
+        "د. مروان"
+      ],
+      "titleEn": "Supplemental Inspection Item #9",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (محطة الجليد الأخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_arctic_station_10",
+      "title": "تقرير المعاينة التكميلي رقم 10",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (محطة أبحاث قطبية معزولة وسط عاصفة ثلجية عاتية تحاصر الفريق داخل المجمع.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "motive",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #10 في مسرح القضية.",
+      "associatedSuspect": "ديمتري",
+      "relatedCharacters": [
+        "ديمتري"
+      ],
+      "titleEn": "Supplemental Inspection Item #10",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (محطة الجليد الأخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_arctic_station_11",
+      "title": "تقرير المعاينة التكميلي رقم 11",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (محطة أبحاث قطبية معزولة وسط عاصفة ثلجية عاتية تحاصر الفريق داخل المجمع.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "physical",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #11 في مسرح القضية.",
+      "associatedSuspect": "كاتيا",
+      "relatedCharacters": [
+        "كاتيا"
+      ],
+      "titleEn": "Supplemental Inspection Item #11",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (محطة الجليد الأخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_arctic_station_12",
+      "title": "تقرير المعاينة التكميلي رقم 12",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (محطة أبحاث قطبية معزولة وسط عاصفة ثلجية عاتية تحاصر الفريق داخل المجمع.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "document",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #12 في مسرح القضية.",
+      "associatedSuspect": "د. مروان",
+      "relatedCharacters": [
+        "د. مروان"
+      ],
+      "titleEn": "Supplemental Inspection Item #12",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (محطة الجليد الأخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
     }
   ],
   "solution": "قام د. مروان بالتسلل إلى القبو التجميدي مستخدماً مبضعاً جراحياً لقطع خط التبريد وتشغيل السخان لإذابة أسطوانة الجليد التاريخية قبل فحصها لمنع دحض نظريته المناخية، مدعياً التواجد في برج الأرصاد الذي أثبتت السجلات الرقمية تجمد بوابته وعدم فتحها طوال الليل."

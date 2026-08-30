@@ -173,6 +173,132 @@ export const galaToastStory: Story = {
       "relatedCharacters": [
         "سامية"
       ]
+    },
+    {
+      "id": "ev_gala_toast_6",
+      "title": "تقرير المعاينة التكميلي رقم 6",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (فيلا جبلية فاخرة تطل على البحر أثناء حفل استقبال خاص لكبار رجال الأعمال والمستشارين.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "physical",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #6 في مسرح القضية.",
+      "associatedSuspect": "سامية",
+      "relatedCharacters": [
+        "سامية"
+      ],
+      "titleEn": "Supplemental Inspection Item #6",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (نخب أخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_gala_toast_7",
+      "title": "تقرير المعاينة التكميلي رقم 7",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (فيلا جبلية فاخرة تطل على البحر أثناء حفل استقبال خاص لكبار رجال الأعمال والمستشارين.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "document",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #7 في مسرح القضية.",
+      "associatedSuspect": "د. كريم",
+      "relatedCharacters": [
+        "د. كريم"
+      ],
+      "titleEn": "Supplemental Inspection Item #7",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (نخب أخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_gala_toast_8",
+      "title": "تقرير المعاينة التكميلي رقم 8",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (فيلا جبلية فاخرة تطل على البحر أثناء حفل استقبال خاص لكبار رجال الأعمال والمستشارين.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "witness",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #8 في مسرح القضية.",
+      "associatedSuspect": "فارس",
+      "relatedCharacters": [
+        "فارس"
+      ],
+      "titleEn": "Supplemental Inspection Item #8",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (نخب أخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_gala_toast_9",
+      "title": "تقرير المعاينة التكميلي رقم 9",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (فيلا جبلية فاخرة تطل على البحر أثناء حفل استقبال خاص لكبار رجال الأعمال والمستشارين.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "timeline",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #9 في مسرح القضية.",
+      "associatedSuspect": "سامية",
+      "relatedCharacters": [
+        "سامية"
+      ],
+      "titleEn": "Supplemental Inspection Item #9",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (نخب أخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_gala_toast_10",
+      "title": "تقرير المعاينة التكميلي رقم 10",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (فيلا جبلية فاخرة تطل على البحر أثناء حفل استقبال خاص لكبار رجال الأعمال والمستشارين.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "motive",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #10 في مسرح القضية.",
+      "associatedSuspect": "د. كريم",
+      "relatedCharacters": [
+        "د. كريم"
+      ],
+      "titleEn": "Supplemental Inspection Item #10",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (نخب أخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_gala_toast_11",
+      "title": "تقرير المعاينة التكميلي رقم 11",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (فيلا جبلية فاخرة تطل على البحر أثناء حفل استقبال خاص لكبار رجال الأعمال والمستشارين.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "physical",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #11 في مسرح القضية.",
+      "associatedSuspect": "فارس",
+      "relatedCharacters": [
+        "فارس"
+      ],
+      "titleEn": "Supplemental Inspection Item #11",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (نخب أخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_gala_toast_12",
+      "title": "تقرير المعاينة التكميلي رقم 12",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (فيلا جبلية فاخرة تطل على البحر أثناء حفل استقبال خاص لكبار رجال الأعمال والمستشارين.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "document",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #12 في مسرح القضية.",
+      "associatedSuspect": "سامية",
+      "relatedCharacters": [
+        "سامية"
+      ],
+      "titleEn": "Supplemental Inspection Item #12",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (نخب أخير).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
     }
   ],
   "solution": "قامت سامية باستغلال وجودها في المكتبة للاطلاع على مسودة الوصية الجديدة التي تقضي بعزلها، وأخذت قطرات القلب من درج المكتب ودست جرعة مضاعفة قاتلة في كأس مراد بينما كان على الطاولة الجانبية، مدعية الانشغال بمراجعة الحسابات على حاسوبها الذي أثبتت السجلات الرقمية خموله التام طوال تلك الفترة."

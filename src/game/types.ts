@@ -64,6 +64,24 @@ export interface EvidenceItem {
   availableFromRound?: number; // Round at which evidence becomes available to inspect
   unlockCondition?: string;    // Story condition description
   isRevealed?: boolean;
+  requiredKillers?: string[];  // Killer dependencies (MUST all be in actualSelectedKillers)
+  excludedKillers?: string[];  // Incompatible killers (MUST NOT be in actualSelectedKillers)
+  associatedSuspect?: string;  // Associated suspect name
+  isKillerSpecific?: boolean;  // If true, requires associatedSuspect to be in actualSelectedKillers
+  titleEn?: string;
+  descriptionEn?: string;
+  publicClueEn?: string;
+  discussionPromptEn?: string;
+}
+
+export interface ClueState {
+  playerCount: number;
+  totalClues: number;
+  revealedClues: string[];
+  remainingClues: number;
+  currentRound: number;
+  clueRevealedThisRound: boolean;
+  revealedClueIds: string[];
 }
 
 export interface InvestigationRound {
@@ -163,7 +181,10 @@ export interface GameState {
   players: Player[];
   currentViewingPlayerIndex: number; // for role reveal pass
   currentRound: number;
-  revealedEvidenceIds: string[]; // Phase 5 evidence identifiers
+  totalClues: number;
+  remainingClues: number;
+  clueRevealedThisRound: boolean;
+  revealedEvidenceIds: string[]; // Phase 5 / Phase 7.3 evidence identifiers
   revealedClues: string[];
   wrongVotesCount: number;
   maxWrongVotes: number;

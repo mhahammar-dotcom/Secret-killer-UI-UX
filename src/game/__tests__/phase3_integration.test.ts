@@ -271,7 +271,11 @@ const sampleStory = builtInStories[0];
         guilty: false
       }
     ],
-    clues: ['أثر مسحوق على الخزنة'],
+    clues: [
+      'أثر مسحوق على الخزنة',
+      'بصمات على مقبض الباب الخلفي',
+      'سجل كاميرا الممر المظلم'
+    ],
     wrongVoteHints: ['السارق على دراية بنظام القفل الإلكتروني'],
     investigationRounds: [
       {

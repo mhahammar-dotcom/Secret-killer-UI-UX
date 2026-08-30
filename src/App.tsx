@@ -361,6 +361,10 @@ export default function App() {
                 round={round}
                 revealedEvidenceIds={gameState.revealedEvidenceIds}
                 revealedClues={gameState.revealedClues}
+                totalClues={gameState.totalClues}
+                remainingClues={gameState.remainingClues}
+                clueRevealedThisRound={gameState.clueRevealedThisRound}
+                canRevealClue={gameEngine.canRevealClue()}
                 onRevealNextEvidence={handleRevealNextEvidence}
                 hasMoreEvidence={gameEngine.hasMoreEvidence()}
                 onProceedToVoting={handleProceedToVoting}

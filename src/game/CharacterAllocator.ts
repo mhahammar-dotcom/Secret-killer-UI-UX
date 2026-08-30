@@ -183,8 +183,21 @@ export class CharacterAllocator {
       const textMentioned = this.detectReferencesInText('', evText, allNames);
       textMentioned.forEach(name => referencedChars.add(name));
 
+      if (Array.isArray(ev.relatedCharacters) && ev.relatedCharacters.length > 1) {
+        const rcList = ev.relatedCharacters.filter(rc => charByName.has(rc));
+        for (const c1 of rcList) {
+          for (const c2 of rcList) {
+            if (c1 !== c2) {
+              dependencies.get(c1)?.add(c2);
+            }
+          }
+        }
+      }
+
       const refArray = Array.from(referencedChars);
       const associatedSuspect = (ev as any).associatedSuspect;
+      const requiredKillers = (ev as any).requiredKillers;
+
       if (refArray.length > 0) {
         if (associatedSuspect && charByName.has(associatedSuspect)) {
           const suspectDeps = dependencies.get(associatedSuspect);
@@ -193,14 +206,24 @@ export class CharacterAllocator {
               suspectDeps?.add(target);
             }
           });
-        } else {
-          // If no specific associatedSuspect, guilty pool suspects depend on referenced characters
-          (story.guiltyPool || []).forEach(guiltyChar => {
-            refArray.forEach(target => {
-              if (target !== guiltyChar.name) {
-                dependencies.get(guiltyChar.name)?.add(target);
-              }
-            });
+        } else if (Array.isArray(requiredKillers) && requiredKillers.length > 0) {
+          requiredKillers.forEach(killerName => {
+            if (charByName.has(killerName)) {
+              const killerDeps = dependencies.get(killerName);
+              refArray.forEach(target => {
+                if (target !== killerName) {
+                  killerDeps?.add(target);
+                }
+              });
+            }
+          });
+        } else if (story.guiltyPool && story.guiltyPool.length === 1) {
+          // Single-killer stories: the sole guilty suspect depends on evidence-referenced characters
+          const soleGuilty = story.guiltyPool[0].name;
+          refArray.forEach(target => {
+            if (target !== soleGuilty) {
+              dependencies.get(soleGuilty)?.add(target);
+            }
           });
         }
       }

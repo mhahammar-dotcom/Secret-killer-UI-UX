@@ -84,6 +84,20 @@ const sampleStory = builtInStories[0];
         category: 'physical',
         isInitialPublic: false,
         availableFromRound: 1
+      },
+      {
+        id: 'ev_item_3',
+        title: 'أثر إضافي 3',
+        description: 'وصف إضافي 3',
+        category: 'physical',
+        availableFromRound: 2
+      },
+      {
+        id: 'ev_item_4',
+        title: 'أثر إضافي 4',
+        description: 'وصف إضافي 4',
+        category: 'timeline',
+        availableFromRound: 2
       }
     ],
     solution: 'الحل'
@@ -124,6 +138,27 @@ const sampleStory = builtInStories[0];
         description: 'بيانات غير متاحة حالياً',
         category: 'document',
         availableFromRound: 3
+      },
+      {
+        id: 'ev_gated_2',
+        title: 'دليل 2',
+        description: 'بيانات 2',
+        category: 'physical',
+        availableFromRound: 1
+      },
+      {
+        id: 'ev_gated_3',
+        title: 'دليل 3',
+        description: 'بيانات 3',
+        category: 'witness',
+        availableFromRound: 1
+      },
+      {
+        id: 'ev_gated_4',
+        title: 'دليل 4',
+        description: 'بيانات 4',
+        category: 'timeline',
+        availableFromRound: 2
       }
     ],
     solution: 'الحل'
@@ -202,6 +237,27 @@ const sampleStory = builtInStories[0];
         description: 'محتوى الأثر',
         category: 'location',
         availableFromRound: 1
+      },
+      {
+        id: 'arbitrary_key_2',
+        title: 'أثر 2',
+        description: 'محتوى 2',
+        category: 'physical',
+        availableFromRound: 1
+      },
+      {
+        id: 'arbitrary_key_3',
+        title: 'أثر 3',
+        description: 'محتوى 3',
+        category: 'witness',
+        availableFromRound: 2
+      },
+      {
+        id: 'arbitrary_key_4',
+        title: 'أثر 4',
+        description: 'محتوى 4',
+        category: 'timeline',
+        availableFromRound: 2
       }
     ],
     solution: 'الحل'

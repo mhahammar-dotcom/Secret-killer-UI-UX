@@ -172,6 +172,132 @@ export const courtStory: Story = {
       "relatedCharacters": [
         "عادل"
       ]
+    },
+    {
+      "id": "ev_court_6",
+      "title": "تقرير المعاينة التكميلي رقم 6",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (مبنى المحكمة العليا المهيب أثناء جلسة استثنائية مسائية لمحاكمة شبكة فساد مالي كبرى.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "physical",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #6 في مسرح القضية.",
+      "associatedSuspect": "عادل",
+      "relatedCharacters": [
+        "عادل"
+      ],
+      "titleEn": "Supplemental Inspection Item #6",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (القضية الصامتة).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_court_7",
+      "title": "تقرير المعاينة التكميلي رقم 7",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (مبنى المحكمة العليا المهيب أثناء جلسة استثنائية مسائية لمحاكمة شبكة فساد مالي كبرى.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "document",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #7 في مسرح القضية.",
+      "associatedSuspect": "المستشار منصور",
+      "relatedCharacters": [
+        "المستشار منصور"
+      ],
+      "titleEn": "Supplemental Inspection Item #7",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (القضية الصامتة).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_court_8",
+      "title": "تقرير المعاينة التكميلي رقم 8",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (مبنى المحكمة العليا المهيب أثناء جلسة استثنائية مسائية لمحاكمة شبكة فساد مالي كبرى.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "witness",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #8 في مسرح القضية.",
+      "associatedSuspect": "سلمى",
+      "relatedCharacters": [
+        "سلمى"
+      ],
+      "titleEn": "Supplemental Inspection Item #8",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (القضية الصامتة).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_court_9",
+      "title": "تقرير المعاينة التكميلي رقم 9",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (مبنى المحكمة العليا المهيب أثناء جلسة استثنائية مسائية لمحاكمة شبكة فساد مالي كبرى.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "timeline",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #9 في مسرح القضية.",
+      "associatedSuspect": "عادل",
+      "relatedCharacters": [
+        "عادل"
+      ],
+      "titleEn": "Supplemental Inspection Item #9",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (القضية الصامتة).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_court_10",
+      "title": "تقرير المعاينة التكميلي رقم 10",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (مبنى المحكمة العليا المهيب أثناء جلسة استثنائية مسائية لمحاكمة شبكة فساد مالي كبرى.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "motive",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #10 في مسرح القضية.",
+      "associatedSuspect": "المستشار منصور",
+      "relatedCharacters": [
+        "المستشار منصور"
+      ],
+      "titleEn": "Supplemental Inspection Item #10",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (القضية الصامتة).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_court_11",
+      "title": "تقرير المعاينة التكميلي رقم 11",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (مبنى المحكمة العليا المهيب أثناء جلسة استثنائية مسائية لمحاكمة شبكة فساد مالي كبرى.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "physical",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #11 في مسرح القضية.",
+      "associatedSuspect": "سلمى",
+      "relatedCharacters": [
+        "سلمى"
+      ],
+      "titleEn": "Supplemental Inspection Item #11",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (القضية الصامتة).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_court_12",
+      "title": "تقرير المعاينة التكميلي رقم 12",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (مبنى المحكمة العليا المهيب أثناء جلسة استثنائية مسائية لمحاكمة شبكة فساد مالي كبرى.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "document",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #12 في مسرح القضية.",
+      "associatedSuspect": "عادل",
+      "relatedCharacters": [
+        "عادل"
+      ],
+      "titleEn": "Supplemental Inspection Item #12",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (القضية الصامتة).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
     }
   ],
   "solution": "قام عادل باستغلال موقعه كأمين سر لأخذ مفتاح الأحراز وفتح الخزانة أثناء الاستراحة، حيث انتزع صفحات الإدانة الأصلية واستبدلها بالورق المائي المتاح في مكتبه لحماية المتهم مقابل رشوة، محاولاً التستر وراء حجة كتابة المحضر في الأرشيف الذي أثبتت السجلات خلوه التام من أي طباعة."

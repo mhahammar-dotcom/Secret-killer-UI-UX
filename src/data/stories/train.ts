@@ -172,6 +172,132 @@ export const trainStory: Story = {
       "relatedCharacters": [
         "فارس"
       ]
+    },
+    {
+      "id": "ev_train_6",
+      "title": "تقرير المعاينة التكميلي رقم 6",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (قطار فاخر يعبر ممراً جبلياً مغطى بالثلوج ليلاً وسط طقس عاصف.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "physical",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #6 في مسرح القضية.",
+      "associatedSuspect": "فارس",
+      "relatedCharacters": [
+        "فارس"
+      ],
+      "titleEn": "Supplemental Inspection Item #6",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (قطار الشرق الفاخر).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_train_7",
+      "title": "تقرير المعاينة التكميلي رقم 7",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (قطار فاخر يعبر ممراً جبلياً مغطى بالثلوج ليلاً وسط طقس عاصف.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "document",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #7 في مسرح القضية.",
+      "associatedSuspect": "بسام",
+      "relatedCharacters": [
+        "بسام"
+      ],
+      "titleEn": "Supplemental Inspection Item #7",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (قطار الشرق الفاخر).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_train_8",
+      "title": "تقرير المعاينة التكميلي رقم 8",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (قطار فاخر يعبر ممراً جبلياً مغطى بالثلوج ليلاً وسط طقس عاصف.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "witness",
+      "availableFromRound": 3,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #8 في مسرح القضية.",
+      "associatedSuspect": "كمال",
+      "relatedCharacters": [
+        "كمال"
+      ],
+      "titleEn": "Supplemental Inspection Item #8",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (قطار الشرق الفاخر).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_train_9",
+      "title": "تقرير المعاينة التكميلي رقم 9",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (قطار فاخر يعبر ممراً جبلياً مغطى بالثلوج ليلاً وسط طقس عاصف.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "timeline",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #9 في مسرح القضية.",
+      "associatedSuspect": "فارس",
+      "relatedCharacters": [
+        "فارس"
+      ],
+      "titleEn": "Supplemental Inspection Item #9",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (قطار الشرق الفاخر).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_train_10",
+      "title": "تقرير المعاينة التكميلي رقم 10",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (قطار فاخر يعبر ممراً جبلياً مغطى بالثلوج ليلاً وسط طقس عاصف.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "motive",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #10 في مسرح القضية.",
+      "associatedSuspect": "بسام",
+      "relatedCharacters": [
+        "بسام"
+      ],
+      "titleEn": "Supplemental Inspection Item #10",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (قطار الشرق الفاخر).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_train_11",
+      "title": "تقرير المعاينة التكميلي رقم 11",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (قطار فاخر يعبر ممراً جبلياً مغطى بالثلوج ليلاً وسط طقس عاصف.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "physical",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #11 في مسرح القضية.",
+      "associatedSuspect": "كمال",
+      "relatedCharacters": [
+        "كمال"
+      ],
+      "titleEn": "Supplemental Inspection Item #11",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (قطار الشرق الفاخر).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
+    },
+    {
+      "id": "ev_train_12",
+      "title": "تقرير المعاينة التكميلي رقم 12",
+      "description": "تقرير فني موثق من موقع الحادثة يوضح مسار الحركة والمعدات في مسرح الواقعة (قطار فاخر يعبر ممراً جبلياً مغطى بالثلوج ليلاً وسط طقس عاصف.).",
+      "publicClue": "أظهرت المعاينة الفنية تفاصيل موثقة حول التحركات والمعدات المستخدمة في الموقع عند الواقعة.",
+      "category": "document",
+      "availableFromRound": 4,
+      "discussionPrompt": "كيف تفسر الأطراف المعنية المؤشرات الجنائية المرصودة في هذا البند الفني؟",
+      "timelineInfo": "تسجيل المؤشر الفني رقم #12 في مسرح القضية.",
+      "associatedSuspect": "فارس",
+      "relatedCharacters": [
+        "فارس"
+      ],
+      "titleEn": "Supplemental Inspection Item #12",
+      "descriptionEn": "Official technical record detailing physical traces and movements at the scene (قطار الشرق الفاخر).",
+      "publicClueEn": "Technical inspection revealed documented indicators regarding movement and equipment.",
+      "discussionPromptEn": "How do the relevant persons account for the technical findings recorded in this item?"
     }
   ],
   "solution": "قام فارس باستعارة المفتاح الشامل من خزانة الطاقم، وعند دخول النفق المظلم فتح المقصورة 7 وسرق الحقيبة الدبلوماسية، ثم أوقف القطار بالمكابح لإرباك الطاقم، مدعياً التواجد في حجرة الغلايات التي أثبتت السجلات الآلية عدم لمسها إطلاقاً."

@@ -7,4 +7,5 @@ export * from './VotingEngine';
 export * from './StoryValidator';
 export * from './StoryStore';
 export * from './StorySolutionEngine';
+export * from './ClueEngine';
 export * from './GameEngine';

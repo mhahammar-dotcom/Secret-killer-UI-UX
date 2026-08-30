@@ -6,13 +6,15 @@ import {
   GamePhase,
   WinnerSide,
   GameEndReason,
-  EvidenceItem
+  EvidenceItem,
+  ClueState
 } from './types';
 import { createInitialGameState, getAlivePlayers } from './GameState';
 import { StoryEngine } from './StoryEngine';
 import { CharacterAllocator, AllocatorOptions } from './CharacterAllocator';
 import { PlayerManager } from './PlayerManager';
 import { VotingEngine } from './VotingEngine';
+import { ClueEngine, getTotalClueCount } from './ClueEngine';
 
 export type GameStateListener = (state: GameState) => void;
 
@@ -23,6 +25,7 @@ export type GameStateListener = (state: GameState) => void;
 export class GameEngine {
   private state: GameState;
   private listeners: Set<GameStateListener> = new Set();
+  private eligibleClues: EvidenceItem[] = [];
 
   constructor(initialState?: GameState) {
     this.state = initialState || createInitialGameState();
@@ -49,6 +52,26 @@ export class GameEngine {
   }
 
   /**
+   * Returns the actual selected killers for the current active game
+   */
+  public getActualSelectedKillers(): string[] {
+    return this.state.players.filter(p => p.guilty).map(p => p.character.name);
+  }
+
+  /**
+   * Returns the authoritative centralized ClueState snapshot
+   */
+  public getClueState(): ClueState {
+    return ClueEngine.buildClueState(
+      this.state.players.length,
+      this.state.currentRound,
+      this.state.revealedEvidenceIds,
+      this.state.revealedClues,
+      this.state.clueRevealedThisRound
+    );
+  }
+
+  /**
    * Initializes and starts a new game with a selected story and player names
    */
   public startNewGame(
@@ -61,9 +84,8 @@ export class GameEngine {
       throw new Error(`Cannot start game: invalid story. Errors: ${validation.errors.join(', ')}`);
     }
 
-    if (playerNames.length < 4 || playerNames.length > 12) {
-      throw new Error(`Player count must be between 4 and 12 (received ${playerNames.length}).`);
-    }
+    const playerCount = playerNames.length;
+    const maxMatchClues = getTotalClueCount(playerCount);
 
     // Validate player names: non-empty and unique
     const trimmedNames = playerNames.map(n => n.trim()).filter(Boolean);
@@ -77,13 +99,15 @@ export class GameEngine {
 
     // Allocate characters & guilt internally
     const players = CharacterAllocator.allocateCharacters(story, playerNames, options);
+    const actualSelectedKillers = players.filter(p => p.guilty).map(p => p.character.name);
 
-    // Initial revealed clues and evidence items: NO auto-reveal at game start
-    const allEvidence = StoryEngine.getStoryEvidence(story);
-    const initialEvidenceIds: string[] = allEvidence
-      .filter(e => e.isInitialPublic === true)
-      .map(e => e.id);
-    const initialClues = StoryEngine.getInitialPublicClues(story);
+    // Filter eligible clues strictly by the actual selected killers
+    this.eligibleClues = ClueEngine.getEligibleClues(story, actualSelectedKillers);
+    const totalClues = Math.min(maxMatchClues, this.eligibleClues.length);
+
+    const initialEvidence = this.eligibleClues.filter(e => e.isInitialPublic);
+    const initialRevealedIds = initialEvidence.map(e => e.id);
+    const initialRevealedClues = initialEvidence.map(e => e.publicClue || e.description);
 
     this.state = {
       phase: 'ROLE_PASS',
@@ -91,8 +115,11 @@ export class GameEngine {
       players,
       currentViewingPlayerIndex: 0,
       currentRound: 1,
-      revealedEvidenceIds: initialEvidenceIds,
-      revealedClues: initialClues,
+      totalClues,
+      remainingClues: Math.max(0, totalClues - initialRevealedIds.length),
+      clueRevealedThisRound: false,
+      revealedEvidenceIds: initialRevealedIds,
+      revealedClues: initialRevealedClues,
       wrongVotesCount: 0,
       maxWrongVotes: StoryEngine.getMaxWrongVotes(story),
       votes: {},
@@ -176,11 +203,15 @@ export class GameEngine {
   }
 
   /**
-   * Returns all available evidence items defined for the active story
+   * Returns all eligible evidence items defined for the active story and current actual killers
    */
   public getAllEvidence(): EvidenceItem[] {
     if (!this.state.story) return [];
-    return StoryEngine.getStoryEvidence(this.state.story);
+    if (this.eligibleClues && this.eligibleClues.length > 0) {
+      return this.eligibleClues;
+    }
+    const actualKillers = this.getActualSelectedKillers();
+    return ClueEngine.getEligibleClues(this.state.story, actualKillers);
   }
 
   /**
@@ -204,11 +235,25 @@ export class GameEngine {
   }
 
   /**
+   * Checks whether a clue can be revealed in the current round
+   */
+  public canRevealClue(): boolean {
+    if (!this.state.story) return false;
+    if (this.state.clueRevealedThisRound) return false;
+    if (this.state.remainingClues <= 0) return false;
+    if (this.state.revealedEvidenceIds.length >= this.state.totalClues) return false;
+    return this.getAvailableUnrevealedEvidence().length > 0;
+  }
+
+  /**
    * Checks whether a specific evidence item is currently available to be revealed
-   * based on story rules (e.g. round constraints, unlock conditions) and state.
    */
   public isEvidenceAvailable(evidenceId: string): boolean {
     if (!this.state.story) return false;
+    if (this.state.clueRevealedThisRound) return false;
+    if (this.state.remainingClues <= 0) return false;
+    if (this.state.revealedEvidenceIds.length >= this.state.totalClues) return false;
+
     const all = this.getAllEvidence();
     const item = all.find(e => e.id === evidenceId);
     if (!item) return false;
@@ -217,8 +262,8 @@ export class GameEngine {
     const alreadyRevealed = (this.state.revealedEvidenceIds || []).includes(evidenceId);
     if (alreadyRevealed) return false;
 
-    // Story-defined round constraint: if availableFromRound is specified, round must be >= availableFromRound
-    if (item.availableFromRound !== undefined && item.availableFromRound > this.state.currentRound) {
+    // Round gating check
+    if (item.availableFromRound && item.availableFromRound > this.state.currentRound) {
       return false;
     }
 
@@ -231,48 +276,77 @@ export class GameEngine {
   public getAvailableUnrevealedEvidence(): EvidenceItem[] {
     if (!this.state.story) return [];
     const all = this.getAllEvidence();
-    return all.filter(e => this.isEvidenceAvailable(e.id));
+    const revealedSet = new Set(this.state.revealedEvidenceIds || []);
+    return all.filter(
+      e => !revealedSet.has(e.id) && (!e.availableFromRound || e.availableFromRound <= this.state.currentRound)
+    );
   }
 
   /**
    * Checks if there are unrevealed evidence items currently eligible for revelation
    */
   public hasAvailableEvidence(): boolean {
-    return this.getAvailableUnrevealedEvidence().length > 0;
+    return this.canRevealClue();
   }
 
   /**
    * Checks if there are more unrevealed evidence items in total
    */
   public hasMoreEvidence(): boolean {
-    return this.getUnrevealedEvidence().length > 0;
+    return this.canRevealClue();
   }
 
   /**
    * Reveals a specific evidence item by its ID after validating availability rules
    */
-  public revealEvidence(evidenceId: string): GameState {
+  public revealEvidence(evidenceId?: string): GameState {
     if (!this.state.story) {
       throw new Error('Cannot reveal evidence: no active story.');
     }
 
-    if (!this.isEvidenceAvailable(evidenceId)) {
-      // Cannot reveal: not found, already revealed, or not available yet
+    // Hard Rule 5: Only ONE clue can be revealed per round
+    if (this.state.clueRevealedThisRound) {
       return this.getState();
     }
 
-    const item = this.getAllEvidence().find(e => e.id === evidenceId);
-    if (!item) return this.getState();
+    // Hard Rule 11: Clue exhaustion
+    if (
+      this.state.remainingClues <= 0 ||
+      this.state.revealedEvidenceIds.length >= this.state.totalClues
+    ) {
+      return this.getState();
+    }
 
-    const currentRevealed = this.state.revealedEvidenceIds || [];
-    const updatedRevealedIds = [...currentRevealed, evidenceId];
-    const clueText = item.publicClue || item.description || item.title;
+    const allAvailable = this.getAvailableUnrevealedEvidence();
+    if (allAvailable.length === 0) {
+      return this.getState();
+    }
+
+    let targetItem: EvidenceItem | undefined;
+    if (evidenceId) {
+      targetItem = allAvailable.find(e => e.id === evidenceId);
+      if (!targetItem) return this.getState();
+    } else {
+      targetItem = allAvailable[0];
+    }
+
+    // Hard Rule 10: No duplicate clues
+    if (this.state.revealedEvidenceIds.includes(targetItem.id)) {
+      return this.getState();
+    }
+
+    const updatedRevealedIds = [...this.state.revealedEvidenceIds, targetItem.id];
+    const clueText = targetItem.publicClue || targetItem.description || targetItem.title;
     const updatedRevealedClues = this.state.revealedClues.includes(clueText)
       ? this.state.revealedClues
       : [...this.state.revealedClues, clueText];
 
+    const remainingClues = Math.max(0, this.state.totalClues - updatedRevealedIds.length);
+
     this.state = {
       ...this.state,
+      clueRevealedThisRound: true,
+      remainingClues,
       revealedEvidenceIds: updatedRevealedIds,
       revealedClues: updatedRevealedClues
     };
@@ -285,13 +359,7 @@ export class GameEngine {
    * Helper to reveal the next available unrevealed evidence item
    */
   public revealNextEvidence(): GameState {
-    const available = this.getAvailableUnrevealedEvidence();
-    if (available.length === 0) {
-      // No eligible evidence currently available
-      return this.getState();
-    }
-
-    return this.revealEvidence(available[0].id);
+    return this.revealEvidence();
   }
 
   /**
@@ -437,6 +505,7 @@ export class GameEngine {
         ...this.state,
         phase: 'DISCUSSION',
         currentRound: nextRound,
+        clueRevealedThisRound: false,
         votes: {},
         lastVoteResult: null,
         history: {

@@ -34,6 +34,10 @@ interface DiscussionEvidenceScreenProps {
   round: number;
   revealedEvidenceIds?: string[];
   revealedClues?: string[];
+  totalClues?: number;
+  remainingClues?: number;
+  clueRevealedThisRound?: boolean;
+  canRevealClue?: boolean;
   onRevealNextEvidence?: () => void;
   hasMoreEvidence?: boolean;
   onProceedToVoting: () => void;
@@ -51,6 +55,10 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
   round,
   revealedEvidenceIds = [],
   revealedClues = [],
+  totalClues,
+  remainingClues,
+  clueRevealedThisRound = false,
+  canRevealClue,
   onRevealNextEvidence,
   hasMoreEvidence = false,
   onProceedToVoting,
@@ -587,26 +595,60 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                 </div>
               )}
 
-              {/* Reveal Next Evidence CTA */}
-              {hasMoreEvidence && onRevealNextEvidence ? (
-                <button
-                  id="btn_reveal_next_evidence"
-                  onClick={() => {
-                    sound.playClick();
-                    onRevealNextEvidence();
-                    setActiveEvidenceIndex(totalRevealedCount);
-                  }}
-                  className={`w-full py-3.5 px-4 rounded-2xl bg-[#141724] border border-[#c8923a]/60 hover:border-[#f3cb79] hover:bg-[#1a1f30] text-[#f3cb79] font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md`}
-                >
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                  <span>{isEn ? `Request Next Clue (${totalRevealedCount} / ${totalAllCount} revealed)` : `طلب فحص دليل إضافي (${totalRevealedCount} / ${totalAllCount} مكشوف)`}</span>
-                </button>
-              ) : totalAllCount > 0 ? (
-                <div className={`w-full py-2.5 px-4 rounded-2xl bg-black/40 border border-emerald-900/30 text-emerald-300/80 font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} text-xs text-center flex items-center justify-center gap-2`}>
-                  <Shield className="w-4 h-4 text-emerald-400" />
-                  <span>{isEn ? `All clues in the case file have been revealed (${totalRevealedCount})` : `تم الكشف عن جميع الأدلة المتاحة في ملف القضية (${totalRevealedCount})`}</span>
-                </div>
-              ) : null}
+              {/* Reveal Next Evidence CTA & Status */}
+              {(() => {
+                const maxClues = totalClues || totalAllCount;
+                const remaining = remainingClues !== undefined ? remainingClues : (maxClues - totalRevealedCount);
+
+                if (clueRevealedThisRound) {
+                  return (
+                    <div className={`w-full py-3 px-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200/90 font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} text-xs text-center flex items-center justify-center gap-2 shadow-sm`}>
+                      <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>
+                        {isEn
+                          ? `Clue revealed for this round (1 clue max per round). Remaining: ${remaining} of ${maxClues}`
+                          : `تم كشف دليل هذه الجولة (دليل واحد كحد أقصى لكل جولة). المتبقي: ${remaining} من ${maxClues}`}
+                      </span>
+                    </div>
+                  );
+                }
+
+                if (remaining <= 0) {
+                  return (
+                    <div className={`w-full py-2.5 px-4 rounded-2xl bg-black/40 border border-emerald-900/30 text-emerald-300/80 font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} text-xs text-center flex items-center justify-center gap-2`}>
+                      <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>
+                        {isEn
+                          ? `All allocated clues for this game have been revealed (${maxClues} clues total)`
+                          : `تم الكشف عن جميع الأدلة المخصصة لهذه القضية (${maxClues} أدلة)`}
+                      </span>
+                    </div>
+                  );
+                }
+
+                if (hasMoreEvidence && onRevealNextEvidence) {
+                  return (
+                    <button
+                      id="btn_reveal_next_evidence"
+                      onClick={() => {
+                        sound.playClick();
+                        onRevealNextEvidence();
+                        setActiveEvidenceIndex(totalRevealedCount);
+                      }}
+                      className={`w-full py-3.5 px-4 rounded-2xl bg-[#141724] border border-[#c8923a]/60 hover:border-[#f3cb79] hover:bg-[#1a1f30] text-[#f3cb79] font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md`}
+                    >
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      <span>
+                        {isEn
+                          ? `Request Next Clue (${totalRevealedCount} / ${maxClues} revealed)`
+                          : `طلب فحص دليل إضافي (${totalRevealedCount} / ${maxClues} مكشوف)`}
+                      </span>
+                    </button>
+                  );
+                }
+
+                return null;
+              })()}
             </motion.div>
           )}
 
