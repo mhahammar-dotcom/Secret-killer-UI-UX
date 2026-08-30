@@ -346,15 +346,14 @@ const sampleStory = builtInStories[0];
   };
 
   const engine = new GameEngine();
-  const state = engine.startNewGame(zeroEvidenceStory, ['أ', 'ب', 'ج', 'د']);
-  
-  assert(state.revealedEvidenceIds.length === 0, 'TEST 10: Zero evidence story has 0 revealed IDs');
-  assert(engine.getAllEvidence().length === 0, 'TEST 10: getAllEvidence returns empty array');
-  assert(engine.hasMoreEvidence() === false, 'TEST 10: hasMoreEvidence is false');
-  assert(engine.hasAvailableEvidence() === false, 'TEST 10: hasAvailableEvidence is false');
-
-  engine.startDiscussion();
-  assert(engine.getState().phase === 'DISCUSSION', 'TEST 10: Discussion phase functions normally with 0 evidence');
+  let threw = false;
+  try {
+    engine.startNewGame(zeroEvidenceStory, ['أ', 'ب', 'ج', 'د']);
+  } catch (err: any) {
+    threw = true;
+    assert(err.message.includes('Cannot start game: 4 players require 4 valid clues'), 'TEST 10: Throws hard error for insufficient clues');
+  }
+  assert(threw, 'TEST 10: Zero evidence story correctly blocked from starting game');
 }
 
 // =========================================================================
@@ -379,7 +378,9 @@ const sampleStory = builtInStories[0];
     investigationRounds: [],
     evidence: [
       { id: 'c_ev_1', title: 'دليل 1', description: 'وصف 1', category: 'motive', availableFromRound: 1 },
-      { id: 'c_ev_2', title: 'دليل 2', description: 'وصف 2', category: 'timeline', availableFromRound: 2 }
+      { id: 'c_ev_2', title: 'دليل 2', description: 'وصف 2', category: 'timeline', availableFromRound: 2 },
+      { id: 'c_ev_3', title: 'دليل 3', description: 'وصف 3', category: 'physical', availableFromRound: 2 },
+      { id: 'c_ev_4', title: 'دليل 4', description: 'وصف 4', category: 'document', availableFromRound: 2 }
     ],
     solution: 'الحل'
   };
@@ -387,7 +388,7 @@ const sampleStory = builtInStories[0];
   const engine = new GameEngine();
   engine.startNewGame(customStory, ['أ', 'ب', 'ج', 'د']);
 
-  assert(engine.getAllEvidence().length === 2, 'TEST 11: Custom story loads 2 evidence items');
+  assert(engine.getAllEvidence().length === 4, 'TEST 11: Custom story loads 4 evidence items');
   assert(engine.getAvailableUnrevealedEvidence().length === 1, 'TEST 11: Only round 1 evidence is available in round 1');
   
   engine.revealNextEvidence();

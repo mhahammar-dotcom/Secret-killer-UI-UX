@@ -103,11 +103,23 @@ export class GameEngine {
 
     // Filter eligible clues strictly by the actual selected killers
     this.eligibleClues = ClueEngine.getEligibleClues(story, actualSelectedKillers);
-    const totalClues = Math.min(maxMatchClues, this.eligibleClues.length);
+    const totalClues = getTotalClueCount(playerCount);
+
+    if (this.eligibleClues.length < totalClues) {
+      throw new Error(
+        `Cannot start game: ${playerCount} players require ${totalClues} valid clues, but only ${this.eligibleClues.length} clues are compatible with the selected killers [${actualSelectedKillers.join(', ')}].`
+      );
+    }
 
     const initialEvidence = this.eligibleClues.filter(e => e.isInitialPublic);
     const initialRevealedIds = initialEvidence.map(e => e.id);
     const initialRevealedClues = initialEvidence.map(e => e.publicClue || e.description);
+
+    if (initialRevealedIds.length > totalClues) {
+      throw new Error(
+        `Cannot start game: Initial public clues (${initialRevealedIds.length}) exceed total configured clues (${totalClues}).`
+      );
+    }
 
     this.state = {
       phase: 'ROLE_PASS',
@@ -116,7 +128,7 @@ export class GameEngine {
       currentViewingPlayerIndex: 0,
       currentRound: 1,
       totalClues,
-      remainingClues: Math.max(0, totalClues - initialRevealedIds.length),
+      remainingClues: totalClues - initialRevealedIds.length,
       clueRevealedThisRound: false,
       revealedEvidenceIds: initialRevealedIds,
       revealedClues: initialRevealedClues,
@@ -457,19 +469,13 @@ export class GameEngine {
       });
     }
 
-    // Unlocked hints on wrong vote
-    const newRevealedClues = [...this.state.revealedClues];
-    if (voteResult.unlockedHint && !newRevealedClues.includes(voteResult.unlockedHint)) {
-      newRevealedClues.push(voteResult.unlockedHint);
-    }
-
     this.state = {
       ...this.state,
       phase: 'VOTE_RESULT',
       players: updatedPlayers,
       votes: activeVotes,
       wrongVotesCount: voteResult.wrongVotesCount,
-      revealedClues: newRevealedClues,
+      revealedClues: this.state.revealedClues,
       lastVoteResult: voteResult,
       winner: voteResult.winner,
       endReason: voteResult.endReason,
