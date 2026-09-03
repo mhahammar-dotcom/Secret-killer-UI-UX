@@ -12,7 +12,7 @@ import {
 import { createInitialGameState, getAlivePlayers } from './GameState';
 import { StoryEngine } from './StoryEngine';
 import { CharacterAllocator, AllocatorOptions } from './CharacterAllocator';
-import { PlayerManager } from './PlayerManager';
+import { PlayerManager, getKillerPartners } from './PlayerManager';
 import { VotingEngine } from './VotingEngine';
 import { ClueEngine, getTotalClueCount } from './ClueEngine';
 
@@ -212,6 +212,25 @@ export class GameEngine {
       this.notify();
     }
     return this.getState();
+  }
+
+  /**
+   * Returns killer partner(s) for a given player ID (Phase 7.4).
+   * - If player is innocent or not found, returns [].
+   * - If player is an actual killer, returns all other actual killers in deterministic order.
+   */
+  public getKillerPartners(playerId: number): Player[] {
+    return getKillerPartners(playerId, this.state.players);
+  }
+
+  /**
+   * Returns killer partner(s) for the current viewing player in ROLE_PASS phase.
+   * If current viewing player is innocent, returns [].
+   */
+  public getCurrentViewingPlayerPartners(): Player[] {
+    const current = this.getCurrentViewingPlayer();
+    if (!current) return [];
+    return this.getKillerPartners(current.id);
   }
 
   /**

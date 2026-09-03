@@ -126,6 +126,10 @@ export interface UIStrings {
   testimonyAndKnowledge: string;
   secretRoleWarning: string;
   youAreTheCulprit: string;
+  youAreTheOnlyKiller: string;
+  yourKillerPartner: string;
+  yourKillerPartners: string;
+  killerAllianceGuidance: string;
   keepDetailsGuidance: string;
   finishPassingStartDiscussion: string;
   iMemorizedPassDevice: string;
@@ -412,6 +416,10 @@ export const AR_STRINGS: UIStrings = {
   testimonyAndKnowledge: 'شهادتك ومعلوماتك حول الحادثة:',
   secretRoleWarning: '⚠️ دورك السري في اللعبة (خاص بك فقط):',
   youAreTheCulprit: 'أنت المذنب في هذه الجريمة. لا تكشف هذه المعلومة لأي لاعب آخر.',
+  youAreTheOnlyKiller: 'أنت القاتل الوحيد في هذه الجريمة.',
+  yourKillerPartner: 'شريكك في الجريمة:',
+  yourKillerPartners: 'شركاؤك في الجريمة:',
+  killerAllianceGuidance: 'تعاون بذكاء لتشتيت انتباه المحققين وتجنب توجيه أصابع الاتهام إليكما.',
   keepDetailsGuidance: '💡 احتفظ بهذه التفاصيل واستخدمها بذكاء أثناء جولات النقاش والتحقيق مع بقية الحاضرين.',
   finishPassingStartDiscussion: 'إنهاء التوزيع وبدء النقاش',
   iMemorizedPassDevice: 'حفظت دوري - إخفاء وتمرير',
@@ -688,6 +696,10 @@ export const EN_STRINGS: UIStrings = {
   testimonyAndKnowledge: 'Your secret testimony & clues regarding the crime:',
   secretRoleWarning: '⚠️ Your Confidential Role (Strictly Private):',
   youAreTheCulprit: 'You are the guilty culprit. Do NOT disclose this to any other player.',
+  youAreTheOnlyKiller: 'You are the only killer in this game.',
+  yourKillerPartner: 'YOUR KILLER PARTNER:',
+  yourKillerPartners: 'YOUR KILLER PARTNERS:',
+  killerAllianceGuidance: 'Coordinate your strategy carefully during discussion to protect each other and avoid suspicion.',
   keepDetailsGuidance: '💡 Keep these details in mind and use them strategically during open discussion and interrogation.',
   finishPassingStartDiscussion: 'Finish Passing & Begin Discussion',
   iMemorizedPassDevice: 'Memorized! Hide & Pass Phone',

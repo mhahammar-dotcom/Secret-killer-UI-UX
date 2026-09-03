@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "tsx src/game/__tests__/engine.test.ts && tsx src/game/__tests__/phase3_integration.test.ts && tsx src/game/__tests__/phase4_rolepass.test.ts && tsx src/game/__tests__/phase5_investigation.test.ts && tsx src/game/__tests__/voting_and_guilty_role.test.ts && tsx src/game/__tests__/story_validator.test.ts && tsx src/game/__tests__/character_allocator.test.ts && tsx src/game/__tests__/phase7_killer_scaling.test.ts && tsx tests/phase7_2b_story_compatibility.test.ts && tsx tests/phase7_3_clue_economy.test.ts"
+    "test": "tsx src/game/__tests__/engine.test.ts && tsx src/game/__tests__/phase3_integration.test.ts && tsx src/game/__tests__/phase4_rolepass.test.ts && tsx src/game/__tests__/phase5_investigation.test.ts && tsx src/game/__tests__/voting_and_guilty_role.test.ts && tsx src/game/__tests__/story_validator.test.ts && tsx src/game/__tests__/character_allocator.test.ts && tsx src/game/__tests__/phase7_killer_scaling.test.ts && tsx tests/phase7_2b_story_compatibility.test.ts && tsx tests/phase7_3_clue_economy.test.ts && tsx tests/phase7_4_killer_alliance.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

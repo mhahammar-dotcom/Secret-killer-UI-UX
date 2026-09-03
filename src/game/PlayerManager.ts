@@ -33,6 +33,71 @@ export function getKillerCount(playerCount: number): number {
 }
 
 /**
+ * Returns partner killer(s) for a given player based strictly on actualSelectedKillers / player guilt.
+ *
+ * Rules:
+ * - If the target is NOT an actual killer (innocent), returns []
+ * - If the target IS an actual killer, returns all other actual killers in deterministic order.
+ * - A killer is never returned as their own partner.
+ */
+export function getKillerPartners(
+  playerIdOrName: number | string,
+  actualSelectedKillersOrPlayers: string[] | Player[],
+  playersList?: Player[]
+): any[] {
+  if (!actualSelectedKillersOrPlayers || actualSelectedKillersOrPlayers.length === 0) {
+    return [];
+  }
+
+  // Case 1: Called with string identifier and string[] of actualSelectedKillers
+  if (typeof actualSelectedKillersOrPlayers[0] === 'string') {
+    const killerNames = actualSelectedKillersOrPlayers as string[];
+    const targetName = String(playerIdOrName).trim();
+
+    // Check if target is among actualSelectedKillers
+    const isKiller = killerNames.some(
+      k => k.trim().toLowerCase() === targetName.toLowerCase()
+    );
+    if (!isKiller) {
+      return [];
+    }
+
+    if (playersList && playersList.length > 0) {
+      // If playersList was also provided, return the matching Player objects for the OTHER killers
+      return playersList.filter(
+        p =>
+          p.guilty &&
+          p.character.name.trim().toLowerCase() !== targetName.toLowerCase() &&
+          p.name.trim().toLowerCase() !== targetName.toLowerCase()
+      );
+    }
+
+    // Return the other killer names deterministically
+    return killerNames.filter(
+      k => k.trim().toLowerCase() !== targetName.toLowerCase()
+    );
+  }
+
+  // Case 2: Called with playerId (or playerName) and Player[] array
+  const players = actualSelectedKillersOrPlayers as Player[];
+  const targetPlayer =
+    typeof playerIdOrName === 'number'
+      ? players.find(p => p.id === playerIdOrName)
+      : players.find(
+          p =>
+            p.name.trim().toLowerCase() === String(playerIdOrName).trim().toLowerCase() ||
+            p.character.name.trim().toLowerCase() === String(playerIdOrName).trim().toLowerCase()
+        );
+
+  if (!targetPlayer || !targetPlayer.guilty) {
+    return [];
+  }
+
+  // Return all other guilty players in deterministic order
+  return players.filter(p => p.guilty && p.id !== targetPlayer.id);
+}
+
+/**
  * PlayerManager provides pure functions to query and update player rosters.
  */
 export class PlayerManager {
@@ -41,6 +106,17 @@ export class PlayerManager {
    */
   static getKillerCount(playerCount: number): number {
     return getKillerCount(playerCount);
+  }
+
+  /**
+   * Returns partner killer(s) for a given player based strictly on actualSelectedKillers / player guilt.
+   */
+  static getKillerPartners(
+    playerIdOrName: number | string,
+    actualSelectedKillersOrPlayers: string[] | Player[],
+    playersList?: Player[]
+  ): any[] {
+    return getKillerPartners(playerIdOrName, actualSelectedKillersOrPlayers, playersList);
   }
 
   /**

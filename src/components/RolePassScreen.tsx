@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Eye, Lock, ArrowLeft, User, ChevronLeft, Home, MessageSquareQuote, BadgeCheck, FileText, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { Eye, Lock, ArrowLeft, User, ChevronLeft, Home, MessageSquareQuote, BadgeCheck, FileText, AlertTriangle, ShieldAlert, Users } from 'lucide-react';
 import { Player } from '../game/types';
+import { getKillerPartners } from '../game/PlayerManager';
 import { sound } from '../utils/audio';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 
@@ -272,21 +273,67 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                   </p>
                 </div>
 
-                {/* Private Hidden Role Notice */}
-                {currentPlayer.guilty && (
-                  <div
-                    data-testid="private-guilty-indicator"
-                    className="p-4 rounded-2xl bg-[#200b0b] border-2 border-red-600/70 text-[#fecaca] shadow-[0_0_20px_rgba(220,38,38,0.2)] flex flex-col gap-1.5"
-                  >
-                    <div className={`flex items-center gap-2 text-red-400 font-black text-sm ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
-                      <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 animate-pulse" />
-                      <span>{t.secretRoleWarning}</span>
+                {/* Private Hidden Role Notice & Killer Alliance (Phase 7.4) */}
+                {currentPlayer.guilty && (() => {
+                  const killerPartners: Player[] = getKillerPartners(currentPlayer.id, players);
+                  return (
+                    <div
+                      data-testid="private-guilty-indicator"
+                      className="p-4 rounded-2xl bg-[#200b0b] border-2 border-red-600/70 text-[#fecaca] shadow-[0_0_20px_rgba(220,38,38,0.25)] flex flex-col gap-3"
+                    >
+                      <div className={`flex items-center gap-2 text-red-400 font-black text-sm ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                        <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 animate-pulse" />
+                        <span>{t.secretRoleWarning}</span>
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <p className={`text-base font-black text-white ${isRtl ? "font-['Cairo']" : 'font-sans'} leading-snug`}>
+                          {t.youAreTheCulprit}
+                        </p>
+                        {killerPartners.length === 0 && (
+                          <p className={`text-xs text-red-300/90 font-medium ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                            {t.youAreTheOnlyKiller}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Killer Partner(s) Section */}
+                      {killerPartners.length > 0 && (
+                        <div
+                          data-testid="killer-partners-section"
+                          className="p-3 rounded-xl bg-black/60 border border-red-500/40 flex flex-col gap-2"
+                        >
+                          <span className={`text-xs font-black text-red-400 tracking-wider flex items-center gap-1.5 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                            <Users className="w-4 h-4 text-red-500" />
+                            <span>{killerPartners.length === 1 ? t.yourKillerPartner : t.yourKillerPartners}</span>
+                          </span>
+                          <div className="flex flex-col gap-1.5">
+                            {killerPartners.map((partner) => (
+                              <div
+                                key={partner.id}
+                                data-testid={`killer-partner-${partner.id}`}
+                                className="flex items-center justify-between px-3 py-2 rounded-lg bg-red-950/40 border border-red-800/40 text-xs sm:text-sm"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] shrink-0" />
+                                  <span className={`font-black text-red-200 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                                    {isEn ? `Player ${partner.id} — ${partner.name}` : `لاعب ${partner.id} — ${partner.name}`}
+                                  </span>
+                                </div>
+                                <span className={`text-xs text-red-400/90 font-semibold ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                                  {partner.character.name}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                          <p className={`text-[11px] text-red-300/80 leading-relaxed mt-0.5 ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                            {t.killerAllianceGuidance}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                    <p className={`text-sm font-black text-white ${isRtl ? "font-['Cairo']" : 'font-sans'} leading-snug`}>
-                      {t.youAreTheCulprit}
-                    </p>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Investigation Guidance */}
                 <div className={`p-3 rounded-xl bg-amber-950/20 border border-amber-900/30 text-xs text-[#a39a8c] ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
