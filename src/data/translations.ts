@@ -176,6 +176,17 @@ export interface UIStrings {
   suspectRoster: string;
   proceedToVote: string;
   allCluesDiscovered: string;
+  newEvidenceBadge: string;
+  newEvidenceDiscovered: string;
+  previouslyRevealedBadge: string;
+  cluesDiscoveredSummary: string;
+  remainingCluesLabel: string;
+  clueLimitReachedThisRound: string;
+  nextClueNextRoundHint: string;
+  requestNewClueAction: string;
+  allEvidenceRevealedBanner: string;
+  noEvidenceRevealedYet: string;
+  noEvidenceRevealedYetDesc: string;
 
   // Voting Screen
   votingChamber: string;
@@ -464,6 +475,17 @@ export const AR_STRINGS: UIStrings = {
   suspectRoster: 'المشتبه بهم الحاضرون',
   proceedToVote: 'إنهاء النقاش والبدء بالتصويت',
   allCluesDiscovered: 'تم الكشف عن جميع الأدلة المتاحة في مسرح الجريمة',
+  newEvidenceBadge: 'قرينة جديدة',
+  newEvidenceDiscovered: 'اكتشاف قرينة جديدة',
+  previouslyRevealedBadge: 'قرينة سابقة',
+  cluesDiscoveredSummary: 'أدلة تم كشفها',
+  remainingCluesLabel: 'المتبقي',
+  clueLimitReachedThisRound: 'تم كشف دليل هذه الجولة بالفعل (دليل واحد كحد أقصى لكل جولة)',
+  nextClueNextRoundHint: 'الدليل التالي متاح في الجولة القادمة',
+  requestNewClueAction: 'طلب فحص دليل جديد',
+  allEvidenceRevealedBanner: 'تم الكشف عن جميع الأدلة المتاحة في القضية',
+  noEvidenceRevealedYet: 'لم يتم فحص أي دليل حتى الآن',
+  noEvidenceRevealedYetDesc: 'افحصوا مسرح الجريمة لاستخراج القرائن والشهادات المتوفرة لهذه الجولة.',
 
   votingChamber: 'غرفة توجيه الاتهام والتصويت',
   votingAccusation: 'جلسة توجيه الاتهام',
@@ -744,6 +766,17 @@ export const EN_STRINGS: UIStrings = {
   suspectRoster: 'Suspects Present',
   proceedToVote: 'Conclude Discussion & Cast Votes',
   allCluesDiscovered: 'All available crime scene evidence has been revealed',
+  newEvidenceBadge: 'New Evidence',
+  newEvidenceDiscovered: 'New Evidence Discovered',
+  previouslyRevealedBadge: 'Previously Revealed',
+  cluesDiscoveredSummary: 'Clues Discovered',
+  remainingCluesLabel: 'Remaining',
+  clueLimitReachedThisRound: 'Clue revealed for this round (1 clue max per round)',
+  nextClueNextRoundHint: 'Next clue available in the next round',
+  requestNewClueAction: 'Request New Clue',
+  allEvidenceRevealedBanner: 'All available evidence has been discovered',
+  noEvidenceRevealedYet: 'No evidence has been revealed yet',
+  noEvidenceRevealedYetDesc: 'Investigate the crime scene to uncover clues and testimonies for this round.',
 
   votingChamber: 'Accusation & Voting Chamber',
   votingAccusation: 'Accusation Chamber',

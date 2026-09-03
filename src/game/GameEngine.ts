@@ -270,6 +270,15 @@ export class GameEngine {
    */
   public canRevealClue(): boolean {
     if (!this.state.story) return false;
+    // Invalid reveal phase: clues can only be revealed in investigation/discussion phase
+    if (
+      this.state.phase === 'VOTING' ||
+      this.state.phase === 'VOTE_RESULT' ||
+      this.state.phase === 'GAME_OVER' ||
+      this.state.phase === 'LOBBY'
+    ) {
+      return false;
+    }
     if (this.state.clueRevealedThisRound) return false;
     if (this.state.remainingClues <= 0) return false;
     if (this.state.revealedEvidenceIds.length >= this.state.totalClues) return false;
@@ -333,6 +342,16 @@ export class GameEngine {
   public revealEvidence(evidenceId?: string): GameState {
     if (!this.state.story) {
       throw new Error('Cannot reveal evidence: no active story.');
+    }
+
+    // Invalid reveal phase check: clues can only be revealed in investigation/discussion phase
+    if (
+      this.state.phase === 'VOTING' ||
+      this.state.phase === 'VOTE_RESULT' ||
+      this.state.phase === 'GAME_OVER' ||
+      this.state.phase === 'LOBBY'
+    ) {
+      return this.getState();
     }
 
     // Hard Rule 5: Only ONE clue can be revealed per round

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Shield,
   Eye,
+  CheckCircle2,
   Play,
   Pause,
   RotateCcw,
@@ -70,6 +71,9 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
   const [activeTab, setActiveTab] = useState<TabType>('evidence');
   const [activeEvidenceIndex, setActiveEvidenceIndex] = useState<number>(0);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
+  const [revealError, setRevealError] = useState<string | null>(null);
+  const isRevealingRef = useRef(false);
 
   const isEn = language === 'en';
   const t = isEn ? EN_STRINGS : AR_STRINGS;
@@ -147,34 +151,81 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
   // Normalize all available evidence from StoryEngine to compute counts and metadata
   const allStoryEvidence: EvidenceItem[] = StoryEngine.getStoryEvidence(story as unknown as Story);
   
-  // Filter revealed evidence strictly based on GameState IDs (ONLY revealed items are visible)
-  const revealedItems: EvidenceItem[] = allStoryEvidence.filter(e => 
-    revealedEvidenceIds.includes(e.id)
-  );
+  // Filter revealed evidence strictly based on GameState IDs in chronological order of revelation
+  const revealedItems: EvidenceItem[] = (revealedEvidenceIds || [])
+    .map(id => allStoryEvidence.find(e => e.id === id))
+    .filter((e): e is EvidenceItem => Boolean(e));
 
   // Strictly ONLY revealed evidence items are accessible to the UI
   const visibleEvidence: EvidenceItem[] = revealedItems;
 
-  const currentEvidence = visibleEvidence[activeEvidenceIndex] || visibleEvidence[0] || null;
   const totalRevealedCount = visibleEvidence.length;
-  const totalAllCount = allStoryEvidence.length;
+  const maxClues = totalClues !== undefined ? totalClues : (players.length > 0 ? players.length : allStoryEvidence.length);
+  const remaining = remainingClues !== undefined ? remainingClues : Math.max(0, maxClues - totalRevealedCount);
+  const isAllDiscovered = totalRevealedCount >= maxClues || remaining <= 0;
+
+  // Auto-focus newest clue when a clue is revealed in this round
+  useEffect(() => {
+    if (totalRevealedCount > 0 && clueRevealedThisRound) {
+      setActiveEvidenceIndex(totalRevealedCount - 1);
+    }
+  }, [totalRevealedCount, clueRevealedThisRound]);
+
+  // Ensure activeEvidenceIndex is safely within bounds
+  const safeEvidenceIndex = Math.min(
+    Math.max(0, activeEvidenceIndex),
+    Math.max(0, totalRevealedCount - 1)
+  );
+  const currentEvidence = visibleEvidence[safeEvidenceIndex] || null;
+
+  // Check whether currently inspected clue is the one discovered this round
+  const isViewingNewClue = clueRevealedThisRound && safeEvidenceIndex === totalRevealedCount - 1;
+
   const currentPhoto = getEvidenceCoverImage(
     currentEvidence?.category,
-    activeEvidenceIndex,
+    safeEvidenceIndex,
     story?.id
   );
 
   const handleNextEvidence = () => {
     sound.playClick();
-    if (activeEvidenceIndex < totalRevealedCount - 1) {
-      setActiveEvidenceIndex(prev => prev + 1);
+    if (safeEvidenceIndex < totalRevealedCount - 1) {
+      setActiveEvidenceIndex(safeEvidenceIndex + 1);
     }
   };
 
   const handlePrevEvidence = () => {
     sound.playClick();
-    if (activeEvidenceIndex > 0) {
-      setActiveEvidenceIndex(prev => prev - 1);
+    if (safeEvidenceIndex > 0) {
+      setActiveEvidenceIndex(safeEvidenceIndex - 1);
+    }
+  };
+
+  const handleRevealClue = () => {
+    if (isRevealingRef.current) return;
+    if (clueRevealedThisRound || !canRevealClue || isAllDiscovered) return;
+
+    isRevealingRef.current = true;
+    setIsRevealing(true);
+    setRevealError(null);
+    sound.playEvidenceFound();
+
+    try {
+      if (onRevealNextEvidence) {
+        onRevealNextEvidence();
+      }
+    } catch (err) {
+      console.error('Clue reveal error:', err);
+      setRevealError(
+        isEn
+          ? 'Failed to reveal evidence. Please try again.'
+          : 'تعذر كشف الدليل. يرجى المحاولة مرة أخرى.'
+      );
+    } finally {
+      setTimeout(() => {
+        isRevealingRef.current = false;
+        setIsRevealing(false);
+      }, 500);
     }
   };
 
@@ -496,8 +547,147 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
               exit={{ opacity: 0, y: -10 }}
               className="flex flex-col gap-4"
             >
+              {/* Top Investigation & Clue Status Banner */}
+              <div
+                id="investigation_round_header"
+                className="p-4 rounded-2xl bg-gradient-to-b from-[#151928] via-[#0d101a] to-[#080a10] border border-[#c8923a]/50 shadow-xl flex flex-col gap-3"
+              >
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center shrink-0">
+                      <Search className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-black uppercase tracking-wider text-amber-400 leading-tight">
+                        {isEn ? 'INVESTIGATION' : 'جلسة التحقيق'}
+                      </div>
+                      <h2 className={`text-sm sm:text-base font-black text-[#f5ebd9] ${isRtl ? "font-['Cairo']" : 'font-sans'}`}>
+                        {isEn ? `ROUND ${round}` : `الجولة ${round}`}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className={`flex flex-col ${isRtl ? 'items-start sm:items-end' : 'items-end'}`}>
+                    <div className="text-xs sm:text-sm font-black text-[#f3cb79] flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>{totalRevealedCount} / {maxClues} {isEn ? 'CLUES DISCOVERED' : 'قرائن تم كشفها'}</span>
+                    </div>
+                    <div className="text-[11px] text-[#a39a8c] font-medium">
+                      {isAllDiscovered ? (
+                        <span className="text-emerald-400 font-bold">
+                          {isEn ? 'ALL EVIDENCE DISCOVERED' : 'تم كشف جميع الأدلة'}
+                        </span>
+                      ) : (
+                        <span>
+                          {t.remainingCluesLabel}: <strong className="text-[#f5ebd9] font-bold">{remaining}</strong>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visual Progress Segments */}
+                <div className="flex items-center gap-1.5 w-full pt-1" aria-label="Evidence Progress">
+                  {Array.from({ length: Math.max(1, maxClues) }).map((_, idx) => {
+                    const isRevealed = idx < totalRevealedCount;
+                    const isCurrentRoundClue = clueRevealedThisRound && idx === totalRevealedCount - 1;
+                    return (
+                      <div
+                        key={idx}
+                        className={`h-2 flex-1 rounded-full transition-all duration-300 ${
+                          isCurrentRoundClue
+                            ? 'bg-gradient-to-r from-amber-400 to-amber-200 shadow-[0_0_8px_rgba(245,158,11,0.7)] animate-pulse'
+                            : isRevealed
+                            ? 'bg-[#c8923a]'
+                            : 'bg-black/60 border border-white/10'
+                        }`}
+                        title={isRevealed ? `Clue ${idx + 1} Revealed` : `Clue ${idx + 1} Unrevealed`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Previously Revealed Clues Selector Pills */}
+              {totalRevealedCount > 1 && (
+                <div
+                  id="clue_navigation_strip"
+                  className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none"
+                  aria-label={isEn ? 'Revealed Clues Selector' : 'شريط التنقل بين الأدلة'}
+                >
+                  {visibleEvidence.map((ev, idx) => {
+                    const isThisNewClue = clueRevealedThisRound && idx === totalRevealedCount - 1;
+                    const isSelected = safeEvidenceIndex === idx;
+                    return (
+                      <button
+                        key={ev.id || idx}
+                        id={`clue_pill_${idx + 1}`}
+                        onClick={() => {
+                          sound.playClick();
+                          setActiveEvidenceIndex(idx);
+                        }}
+                        aria-label={isEn ? `View Clue ${idx + 1}` : `عرض الدليل ${idx + 1}`}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all shrink-0 flex items-center gap-1.5 border cursor-pointer ${
+                          isSelected
+                            ? 'bg-gradient-to-r from-[#c8923a] to-[#d49e3d] text-slate-950 border-amber-300 shadow-md scale-105'
+                            : isThisNewClue
+                            ? 'bg-amber-950/40 text-amber-300 border-amber-500/50 hover:bg-amber-950/70'
+                            : 'bg-[#0e111a] text-[#a39a8c] border-[#7a5c2b]/30 hover:text-[#f5ebd9] hover:bg-[#141724]'
+                        }`}
+                      >
+                        <span>{isEn ? `Clue #${idx + 1}` : `دليل #${idx + 1}`}</span>
+                        {isThisNewClue ? (
+                          <span
+                            className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase ${
+                              isSelected
+                                ? 'bg-black text-amber-400'
+                                : 'bg-amber-500/30 text-amber-300 border border-amber-400/40'
+                            }`}
+                          >
+                            {isEn ? 'NEW' : 'جديد'}
+                          </span>
+                        ) : (
+                          <span
+                            className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase ${
+                              isSelected
+                                ? 'bg-black/40 text-slate-900'
+                                : 'bg-black/30 text-[#8e8577]'
+                            }`}
+                          >
+                            {isEn ? 'REVEALED' : 'مكشوف'}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Main Evidence Card */}
               {visibleEvidence.length > 0 && currentEvidence ? (
-                <div className="rounded-[26px] bg-[#0d0f16] border-2 border-[#c8923a]/50 p-5 sm:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.8)] flex flex-col gap-4">
+                <div
+                  id="clue_evidence_card"
+                  className="rounded-[26px] bg-[#0d0f16] border-2 border-[#c8923a]/50 p-5 sm:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.8)] flex flex-col gap-4"
+                >
+                  {/* Top Status Tag: New Evidence Discovery vs Previously Revealed */}
+                  <div className="flex items-center justify-between gap-2">
+                    {isViewingNewClue ? (
+                      <div className="px-3 py-1 rounded-xl bg-amber-500/20 border border-amber-400/60 text-amber-300 text-xs font-black flex items-center gap-1.5 shadow-[0_0_12px_rgba(245,158,11,0.3)]">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                        <span className="uppercase tracking-wider">{isEn ? 'NEW EVIDENCE DISCOVERED' : 'اكتشاف قرينة جديدة'}</span>
+                      </div>
+                    ) : (
+                      <div className="px-3 py-1 rounded-xl bg-slate-900/80 border border-slate-700/50 text-[#a39a8c] text-xs font-bold flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="uppercase tracking-wider">{isEn ? 'PREVIOUSLY REVEALED' : 'قرينة سابقة تم فحصها'}</span>
+                      </div>
+                    )}
+
+                    <span className="text-xs font-black text-[#f3cb79]">
+                      {safeEvidenceIndex + 1} / {totalRevealedCount}
+                    </span>
+                  </div>
+
                   {/* Evidence Photo */}
                   <div className="relative w-full h-44 sm:h-52 rounded-[20px] overflow-hidden border border-[#7a5c2b]/50 bg-black shrink-0">
                     <img
@@ -521,7 +711,7 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                     })()}
 
                     <div className={`absolute bottom-3 ${isRtl ? 'right-3' : 'left-3'} px-3 py-1 rounded-xl bg-black/80 backdrop-blur-sm border border-amber-500/30 text-[#f3cb79] text-xs font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} shadow-md`}>
-                      {isEn ? `Evidence Clue ${activeEvidenceIndex + 1} of ${totalRevealedCount}` : `دليل تحقيقي ${activeEvidenceIndex + 1} من ${totalRevealedCount}`}
+                      {isEn ? `Evidence Clue ${safeEvidenceIndex + 1} of ${totalRevealedCount}` : `دليل تحقيقي ${safeEvidenceIndex + 1} من ${totalRevealedCount}`}
                     </div>
                   </div>
 
@@ -552,12 +742,14 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                     </div>
                   )}
 
-                  {/* Evidence Carousel Pagination */}
+                  {/* Evidence Carousel Pagination Controls */}
                   {totalRevealedCount > 1 && (
                     <div className="flex items-center justify-between pt-2 border-t border-amber-900/30">
                       <button
-                        disabled={activeEvidenceIndex === 0}
+                        id="btn_prev_evidence"
+                        disabled={safeEvidenceIndex === 0}
                         onClick={handlePrevEvidence}
+                        aria-label={isEn ? 'Previous Clue' : 'الدليل السابق'}
                         className="p-2.5 rounded-xl bg-black/60 text-[#e5b35a] hover:text-[#f3cb79] disabled:opacity-30 border border-[#7a5c2b]/50 transition-colors cursor-pointer"
                         title={isEn ? 'Previous Clue' : 'الدليل السابق'}
                       >
@@ -565,12 +757,14 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                       </button>
 
                       <span className={`text-xs font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-[#f5ebd9]`}>
-                        {activeEvidenceIndex + 1} / {totalRevealedCount}
+                        {safeEvidenceIndex + 1} / {totalRevealedCount}
                       </span>
 
                       <button
-                        disabled={activeEvidenceIndex === totalRevealedCount - 1}
+                        id="btn_next_evidence"
+                        disabled={safeEvidenceIndex === totalRevealedCount - 1}
                         onClick={handleNextEvidence}
+                        aria-label={isEn ? 'Next Clue' : 'الدليل التالي'}
                         className="p-2.5 rounded-xl bg-black/60 text-[#e5b35a] hover:text-[#f3cb79] disabled:opacity-30 border border-[#7a5c2b]/50 transition-colors cursor-pointer"
                         title={isEn ? 'Next Clue' : 'الدليل التالي'}
                       >
@@ -580,75 +774,103 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
                   )}
                 </div>
               ) : (
-                <div className={`rounded-[24px] bg-[#0d0f16] border border-amber-900/30 p-6 text-center text-[#b0a99c] ${isRtl ? "font-['Cairo']" : 'font-sans'} flex flex-col items-center gap-2`}>
+                <div
+                  id="clue_empty_state"
+                  className={`rounded-[24px] bg-[#0d0f16] border border-amber-900/30 p-6 text-center text-[#b0a99c] ${isRtl ? "font-['Cairo']" : 'font-sans'} flex flex-col items-center gap-2`}
+                >
                   <Search className="w-10 h-10 text-[#c8923a]/60 mb-1" />
                   <p className="text-sm font-bold text-[#f5ebd9]">
-                    {totalAllCount === 0 
-                      ? (isEn ? 'No additional physical clues in this case file' : 'لا توجد أدلة مادية إضافية في هذا الملف') 
-                      : (isEn ? 'No physical clue has been revealed yet' : 'لم يتم فحص أي دليل مادي بعد')}
+                    {isEn ? 'No evidence revealed yet' : 'لم يتم فحص أي دليل حتى الآن'}
                   </p>
                   <p className="text-xs leading-relaxed max-w-sm">
-                    {totalAllCount === 0
-                      ? (isEn ? 'Rely on the case briefing and suspects\' statements to discover the truth.' : 'اعتمدوا على ملف الوقائع وإفادات الحاضرين للوصول إلى الحقيقة.')
-                      : (isEn ? `The case file contains (${totalAllCount}) clues available for investigation.` : `ملف القضية يحتوي على (${totalAllCount}) أدلة ومسارات قابلة للفحص والتحري.`)}
+                    {isEn
+                      ? `0 / ${maxClues} Clues Discovered • Remaining: ${remaining}. Examine the crime scene to uncover clues for Round ${round}.`
+                      : `0 من ${maxClues} قرائن مكتشفة • المتبقي: ${remaining}. افحصوا مسرح الجريمة للبدء في كشف قرائن الجولة ${round}.`}
                   </p>
                 </div>
               )}
 
               {/* Reveal Next Evidence CTA & Status */}
-              {(() => {
-                const maxClues = totalClues || totalAllCount;
-                const remaining = remainingClues !== undefined ? remainingClues : (maxClues - totalRevealedCount);
-
-                if (clueRevealedThisRound) {
-                  return (
-                    <div className={`w-full py-3 px-4 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200/90 font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} text-xs text-center flex items-center justify-center gap-2 shadow-sm`}>
-                      <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                      <span>
-                        {isEn
-                          ? `Clue revealed for this round (1 clue max per round). Remaining: ${remaining} of ${maxClues}`
-                          : `تم كشف دليل هذه الجولة (دليل واحد كحد أقصى لكل جولة). المتبقي: ${remaining} من ${maxClues}`}
-                      </span>
+              <div className="flex flex-col gap-2 pt-1">
+                {revealError && (
+                  <div
+                    id="clue_reveal_error_banner"
+                    className="p-3.5 rounded-xl bg-red-950/80 border border-red-500/60 text-red-200 text-xs font-bold flex items-center justify-between gap-2 shadow-md"
+                  >
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                      <span>{revealError}</span>
                     </div>
-                  );
-                }
-
-                if (remaining <= 0) {
-                  return (
-                    <div className={`w-full py-2.5 px-4 rounded-2xl bg-black/40 border border-emerald-900/30 text-emerald-300/80 font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} text-xs text-center flex items-center justify-center gap-2`}>
-                      <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>
-                        {isEn
-                          ? `All allocated clues for this game have been revealed (${maxClues} clues total)`
-                          : `تم الكشف عن جميع الأدلة المخصصة لهذه القضية (${maxClues} أدلة)`}
-                      </span>
-                    </div>
-                  );
-                }
-
-                if (hasMoreEvidence && onRevealNextEvidence) {
-                  return (
                     <button
-                      id="btn_reveal_next_evidence"
-                      onClick={() => {
-                        sound.playClick();
-                        onRevealNextEvidence();
-                        setActiveEvidenceIndex(totalRevealedCount);
-                      }}
-                      className={`w-full py-3.5 px-4 rounded-2xl bg-[#141724] border border-[#c8923a]/60 hover:border-[#f3cb79] hover:bg-[#1a1f30] text-[#f3cb79] font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md`}
+                      onClick={() => setRevealError(null)}
+                      className="text-red-400 hover:text-red-200 text-xs font-black cursor-pointer px-1.5 py-0.5 rounded"
+                      aria-label="Dismiss error"
                     >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                {isAllDiscovered ? (
+                  <div
+                    id="clues_exhausted_banner"
+                    className={`w-full py-4 px-4 rounded-2xl bg-[#0b0e14] border-2 border-emerald-600/50 text-emerald-300 font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} text-xs sm:text-sm text-center flex flex-col items-center justify-center gap-1 shadow-md`}
+                  >
+                    <div className="flex items-center gap-2 text-emerald-400 font-black">
+                      <Shield className="w-4 h-4 shrink-0" />
+                      <span>
+                        {isEn
+                          ? `ALL EVIDENCE DISCOVERED • ${maxClues} / ${maxClues} CLUES`
+                          : `تم الكشف عن جميع الأدلة • ${maxClues} من ${maxClues} قرائن`}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-[#a39a8c] font-medium">
+                      {t.allEvidenceRevealedBanner}
+                    </span>
+                  </div>
+                ) : clueRevealedThisRound ? (
+                  <div
+                    id="clue_revealed_this_round_banner"
+                    className={`w-full py-3.5 px-4 rounded-2xl bg-amber-950/40 border-2 border-amber-500/40 text-amber-200 font-bold ${isRtl ? "font-['Cairo']" : 'font-sans'} text-xs sm:text-sm flex flex-col items-center justify-center gap-1 shadow-sm text-center`}
+                  >
+                    <div className="flex items-center gap-2 text-amber-300 font-black">
+                      <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>{t.clueLimitReachedThisRound}</span>
+                    </div>
+                    <span className="text-[11px] text-amber-300/80 font-medium">
+                      {isEn
+                        ? `Next clue available in Round ${round + 1} • Remaining: ${remaining} of ${maxClues}`
+                        : `الدليل التالي متاح في الجولة ${round + 1} • المتبقي: ${remaining} من ${maxClues}`}
+                    </span>
+                  </div>
+                ) : canRevealClue && hasMoreEvidence && onRevealNextEvidence ? (
+                  <button
+                    id="btn_reveal_next_evidence"
+                    onClick={handleRevealClue}
+                    disabled={isRevealing}
+                    aria-label={
+                      isEn
+                        ? `Request New Clue (${totalRevealedCount} of ${maxClues} discovered)`
+                        : `طلب فحص دليل جديد (${totalRevealedCount} من ${maxClues} مكشوف)`
+                    }
+                    className={`w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-[#171c2c] via-[#20273c] to-[#171c2c] border-2 border-[#c8923a]/70 hover:border-[#f3cb79] hover:brightness-110 text-[#f3cb79] font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-sm sm:text-base flex flex-col items-center justify-center gap-1 transition-all cursor-pointer shadow-lg active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    <div className="flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-amber-400" />
                       <span>
                         {isEn
-                          ? `Request Next Clue (${totalRevealedCount} / ${maxClues} revealed)`
-                          : `طلب فحص دليل إضافي (${totalRevealedCount} / ${maxClues} مكشوف)`}
+                          ? `Request New Clue (${totalRevealedCount} / ${maxClues} Discovered)`
+                          : `طلب فحص دليل جديد (${totalRevealedCount} من ${maxClues} مكتشف)`}
                       </span>
-                    </button>
-                  );
-                }
-
-                return null;
-              })()}
+                    </div>
+                    <span className="text-[11px] text-[#b0a99c] font-medium">
+                      {isEn
+                        ? `1 clue max per round • ${remaining} remaining in case file`
+                        : `دليل واحد كحد أقصى لكل جولة • متبقي ${remaining} في ملف القضية`}
+                    </span>
+                  </button>
+                ) : null}
+              </div>
             </motion.div>
           )}
 
