@@ -385,9 +385,10 @@ console.log('\n--- 9. Testing One-Clue-Per-Round, Duplicate Protection & Clue Ex
   const blockedState = engine.revealEvidence('another_clue');
   assert(blockedState.revealedEvidenceIds.length === 1, 'Second clue reveal blocked in same round');
 
-  // Advance to voting and round 2
+  // Advance to voting and round 2 (vote for an innocent player so game continues to round 2)
   engine.startVoting();
-  engine.getState().players.forEach(p => engine.castVote(p.id, p.id === 1 ? 2 : 1));
+  const innocentToVote = engine.getState().players.find(p => !p.guilty)!;
+  engine.getState().players.forEach(p => engine.castVote(p.id, innocentToVote.id));
   engine.resolveVotes();
   engine.proceedAfterVoteResult();
 
