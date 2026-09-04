@@ -37,6 +37,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
   const [isPassReady, setIsPassReady] = useState<boolean>(false);
   const [isConfirming, setIsConfirming] = useState<boolean>(false);
   const [collectedVotes, setCollectedVotes] = useState<Record<number, number>>({});
+  const [showExitConfirm, setShowExitConfirm] = useState<boolean>(false);
 
   const currentVoter = activePlayers[currentVoterIdx];
   // Eligible targets: all living players except the current voter (self-voting prohibited)
@@ -163,7 +164,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
           <button
             onClick={() => {
               sound.playClick();
-              if (onNavigateHome) onNavigateHome();
+              setShowExitConfirm(true);
             }}
             className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-[#c8923a]/70 text-[#e5b35a] flex items-center justify-center hover:bg-black/90 hover:border-[#f3cb79] transition-all cursor-pointer active:scale-95 shadow-lg shadow-black/80"
             title={t.home}
@@ -395,6 +396,46 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Confirmation Modal when Leaving Active Voting Session */}
+      <AnimatePresence>
+        {showExitConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className={`w-full max-w-sm rounded-[28px] bg-[#0e111a] border-2 border-amber-500/40 p-6 text-center text-slate-100 flex flex-col gap-4 shadow-2xl ${isRtl ? "font-['Cairo']" : 'font-sans'}`}
+            >
+              <h3 className="text-lg font-black text-[#f3cb79]">
+                {isEn ? 'Leave Voting Session?' : 'مغادرة جلسة التصويت؟'}
+              </h3>
+              <p className="text-xs sm:text-sm text-[#b0a99c] leading-relaxed">
+                {isEn
+                  ? 'Are you sure you want to exit the active voting session and return to the main menu?'
+                  : 'هل أنت متأكد من رغبتك في مغادرة جلسة التصويت الحالية والعودة إلى القائمة الرئيسية؟'}
+              </p>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowExitConfirm(false)}
+                  className="flex-1 py-3 rounded-xl bg-black/50 border border-slate-700 text-slate-300 font-bold text-sm hover:bg-black/70 cursor-pointer transition-all"
+                >
+                  {isEn ? 'Continue Voting' : 'متابعة التصويت'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowExitConfirm(false);
+                    if (onNavigateHome) onNavigateHome();
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-red-900/80 border border-red-600 text-red-100 font-bold text-sm hover:bg-red-800 cursor-pointer transition-all"
+                >
+                  {isEn ? 'Yes, Leave' : 'نعم، مغادرة'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

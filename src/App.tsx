@@ -171,6 +171,11 @@ export default function App() {
   };
 
   const handleProceedToVoting = () => {
+    try {
+      gameEngine.startVoting();
+    } catch (e) {
+      console.error('Error starting voting via GameEngine', e);
+    }
     setCurrentScreen('voting');
   };
 
@@ -192,11 +197,21 @@ export default function App() {
 
   const handleProceedToTruth = (determinedWinner: 'innocents' | 'guilty') => {
     adService.requestInterstitial('game_end', () => {
+      try {
+        gameEngine.proceedAfterVoteResult();
+      } catch (e) {
+        console.error('Error proceeding after vote result', e);
+      }
       setCurrentScreen('killer_reveal');
     });
   };
 
   const handleProceedToExplanation = () => {
+    try {
+      gameEngine.proceedToCrimeExplanation();
+    } catch (e) {
+      console.error('Error advancing to crime explanation', e);
+    }
     setCurrentScreen('crime_explanation');
   };
 
@@ -205,6 +220,11 @@ export default function App() {
   };
 
   const handleProceedToResults = () => {
+    try {
+      gameEngine.proceedToGameOver();
+    } catch (e) {
+      console.error('Error advancing to game over', e);
+    }
     setCurrentScreen('results');
   };
 
@@ -414,7 +434,6 @@ export default function App() {
                 voteResult={gameState.lastVoteResult}
                 onProceedNextRound={handleProceedNextRound}
                 onProceedToTruth={handleProceedToTruth}
-                onBack={() => setCurrentScreen('voting')}
                 onNavigateHome={handleNavigateHome}
                 language={language}
                 secretBallotMode={settings.secretBallotMode}
