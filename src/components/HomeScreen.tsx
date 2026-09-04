@@ -280,6 +280,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       <RatingModal
         isOpen={showRatingModal}
         onClose={() => setShowRatingModal(false)}
+        language={language}
       />
     </div>
   );

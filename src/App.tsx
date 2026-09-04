@@ -22,6 +22,7 @@ import { BannerAd } from './components/ads/BannerAd';
 import { InterstitialAdModal } from './components/ads/InterstitialAdModal';
 import { adService } from './services/adService';
 import { sound } from './utils/audio';
+import { validateFirebaseConnection } from './services/firebase';
 
 export default function App() {
   // Stable GameEngine instance that survives renders
@@ -72,6 +73,11 @@ export default function App() {
   useEffect(() => {
     return gameEngine.subscribe(setGameState);
   }, [gameEngine]);
+
+  // Validate connection to Firebase Firestore on initial boot
+  useEffect(() => {
+    validateFirebaseConnection();
+  }, []);
 
   // UI Navigation & Stories State
   const [currentScreen, setCurrentScreen] = useState<GameScreen>('home');

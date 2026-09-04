@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "FeedbackRating": {
+      "type": "object",
+      "properties": {
+        "rating": {
+          "type": "number",
+          "description": "Star rating from 1 to 5",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "feedback": {
+          "type": "string",
+          "description": "Constructive suggestions or bug comments from players",
+          "maxLength": 1000
+        },
+        "category": {
+          "type": "string",
+          "description": "Feedback category (e.g. gameplay, bugs, stories, general)",
+          "maxLength": 50
+        },
+        "appVersion": {
+          "type": "string",
+          "description": "App version at time of submission",
+          "maxLength": 20
+        },
+        "language": {
+          "type": "string",
+          "description": "User UI language ('ar' or 'en')",
+          "maxLength": 10
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp string of when feedback was submitted"
+        }
+      },
+      "required": ["rating", "feedback", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/ratings/{ratingId}": {
+      "schema": "FeedbackRating",
+      "description": "Player ratings and constructive feedback submissions"
+    }
+  }
+}

@@ -54,7 +54,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose, languag
           </div>
           <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-black/40 border border-[#7a5c2b]/40 text-[#f5ebd9]">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{isEn ? 'Secret info for your eyes only' : 'معلوماتك السرية لك وحدك'}</span>
+            <span>{isEn ? 'Clever deduction & unmasking deceit' : 'حوار ذكي لكشف القاتل والخداع'}</span>
           </div>
           <div className="flex items-center gap-2 p-2.5 rounded-2xl bg-black/40 border border-[#7a5c2b]/40 text-[#f5ebd9]">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
