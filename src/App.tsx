@@ -203,13 +203,13 @@ export default function App() {
 
   const handleProceedNextRound = () => {
     adService.requestInterstitial('round_transition', () => {
-      coordinator.proceedAfterVoteResult(false);
+      coordinator.proceedAfterVoteResult();
     });
   };
 
-  const handleProceedToTruth = (determinedWinner: 'innocents' | 'guilty') => {
+  const handleProceedToTruth = (_determinedWinner: 'innocents' | 'guilty') => {
     adService.requestInterstitial('game_end', () => {
-      coordinator.proceedAfterVoteResult(true);
+      coordinator.proceedAfterVoteResult();
     });
   };
 

@@ -95,9 +95,9 @@ console.log('--- TEST 2: If GameEngine.proceedAfterVoteResult() throws, UI does 
 
   // Case A: No active game
   check(harness.getScreen() === 'vote_result', 'Initial screen is vote_result');
-  const resultA = harness.coordinator.proceedAfterVoteResult(true);
+  const resultA = harness.coordinator.proceedAfterVoteResult();
   check(resultA === false, 'proceedAfterVoteResult returned false');
-  check(harness.getScreen() === 'vote_result', 'Screen remained on vote_result, did NOT advance to killer_reveal');
+  check(harness.getScreen() === 'vote_result', 'Screen remained on vote_result, did NOT advance');
   check(harness.getError() !== null, 'Error was set');
 
   // Case B: Simulated rejection for killer reveal
@@ -110,16 +110,9 @@ console.log('--- TEST 2: If GameEngine.proceedAfterVoteResult() throws, UI does 
     throw new Error('Vote result resolution in progress');
   };
 
-  const resultB = harness.coordinator.proceedAfterVoteResult(true);
+  const resultB = harness.coordinator.proceedAfterVoteResult();
   check(resultB === false, 'Returned false on throw');
-  check(harness.getScreen() === 'vote_result', 'Screen remained on vote_result, did NOT advance to killer_reveal');
-  check(harness.getError() === 'Vote result resolution in progress', 'Error message recorded');
-
-  // Case C: Simulated rejection for next round (free_discussion)
-  harness.clearError();
-  const resultC = harness.coordinator.proceedAfterVoteResult(false);
-  check(resultC === false, 'Returned false for next round attempt');
-  check(harness.getScreen() === 'vote_result', 'Screen remained on vote_result, did NOT advance to free_discussion');
+  check(harness.getScreen() === 'vote_result', 'Screen remained on vote_result, did NOT advance');
   check(harness.getError() === 'Vote result resolution in progress', 'Error message recorded');
 
   engine.proceedAfterVoteResult = originalProceed;
@@ -281,9 +274,9 @@ console.log('--- TEST 6: Successful GameEngine transitions DO navigate correctly
   check(resolveSuccess === true, 'resolveVotes succeeded');
   check(harness.getScreen() === 'vote_result', 'Screen navigated to vote_result');
 
-  // Step 5: Next round (not game over) -> transitions to free_discussion
+  // Step 5: Next round (not game over) -> transitions to free_discussion based on engine state
   check(engine.getState().winner === 'NONE', 'Game is not over yet');
-  const nextRoundSuccess = harness.coordinator.proceedAfterVoteResult(false);
+  const nextRoundSuccess = harness.coordinator.proceedAfterVoteResult();
   check(nextRoundSuccess === true, 'proceedAfterVoteResult for next round succeeded');
   check(harness.getScreen() === 'free_discussion', 'Screen navigated back to free_discussion for round 2');
 
@@ -299,8 +292,8 @@ console.log('--- TEST 6: Successful GameEngine transitions DO navigate correctly
   check(harness.getScreen() === 'vote_result', 'Navigated to round 2 vote_result');
   check(engine.getState().winner === 'INNOCENTS', 'Innocents have won');
 
-  // Step 7: Proceed to truth (game over) -> transitions to killer_reveal
-  const revealSuccess = harness.coordinator.proceedAfterVoteResult(true);
+  // Step 7: Proceed to truth (game over) -> transitions to killer_reveal based on engine state
+  const revealSuccess = harness.coordinator.proceedAfterVoteResult();
   check(revealSuccess === true, 'proceedAfterVoteResult for game over succeeded');
   check(harness.getScreen() === 'killer_reveal', 'Screen navigated to killer_reveal');
 

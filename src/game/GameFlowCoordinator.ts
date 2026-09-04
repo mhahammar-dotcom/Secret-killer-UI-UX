@@ -13,8 +13,9 @@ export interface TransitionCallbacks {
  * GameFlowCoordinator enforces authoritative synchronization between GameEngine state transitions
  * and UI screen navigation.
  * 
- * CORE RULE:
- * The UI screen must NEVER advance if the authoritative GameEngine transition fails.
+ * CORE RULES:
+ * 1. The UI screen must NEVER advance if the authoritative GameEngine transition fails.
+ * 2. Destinations are determined by authoritative GameEngine state, NOT caller-controlled booleans.
  */
 export class GameFlowCoordinator {
   constructor(
@@ -24,13 +25,21 @@ export class GameFlowCoordinator {
 
   /**
    * Starts voting phase.
-   * UI screen advances to 'voting' ONLY if GameEngine transition succeeds.
+   * UI screen advances to 'voting' ONLY if GameEngine transition succeeds and phase is VOTING.
    */
   public startVoting(): boolean {
     try {
-      this.gameEngine.startVoting();
-      this.callbacks.setScreen('voting');
-      return true;
+      const state = this.gameEngine.startVoting();
+      if (state.phase === 'VOTING') {
+        this.callbacks.setScreen('voting');
+        return true;
+      } else {
+        throw new Error(
+          this.callbacks.getLanguage() === 'en'
+            ? 'Game failed to enter voting phase.'
+            : 'فشل الانتقال إلى مرحلة التصويت.'
+        );
+      }
     } catch (e: any) {
       console.error('Error starting voting via GameEngine:', e);
       const isEn = this.callbacks.getLanguage() === 'en';
@@ -43,13 +52,22 @@ export class GameFlowCoordinator {
 
   /**
    * Resolves votes cast in voting phase.
-   * UI screen advances to 'vote_result' ONLY if GameEngine transition succeeds.
+   * UI screen advances to 'vote_result' ONLY if GameEngine transition succeeds and phase is VOTE_RESULT.
    */
   public resolveVotes(votes: Record<number, number>): boolean {
     try {
       this.gameEngine.resolveVotes(votes);
-      this.callbacks.setScreen('vote_result');
-      return true;
+      const state = this.gameEngine.getState();
+      if (state.phase === 'VOTE_RESULT') {
+        this.callbacks.setScreen('vote_result');
+        return true;
+      } else {
+        throw new Error(
+          this.callbacks.getLanguage() === 'en'
+            ? 'Failed to record vote results.'
+            : 'فشل تسجيل نتائج التصويت.'
+        );
+      }
     } catch (e: any) {
       console.error('Error resolving votes via GameEngine:', e);
       const isEn = this.callbacks.getLanguage() === 'en';
@@ -62,15 +80,24 @@ export class GameFlowCoordinator {
 
   /**
    * Proceeds after vote result to next round ('free_discussion') or killer reveal ('killer_reveal').
+   * Destination is authoritatively determined from GameEngine state:
+   * - If phase === 'KILLER_REVEAL' or winner !== 'NONE' -> 'killer_reveal'
+   * - If phase === 'DISCUSSION' and winner === 'NONE' -> 'free_discussion'
    * UI screen advances ONLY if GameEngine transition succeeds.
    */
-  public proceedAfterVoteResult(isGameOver: boolean): boolean {
+  public proceedAfterVoteResult(): boolean {
     try {
-      this.gameEngine.proceedAfterVoteResult();
-      if (isGameOver) {
+      const state = this.gameEngine.proceedAfterVoteResult();
+      if (state.phase === 'KILLER_REVEAL' || state.winner !== 'NONE') {
         this.callbacks.setScreen('killer_reveal');
-      } else {
+      } else if (state.phase === 'DISCUSSION') {
         this.callbacks.setScreen('free_discussion');
+      } else {
+        throw new Error(
+          this.callbacks.getLanguage() === 'en'
+            ? 'Unexpected game state after vote result.'
+            : 'حالة غير متوقعة للعبة بعد نتيجة التصويت.'
+        );
       }
       return true;
     } catch (e: any) {
@@ -85,13 +112,21 @@ export class GameFlowCoordinator {
 
   /**
    * Proceeds from killer reveal to crime explanation.
-   * UI screen advances to 'crime_explanation' ONLY if GameEngine transition succeeds.
+   * UI screen advances to 'crime_explanation' ONLY if GameEngine transition succeeds and phase is CRIME_EXPLANATION.
    */
   public proceedToCrimeExplanation(): boolean {
     try {
-      this.gameEngine.proceedToCrimeExplanation();
-      this.callbacks.setScreen('crime_explanation');
-      return true;
+      const state = this.gameEngine.proceedToCrimeExplanation();
+      if (state.phase === 'CRIME_EXPLANATION') {
+        this.callbacks.setScreen('crime_explanation');
+        return true;
+      } else {
+        throw new Error(
+          this.callbacks.getLanguage() === 'en'
+            ? 'Failed to advance to crime explanation.'
+            : 'فشل الانتقال إلى تفاصيل الجريمة.'
+        );
+      }
     } catch (e: any) {
       console.error('Error advancing to crime explanation:', e);
       const isEn = this.callbacks.getLanguage() === 'en';
@@ -104,13 +139,21 @@ export class GameFlowCoordinator {
 
   /**
    * Proceeds from reveal truth to final game results.
-   * UI screen advances to 'results' ONLY if GameEngine transition succeeds.
+   * UI screen advances to 'results' ONLY if GameEngine transition succeeds and phase is GAME_OVER.
    */
   public proceedToGameOver(): boolean {
     try {
-      this.gameEngine.proceedToGameOver();
-      this.callbacks.setScreen('results');
-      return true;
+      const state = this.gameEngine.proceedToGameOver();
+      if (state.phase === 'GAME_OVER') {
+        this.callbacks.setScreen('results');
+        return true;
+      } else {
+        throw new Error(
+          this.callbacks.getLanguage() === 'en'
+            ? 'Failed to advance to game over.'
+            : 'فشل الانتقال إلى نتائج اللعبة.'
+        );
+      }
     } catch (e: any) {
       console.error('Error advancing to game over:', e);
       const isEn = this.callbacks.getLanguage() === 'en';
@@ -144,7 +187,7 @@ export class GameFlowCoordinator {
 
   /**
    * Starts a new game with authoritative validation.
-   * UI screen advances to 'role_pass' ONLY if GameEngine successfully starts match.
+   * UI screen advances to 'role_pass' ONLY if GameEngine successfully starts match in ROLE_PASS phase.
    */
   public startNewGame(story: Story, playerNames: string[]): boolean {
     try {
@@ -175,9 +218,17 @@ export class GameFlowCoordinator {
    */
   public resetRolePass(): boolean {
     try {
-      this.gameEngine.resetRolePass();
-      this.callbacks.setScreen('player_setup');
-      return true;
+      const state = this.gameEngine.resetRolePass();
+      if (state.currentViewingPlayerIndex === 0) {
+        this.callbacks.setScreen('player_setup');
+        return true;
+      } else {
+        throw new Error(
+          this.callbacks.getLanguage() === 'en'
+            ? 'Failed to reset role pass.'
+            : 'تعذر إعادة تعيين تمرير الأدوار.'
+        );
+      }
     } catch (e: any) {
       console.error('Failed to reset role pass:', e);
       const isEn = this.callbacks.getLanguage() === 'en';
@@ -190,13 +241,21 @@ export class GameFlowCoordinator {
 
   /**
    * Resets game to lobby/home or story_select.
-   * UI screen advances ONLY if reset succeeds.
+   * UI screen advances ONLY if reset succeeds and phase is LOBBY.
    */
   public resetToLobby(targetScreen: 'home' | 'story_select'): boolean {
     try {
-      this.gameEngine.resetToLobby();
-      this.callbacks.setScreen(targetScreen);
-      return true;
+      const state = this.gameEngine.resetToLobby();
+      if (state.phase === 'LOBBY') {
+        this.callbacks.setScreen(targetScreen);
+        return true;
+      } else {
+        throw new Error(
+          this.callbacks.getLanguage() === 'en'
+            ? 'Failed to reset game state.'
+            : 'فشل إعادة تعيين حالة اللعبة.'
+        );
+      }
     } catch (e: any) {
       console.error('Error resetting game to lobby:', e);
       const isEn = this.callbacks.getLanguage() === 'en';
