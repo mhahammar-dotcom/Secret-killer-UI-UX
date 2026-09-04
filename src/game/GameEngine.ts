@@ -434,6 +434,10 @@ export class GameEngine {
    * Enters voting phase for the current round
    */
   public startVoting(): GameState {
+    if (!this.state.story) {
+      throw new Error('Cannot start voting: no active game.');
+    }
+
     this.state = {
       ...this.state,
       phase: 'VOTING',
@@ -536,6 +540,10 @@ export class GameEngine {
    * Proceeds from vote result screen to either next discussion round or killer reveal
    */
   public proceedAfterVoteResult(): GameState {
+    if (!this.state.story) {
+      throw new Error('Cannot proceed after vote result: no active game.');
+    }
+
     if (this.state.winner !== 'NONE') {
       this.state = {
         ...this.state,
@@ -567,6 +575,10 @@ export class GameEngine {
    * Advances from Killer Reveal to Crime Explanation
    */
   public proceedToCrimeExplanation(): GameState {
+    if (!this.state.story) {
+      throw new Error('Cannot proceed to crime explanation: no active game.');
+    }
+
     this.state = {
       ...this.state,
       phase: 'CRIME_EXPLANATION'
@@ -579,6 +591,10 @@ export class GameEngine {
    * Advances to Final Results / Game Over
    */
   public proceedToGameOver(): GameState {
+    if (!this.state.story) {
+      throw new Error('Cannot proceed to game over: no active game.');
+    }
+
     this.state = {
       ...this.state,
       phase: 'GAME_OVER'

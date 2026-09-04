@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GameScreen, StoryData, PlayerData, GameSettings } from './types';
 import { BUILT_IN_STORIES, loadCustomStories, saveCustomStory, localizeStory, localizeStories } from './data/cases';
-import { GameEngine, StoryEngine, Story, GameState } from './game';
+import { GameEngine, StoryEngine, Story, GameState, GameFlowCoordinator } from './game';
 import { HomeScreen } from './components/HomeScreen';
 import { StorySelectScreen } from './components/StorySelectScreen';
 import { CaseIntroScreen } from './components/CaseIntroScreen';
@@ -77,6 +77,35 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<GameScreen>('home');
   const [stories, setStories] = useState<StoryData[]>(BUILT_IN_STORIES);
   const [selectedStory, setSelectedStory] = useState<StoryData>(BUILT_IN_STORIES[0]);
+  const [transitionError, setTransitionError] = useState<string | null>(null);
+
+  // Auto-dismiss transition error message after 4.5 seconds
+  useEffect(() => {
+    if (transitionError) {
+      const timer = setTimeout(() => {
+        setTransitionError(null);
+      }, 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [transitionError]);
+
+  // Keep references for stable coordinator callbacks
+  const currentScreenRef = useRef<GameScreen>(currentScreen);
+  currentScreenRef.current = currentScreen;
+
+  const languageRef = useRef<'ar' | 'en'>(language);
+  languageRef.current = language;
+
+  const coordinatorRef = useRef<GameFlowCoordinator | null>(null);
+  if (!coordinatorRef.current) {
+    coordinatorRef.current = new GameFlowCoordinator(gameEngine, {
+      getScreen: () => currentScreenRef.current,
+      setScreen: (screen: GameScreen) => setCurrentScreen(screen),
+      setError: (err: string | null) => setTransitionError(err),
+      getLanguage: () => languageRef.current,
+    });
+  }
+  const coordinator = coordinatorRef.current;
 
   // Modals state
   const [showRules, setShowRules] = useState(false);
@@ -147,72 +176,45 @@ export default function App() {
 
   // Start new game via GameEngine
   const handleConfirmPlayers = (playerNames: string[]) => {
-    try {
-      const localizedStory = localizeStory(selectedStory, language);
-      const newState = gameEngine.startNewGame(localizedStory as unknown as Story, playerNames);
-      if (newState.phase === 'ROLE_PASS') {
-        setCurrentScreen('role_pass');
-      }
-    } catch (error: any) {
-      console.error('Failed to start game via GameEngine:', error);
-      alert(error?.message || (isEn ? 'Failed to start game. Please verify player settings.' : 'تعذر بدء اللعبة، يرجى التأكد من صحة إعدادات اللاعبين'));
-    }
+    const localizedStory = localizeStory(selectedStory, language);
+    coordinator.startNewGame(localizedStory as unknown as Story, playerNames);
   };
 
   const handleAdvanceRolePass = () => {
-    const updatedState = gameEngine.advanceRolePass();
-    if (updatedState.phase === 'DISCUSSION') {
-      setCurrentScreen('free_discussion');
-    }
+    coordinator.advanceRolePass();
   };
 
   const handleRevealNextEvidence = () => {
-    gameEngine.revealNextEvidence();
+    try {
+      gameEngine.revealNextEvidence();
+    } catch (e: any) {
+      console.error('Error revealing evidence:', e);
+      setTransitionError(e?.message || (isEn ? 'Cannot reveal more evidence.' : 'لا يمكن كشف المزيد من الأدلة.'));
+    }
   };
 
   const handleProceedToVoting = () => {
-    try {
-      gameEngine.startVoting();
-    } catch (e) {
-      console.error('Error starting voting via GameEngine', e);
-    }
-    setCurrentScreen('voting');
+    coordinator.startVoting();
   };
 
   const handleCompleteVoting = (votes: Record<number, number>) => {
-    try {
-      gameEngine.resolveVotes(votes);
-    } catch (e) {
-      console.error('Error resolving votes via GameEngine', e);
-    }
-    setCurrentScreen('vote_result');
+    coordinator.resolveVotes(votes);
   };
 
   const handleProceedNextRound = () => {
     adService.requestInterstitial('round_transition', () => {
-      gameEngine.proceedAfterVoteResult();
-      setCurrentScreen('free_discussion');
+      coordinator.proceedAfterVoteResult(false);
     });
   };
 
   const handleProceedToTruth = (determinedWinner: 'innocents' | 'guilty') => {
     adService.requestInterstitial('game_end', () => {
-      try {
-        gameEngine.proceedAfterVoteResult();
-      } catch (e) {
-        console.error('Error proceeding after vote result', e);
-      }
-      setCurrentScreen('killer_reveal');
+      coordinator.proceedAfterVoteResult(true);
     });
   };
 
   const handleProceedToExplanation = () => {
-    try {
-      gameEngine.proceedToCrimeExplanation();
-    } catch (e) {
-      console.error('Error advancing to crime explanation', e);
-    }
-    setCurrentScreen('crime_explanation');
+    coordinator.proceedToCrimeExplanation();
   };
 
   const handleProceedToTruthReveal = () => {
@@ -220,22 +222,15 @@ export default function App() {
   };
 
   const handleProceedToResults = () => {
-    try {
-      gameEngine.proceedToGameOver();
-    } catch (e) {
-      console.error('Error advancing to game over', e);
-    }
-    setCurrentScreen('results');
+    coordinator.proceedToGameOver();
   };
 
   const handlePlayAgain = () => {
-    gameEngine.resetToLobby();
-    setCurrentScreen('story_select');
+    coordinator.resetToLobby('story_select');
   };
 
   const handleNavigateHome = () => {
-    gameEngine.resetToLobby();
-    setCurrentScreen('home');
+    coordinator.resetToLobby('home');
   };
 
   // Data adapter: convert GameEngine Player shape to UI PlayerData shape
@@ -357,10 +352,7 @@ export default function App() {
                 players={gameState.players}
                 currentViewingIndex={gameState.currentViewingPlayerIndex}
                 onAdvanceRolePass={handleAdvanceRolePass}
-                onBack={() => {
-                  gameEngine.resetRolePass();
-                  setCurrentScreen('player_setup');
-                }}
+                onBack={() => coordinator.resetRolePass()}
                 onNavigateHome={handleNavigateHome}
                 language={language}
               />
@@ -522,6 +514,29 @@ export default function App() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Localized Transition Error Banner */}
+      <AnimatePresence>
+        {transitionError && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-md w-full px-4 pointer-events-auto"
+          >
+            <div className="bg-red-950/95 border border-red-500/80 text-red-100 px-4 py-3 rounded-2xl shadow-2xl flex items-center justify-between gap-3 backdrop-blur-md">
+              <span className="text-sm font-semibold">{transitionError}</span>
+              <button
+                type="button"
+                onClick={() => setTransitionError(null)}
+                className="text-red-300 hover:text-white text-xs px-2.5 py-1 rounded-lg bg-red-900/60 font-bold hover:bg-red-900 transition-colors"
+              >
+                {isEn ? 'Dismiss' : 'إغلاق'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modals */}
       <RulesModal

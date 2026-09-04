@@ -9,3 +9,4 @@ export * from './StoryStore';
 export * from './StorySolutionEngine';
 export * from './ClueEngine';
 export * from './GameEngine';
+export * from './GameFlowCoordinator';
