@@ -5,6 +5,7 @@ import { StoryData, PlayerData } from '../types';
 import { sound } from '../utils/audio';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 import culpritRevealImg from '../assets/images/noir_culprit_reveal_1787831528598.jpg';
+import { STORY_DEDUCTION_DATABASE, GuiltyProfile } from '../game/StorySolutionEngine';
 
 interface KillerRevealScreenProps {
   story: StoryData;
@@ -41,23 +42,28 @@ export const KillerRevealScreen: React.FC<KillerRevealScreenProps> = ({
     eliminated: false,
   };
 
+  const caseData = STORY_DEDUCTION_DATABASE[story.id];
+  const primaryProfile: GuiltyProfile | undefined = caseData
+    ? Object.values(caseData.culprits).find((c) => {
+        const charName = primaryKiller.character.name;
+        return c.name === charName || charName.includes(c.name) || c.name.includes(charName);
+      })
+    : undefined;
+
   useEffect(() => {
     sound.playRoleReveal();
   }, []);
 
   const getConfession = () => {
-    if (isEn) {
-      if (story.id === 'dreams') {
-        return 'I disabled the systems and accessed the chamber to purge the memory logs!';
-      } else if (story.id === 'gala_toast') {
-        return 'I slipped the poison into Murad\'s glass while everyone was distracted by the toast!';
+    if (primaryProfile) {
+      if (isEn) {
+        return `"${primaryProfile.actionEn} ${primaryProfile.motiveEn}"`;
       }
-      return 'I orchestrated the crime and deceived everyone throughout the investigation!';
+      return `"${primaryProfile.actionAr} ${primaryProfile.motiveAr}"`;
     }
-    if (story.id === 'dreams') {
-      return 'لقد عطلت الأنظمة وفتحت الممر السري لمسح سجلات الذاكرة!';
-    } else if (story.id === 'gala_toast') {
-      return 'لقد دسست السم في كأس مراد أثناء انشغال الجميع بالحفل!';
+
+    if (isEn) {
+      return 'I orchestrated the crime and deceived everyone throughout the investigation!';
     }
     return 'لقد نفذت الجريمة وضللت أصابع الاتهام طوال الجلسة!';
   };

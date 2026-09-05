@@ -4,6 +4,7 @@ import { Target, FileText, Syringe, Trash2, ArrowLeft, ChevronLeft, Home } from 
 import { StoryData, PlayerData } from '../types';
 import { sound } from '../utils/audio';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
+import { STORY_DEDUCTION_DATABASE, GuiltyProfile } from '../game/StorySolutionEngine';
 
 interface CrimeExplanationScreenProps {
   story: StoryData;
@@ -26,74 +27,124 @@ export const CrimeExplanationScreen: React.FC<CrimeExplanationScreenProps> = ({
   const t = isEn ? EN_STRINGS : AR_STRINGS;
   const isRtl = !isEn;
 
+  const guiltyPlayers = players.filter((p) => p.guilty);
+  const caseData = STORY_DEDUCTION_DATABASE[story.id];
+
+  // Retrieve actual guilty profiles for the active guilty players
+  const culpritsProfiles: GuiltyProfile[] = [];
+  if (caseData) {
+    guiltyPlayers.forEach((p) => {
+      const charName = p.character.name;
+      const foundKey = Object.keys(caseData.culprits).find(
+        (k) => k === charName || charName.includes(k) || k.includes(charName)
+      );
+      if (foundKey) {
+        culpritsProfiles.push(caseData.culprits[foundKey]);
+      }
+    });
+  }
+
   const getExplanationCards = () => {
+    // If we have dynamic profiles from StorySolutionEngine, derive the 4 cards accurately
+    if (culpritsProfiles.length > 0) {
+      if (isEn) {
+        const motiveText = culpritsProfiles.length === 1
+          ? culpritsProfiles[0].motiveEn
+          : culpritsProfiles.map((c) => `${c.nameEn}: ${c.motiveEn}`).join(' ');
+
+        const planText = culpritsProfiles.length === 1
+          ? culpritsProfiles[0].actionEn
+          : culpritsProfiles.map((c) => `${c.nameEn}: ${c.actionEn}`).join(' ');
+
+        const executionText = culpritsProfiles.length === 1
+          ? culpritsProfiles[0].methodEn
+          : culpritsProfiles.map((c) => `${c.nameEn}: ${c.methodEn}`).join(' ');
+
+        const concealmentText = culpritsProfiles.length === 1
+          ? culpritsProfiles[0].cluesEn
+          : `${culpritsProfiles.map((c) => `${c.nameEn}: ${c.cluesEn}`).join(' ')} ${caseData ? `Shared Evidence: ${caseData.sharedEvidenceEn}` : ''}`;
+
+        return [
+          {
+            id: 'motive',
+            title: t.motive,
+            icon: Target,
+            iconColor: 'text-[#f3cb79] bg-[#c8923a]/20 border-[#c8923a]/50',
+            content: motiveText,
+          },
+          {
+            id: 'plan',
+            title: t.plan,
+            icon: FileText,
+            iconColor: 'text-blue-400 bg-blue-500/20 border-blue-500/40',
+            content: planText,
+          },
+          {
+            id: 'execution',
+            title: t.execution,
+            icon: Syringe,
+            iconColor: 'text-red-400 bg-red-500/20 border-red-500/40',
+            content: executionText,
+          },
+          {
+            id: 'concealment',
+            title: t.concealment,
+            icon: Trash2,
+            iconColor: 'text-purple-400 bg-purple-500/20 border-purple-500/40',
+            content: concealmentText,
+          },
+        ];
+      } else {
+        const motiveText = culpritsProfiles.length === 1
+          ? culpritsProfiles[0].motiveAr
+          : culpritsProfiles.map((c) => `${c.name}: ${c.motiveAr}`).join(' ');
+
+        const planText = culpritsProfiles.length === 1
+          ? culpritsProfiles[0].actionAr
+          : culpritsProfiles.map((c) => `${c.name}: ${c.actionAr}`).join(' ');
+
+        const executionText = culpritsProfiles.length === 1
+          ? culpritsProfiles[0].methodAr
+          : culpritsProfiles.map((c) => `${c.name}: ${c.methodAr}`).join(' ');
+
+        const concealmentText = culpritsProfiles.length === 1
+          ? culpritsProfiles[0].cluesAr
+          : `${culpritsProfiles.map((c) => `${c.name}: ${c.cluesAr}`).join(' ')} ${caseData ? `الأدلة المشتركة: ${caseData.sharedEvidenceAr}` : ''}`;
+
+        return [
+          {
+            id: 'motive',
+            title: t.motive,
+            icon: Target,
+            iconColor: 'text-[#f3cb79] bg-[#c8923a]/20 border-[#c8923a]/50',
+            content: motiveText,
+          },
+          {
+            id: 'plan',
+            title: t.plan,
+            icon: FileText,
+            iconColor: 'text-blue-400 bg-blue-500/20 border-blue-500/40',
+            content: planText,
+          },
+          {
+            id: 'execution',
+            title: t.execution,
+            icon: Syringe,
+            iconColor: 'text-red-400 bg-red-500/20 border-red-500/40',
+            content: executionText,
+          },
+          {
+            id: 'concealment',
+            title: t.concealment,
+            icon: Trash2,
+            iconColor: 'text-purple-400 bg-purple-500/20 border-purple-500/40',
+            content: concealmentText,
+          },
+        ];
+      }
+    }
+
     if (isEn) {
-      if (story.id === 'dreams') {
-        return [
-          {
-            id: 'motive',
-            title: t.motive,
-            icon: Target,
-            iconColor: 'text-[#f3cb79] bg-[#c8923a]/20 border-[#c8923a]/50',
-            content: 'Nader planned to steal the Core source code and sell it to a competing investor to launch his own venture for a fortune.',
-          },
-          {
-            id: 'plan',
-            title: t.plan,
-            icon: FileText,
-            iconColor: 'text-blue-400 bg-blue-500/20 border-blue-500/40',
-            content: 'He wanted to eliminate Dr. Samer and disable the West Wing surveillance during the blackout so he would become the sole director of the project.',
-          },
-          {
-            id: 'execution',
-            title: t.execution,
-            icon: Syringe,
-            iconColor: 'text-red-400 bg-red-500/20 border-red-500/40',
-            content: 'He entered Dr. Samer’s laboratory at 21:43 using his privileged access card and opened the hidden corridor while everyone was submerged in the collective dream.',
-          },
-          {
-            id: 'concealment',
-            title: t.concealment,
-            icon: Trash2,
-            iconColor: 'text-purple-400 bg-purple-500/20 border-purple-500/40',
-            content: 'He purged the shared memory logs and discarded an access card near the victim to divert suspicion toward the nocturnal security personnel.',
-          },
-        ];
-      }
-
-      if (story.id === 'gala_toast') {
-        return [
-          {
-            id: 'motive',
-            title: t.motive,
-            icon: Target,
-            iconColor: 'text-[#f3cb79] bg-[#c8923a]/20 border-[#c8923a]/50',
-            content: 'Samia discovered that Murad intended to write her out of his revised testament after years of loyal dedication.',
-          },
-          {
-            id: 'plan',
-            title: t.plan,
-            icon: FileText,
-            iconColor: 'text-blue-400 bg-blue-500/20 border-blue-500/40',
-            content: 'Her intimate knowledge of Murad’s medications allowed her to substitute his prescription with a double lethal dose that showed delayed symptoms.',
-          },
-          {
-            id: 'execution',
-            title: t.execution,
-            icon: Syringe,
-            iconColor: 'text-red-400 bg-red-500/20 border-red-500/40',
-            content: 'She took advantage of the moment Murad’s glass was left unattended on the side buffet to deftly stir in the fatal toxin.',
-          },
-          {
-            id: 'concealment',
-            title: t.concealment,
-            icon: Trash2,
-            iconColor: 'text-purple-400 bg-purple-500/20 border-purple-500/40',
-            content: 'She disposed of the empty blister pack in the service stairwell and pretended to step away for an urgent legal phone call.',
-          },
-        ];
-      }
-
       return [
         {
           id: 'motive',
@@ -126,97 +177,31 @@ export const CrimeExplanationScreen: React.FC<CrimeExplanationScreenProps> = ({
       ];
     }
 
-    if (story.id === 'dreams') {
-      return [
-        {
-          id: 'motive',
-          title: 'الدافع',
-          icon: Target,
-          iconColor: 'text-[#f3cb79] bg-[#c8923a]/20 border-[#c8923a]/50',
-          content: 'نادر كان يخطط لسرقة الكود الأساسي (Core) وبيعه لأحد الممولين المنافسين لبدء شركته الخاصة بمبلغ طائل.',
-        },
-        {
-          id: 'plan',
-          title: 'الخطة',
-          icon: FileText,
-          iconColor: 'text-blue-400 bg-blue-500/20 border-blue-500/40',
-          content: 'أراد التخلص من د. سامر وتعطيل كاميرات الممر الغربي عند انقطاع الطاقة حتى يصبح المسؤول الوحيد عن المشروع.',
-        },
-        {
-          id: 'execution',
-          title: 'تنفيذ الجريمة',
-          icon: Syringe,
-          iconColor: 'text-red-400 bg-red-500/20 border-red-500/40',
-          content: 'دخل مختبر د. سامر عند الساعة 21:43 مستغلاً صلاحياته الاستثنائية وفتح الممر السري أثناء نوم الحاضرين في الحلم المشترك.',
-        },
-        {
-          id: 'concealment',
-          title: 'إخفاء الأدلة',
-          icon: Trash2,
-          iconColor: 'text-purple-400 bg-purple-500/20 border-purple-500/40',
-          content: 'مسح سجلات الذاكرة المشتركة ورمى بطاقة الدخول بالقرب من الجثة لتشتيت الشبهات نحو حراس الأمن الليلي.',
-        },
-      ];
-    }
-
-    if (story.id === 'gala_toast') {
-      return [
-        {
-          id: 'motive',
-          title: 'الدافع',
-          icon: Target,
-          iconColor: 'text-[#f3cb79] bg-[#c8923a]/20 border-[#c8923a]/50',
-          content: 'سامية اكتشفت أن مراد ينوي استبعاد اسمها من الوصية المعدلة بعد سنوات من العمل الدؤوب معه.',
-        },
-        {
-          id: 'plan',
-          title: 'الخطة',
-          icon: FileText,
-          iconColor: 'text-blue-400 bg-blue-500/20 border-blue-500/40',
-          content: 'معرفتها بالملفات الطبية الدقيقة مكنتها من استبدال دوائه بجرعة مضاعفة قاتلة لا تترك أثراً فورياً.',
-        },
-        {
-          id: 'execution',
-          title: 'تنفيذ الجريمة',
-          icon: Syringe,
-          iconColor: 'text-red-400 bg-red-500/20 border-red-500/40',
-          content: 'استغلت اللحظات التي تُرك فيها كأس مراد على الطاولة الجانبية ودسّت المادة القاتلة ببراعة.',
-        },
-        {
-          id: 'concealment',
-          title: 'إخفاء الأدلة',
-          icon: Trash2,
-          iconColor: 'text-purple-400 bg-purple-500/20 border-purple-500/40',
-          content: 'تخلصت من شريط الدواء الفارغ في الممر الخلفي وادعت انشغالها بإجراء مكالمة قانونية عاجلة.',
-        },
-      ];
-    }
-
     return [
       {
         id: 'motive',
-        title: 'الدافع',
+        title: t.motive,
         icon: Target,
         iconColor: 'text-[#f3cb79] bg-[#c8923a]/20 border-[#c8923a]/50',
         content: story.introduction?.stakes || 'تحقيق مكاسب شخصية وإخفاء أسرار خطيرة عن أعين المحققين.',
       },
       {
         id: 'plan',
-        title: 'الخطة',
+        title: t.plan,
         icon: FileText,
         iconColor: 'text-blue-400 bg-blue-500/20 border-blue-500/40',
         content: story.introduction?.situation || 'استغلال ثغرات التوقيت والمكان لتنفيذ المخطط دون لفت الانتباه.',
       },
       {
         id: 'execution',
-        title: 'تنفيذ الجريمة',
+        title: t.execution,
         icon: Syringe,
         iconColor: 'text-red-400 bg-red-500/20 border-red-500/40',
         content: story.introduction?.incident || story.description,
       },
       {
         id: 'concealment',
-        title: 'إخفاء الأدلة',
+        title: t.concealment,
         icon: Trash2,
         iconColor: 'text-purple-400 bg-purple-500/20 border-purple-500/40',
         content: 'تشتيت أصابع الاتهام وتلفيق أدلة مضللة لعرقلة الوصول للحقيقة.',
