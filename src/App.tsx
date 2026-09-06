@@ -224,7 +224,7 @@ export default function App() {
   };
 
   const handleProceedToTruthReveal = () => {
-    setCurrentScreen('reveal_truth');
+    coordinator.proceedToTruthReveal();
   };
 
   const handleProceedToResults = () => {

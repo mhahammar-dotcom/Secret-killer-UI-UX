@@ -13,6 +13,7 @@ export type GamePhase =
   | 'VOTE_RESULT'
   | 'KILLER_REVEAL'
   | 'CRIME_EXPLANATION'
+  | 'REVEAL_TRUTH'
   | 'GAME_OVER';
 
 export type WinnerSide = 'INNOCENTS' | 'GUILTY' | 'NONE';

@@ -588,6 +588,22 @@ export class GameEngine {
   }
 
   /**
+   * Advances from Crime Explanation to Reveal Truth
+   */
+  public proceedToTruthReveal(): GameState {
+    if (!this.state.story) {
+      throw new Error('Cannot proceed to reveal truth: no active game.');
+    }
+
+    this.state = {
+      ...this.state,
+      phase: 'REVEAL_TRUTH'
+    };
+    this.notify();
+    return this.getState();
+  }
+
+  /**
    * Advances to Final Results / Game Over
    */
   public proceedToGameOver(): GameState {

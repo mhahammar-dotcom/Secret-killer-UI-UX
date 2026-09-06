@@ -234,6 +234,30 @@ console.log('--- TEST H: Crime Explanation Success and Failure ---');
 }
 
 // =========================================================================
+// TEST I1: TRUTH REVEAL SUCCESS/FAILURE
+// =========================================================================
+console.log('--- TEST I1: Truth Reveal Success and Failure ---');
+{
+  // 1. Success
+  const engine = new GameEngine();
+  const harness = createMockHarness(engine, 'crime_explanation');
+  engine.startNewGame(story, ['Alice', 'Bob', 'Charlie', 'David']);
+
+  const successResult = harness.coordinator.proceedToTruthReveal();
+  check(successResult === true, 'proceedToTruthReveal returned true on valid game');
+  check(engine.getState().phase === 'REVEAL_TRUTH', 'Engine phase is REVEAL_TRUTH');
+  check(harness.getScreen() === 'reveal_truth', 'UI navigated to reveal_truth');
+
+  // 2. Failure
+  const uninitEngine = new GameEngine();
+  const failHarness = createMockHarness(uninitEngine, 'crime_explanation');
+  const failResult = failHarness.coordinator.proceedToTruthReveal();
+  check(failResult === false, 'proceedToTruthReveal returned false when no active game');
+  check(failHarness.getScreen() === 'crime_explanation', 'UI remained on crime_explanation');
+  check(failHarness.getError() !== null, 'Error callback fired');
+}
+
+// =========================================================================
 // TEST I: GAME OVER SUCCESS/FAILURE
 // =========================================================================
 console.log('--- TEST I: Game Over Success and Failure ---');

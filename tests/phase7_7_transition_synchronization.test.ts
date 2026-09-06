@@ -151,6 +151,38 @@ console.log('--- TEST 3: If GameEngine.proceedToCrimeExplanation() throws, UI do
 }
 
 // =========================================================================
+// TEST 3B: If GameEngine.proceedToTruthReveal() throws -> UI does NOT navigate to reveal_truth
+// =========================================================================
+console.log('--- TEST 3B: If GameEngine.proceedToTruthReveal() throws, UI does NOT navigate to reveal_truth ---');
+{
+  const engine = new GameEngine();
+  const harness = createTestHarness(engine, 'crime_explanation');
+
+  // Case A: No active game
+  const resultA = harness.coordinator.proceedToTruthReveal();
+  check(resultA === false, 'proceedToTruthReveal returned false without active game');
+  check(harness.getScreen() === 'crime_explanation', 'Screen remained on crime_explanation, did NOT advance');
+  check(harness.getError() !== null, 'Error was set');
+
+  // Case B: Simulated rejection
+  engine.startNewGame(story, ['Player 1', 'Player 2', 'Player 3', 'Player 4']);
+  harness.clearError();
+  harness.setScreen('crime_explanation');
+
+  const originalMethod = engine.proceedToTruthReveal.bind(engine);
+  engine.proceedToTruthReveal = () => {
+    throw new Error('Cannot advance to reveal truth yet');
+  };
+
+  const resultB = harness.coordinator.proceedToTruthReveal();
+  check(resultB === false, 'Returned false when engine rejected');
+  check(harness.getScreen() === 'crime_explanation', 'Screen remained on crime_explanation');
+  check(harness.getError() === 'Cannot advance to reveal truth yet', 'Error recorded');
+
+  engine.proceedToTruthReveal = originalMethod;
+}
+
+// =========================================================================
 // TEST 4: If GameEngine.proceedToGameOver() throws -> UI does NOT navigate to results
 // =========================================================================
 console.log('--- TEST 4: If GameEngine.proceedToGameOver() throws, UI does NOT navigate to results ---');
@@ -301,6 +333,12 @@ console.log('--- TEST 6: Successful GameEngine transitions DO navigate correctly
   const explSuccess = harness.coordinator.proceedToCrimeExplanation();
   check(explSuccess === true, 'proceedToCrimeExplanation succeeded');
   check(harness.getScreen() === 'crime_explanation', 'Screen navigated to crime_explanation');
+
+  // Step 8b: Proceed to reveal truth -> transitions to reveal_truth
+  const truthSuccess = harness.coordinator.proceedToTruthReveal();
+  check(truthSuccess === true, 'proceedToTruthReveal succeeded');
+  check(harness.getScreen() === 'reveal_truth', 'Screen navigated to reveal_truth');
+  check(engine.getState().phase === 'REVEAL_TRUTH', 'Engine state is REVEAL_TRUTH');
 
   // Step 9: Proceed to game over -> transitions to results
   const gameOverSuccess = harness.coordinator.proceedToGameOver();

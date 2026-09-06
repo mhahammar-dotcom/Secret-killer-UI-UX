@@ -138,6 +138,33 @@ export class GameFlowCoordinator {
   }
 
   /**
+   * Proceeds from crime explanation to reveal truth.
+   * UI screen advances to 'reveal_truth' ONLY if GameEngine transition succeeds and phase is REVEAL_TRUTH.
+   */
+  public proceedToTruthReveal(): boolean {
+    try {
+      const state = this.gameEngine.proceedToTruthReveal();
+      if (state.phase === 'REVEAL_TRUTH') {
+        this.callbacks.setScreen('reveal_truth');
+        return true;
+      } else {
+        throw new Error(
+          this.callbacks.getLanguage() === 'en'
+            ? 'Failed to advance to reveal truth.'
+            : 'فشل الانتقال إلى كشف الحقيقة.'
+        );
+      }
+    } catch (e: any) {
+      console.error('Error advancing to reveal truth:', e);
+      const isEn = this.callbacks.getLanguage() === 'en';
+      this.callbacks.setError(
+        e?.message || (isEn ? 'Unable to load reveal truth.' : 'تعذر الانتقال إلى كشف الحقيقة.')
+      );
+      return false;
+    }
+  }
+
+  /**
    * Proceeds from reveal truth to final game results.
    * UI screen advances to 'results' ONLY if GameEngine transition succeeds and phase is GAME_OVER.
    */
