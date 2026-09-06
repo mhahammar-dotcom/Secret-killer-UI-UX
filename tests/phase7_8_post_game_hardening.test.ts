@@ -408,6 +408,10 @@ console.log('--- TEST K: Coordinator Single Source of Truth for Post-Game ---');
   const harness = createTestHarness(engine, 'crime_explanation');
   engine.startNewGame(story, ['Alice', 'Bob', 'Charlie', 'David']);
 
+  // Enter CRIME_EXPLANATION first
+  engine.proceedToCrimeExplanation();
+  check(engine.getState().phase === 'CRIME_EXPLANATION', 'Engine phase is CRIME_EXPLANATION');
+
   // Verify that calling coordinator.proceedToTruthReveal() performs the GameEngine transition
   // and THEN updates the UI screen to 'reveal_truth'
   check(engine.getState().phase !== 'REVEAL_TRUTH', 'Initial phase is not REVEAL_TRUTH');
@@ -488,6 +492,76 @@ console.log('--- TEST M: English Post-Game Flow & Localization ---');
   check(harness.getScreen() === 'reveal_truth', 'English navigated to reveal_truth');
   harness.coordinator.proceedToGameOver();
   check(harness.getScreen() === 'results', 'English navigated to results');
+}
+
+// =========================================================================
+// TEST N: INVALID-PHASE CALL TO proceedToTruthReveal() IS REJECTED WITHOUT MUTATING STATE
+// =========================================================================
+console.log('--- TEST N: proceedToTruthReveal Rejects Invalid Phases Without Mutating State ---');
+{
+  const engine = new GameEngine();
+  engine.startNewGame(story, ['Alice', 'Bob', 'Charlie', 'David']);
+  check(engine.getState().phase === 'ROLE_PASS', 'Initial phase after startNewGame is ROLE_PASS');
+
+  // 1. Direct call when phase is ROLE_PASS (invalid phase)
+  const stateSnapshotBefore = JSON.parse(JSON.stringify(engine.getState()));
+  let thrownError: Error | null = null;
+  try {
+    engine.proceedToTruthReveal();
+  } catch (err: any) {
+    thrownError = err;
+  }
+
+  check(thrownError !== null, 'proceedToTruthReveal threw error on invalid phase (ROLE_PASS)');
+  check(
+    thrownError!.message.includes('expected CRIME_EXPLANATION'),
+    'Error message explicitly specifies expected phase CRIME_EXPLANATION'
+  );
+  check(engine.getState().phase === 'ROLE_PASS', 'State phase remained ROLE_PASS without mutation');
+  check(
+    JSON.stringify(engine.getState()) === JSON.stringify(stateSnapshotBefore),
+    'Engine state was completely unmutated after rejected transition'
+  );
+
+  // 2. Advance through role passes to DISCUSSION phase (still invalid phase)
+  const harness = createTestHarness(engine, 'free_discussion');
+  for (let i = 0; i < 4; i++) {
+    harness.coordinator.advanceRolePass();
+  }
+  check(engine.getState().phase === 'DISCUSSION', 'Game is now in DISCUSSION phase');
+
+  const discussionSnapshot = JSON.parse(JSON.stringify(engine.getState()));
+  let discussionError: Error | null = null;
+  try {
+    engine.proceedToTruthReveal();
+  } catch (err: any) {
+    discussionError = err;
+  }
+
+  check(discussionError !== null, 'proceedToTruthReveal threw error on invalid phase (DISCUSSION)');
+  check(engine.getState().phase === 'DISCUSSION', 'State phase remained DISCUSSION without mutation');
+  check(
+    JSON.stringify(engine.getState()) === JSON.stringify(discussionSnapshot),
+    'Engine state remained completely unmutated after rejected DISCUSSION transition'
+  );
+
+  // 3. Coordinator integration: coordinator catches rejection, does NOT navigate, sets error
+  const coordResult = harness.coordinator.proceedToTruthReveal();
+  check(coordResult === false, 'Coordinator returned false when engine rejected invalid phase');
+  check(harness.getScreen() === 'free_discussion', 'Screen remained on free_discussion');
+  check(harness.getError() !== null, 'Error was recorded on coordinator');
+
+  // 4. Transition to CRIME_EXPLANATION -> proceedToTruthReveal now succeeds
+  engine.proceedToCrimeExplanation();
+  check(engine.getState().phase === 'CRIME_EXPLANATION', 'Phase is now CRIME_EXPLANATION');
+  harness.setScreen('crime_explanation');
+  harness.clearError();
+
+  const successResult = harness.coordinator.proceedToTruthReveal();
+  check(successResult === true, 'Coordinator returned true when phase is CRIME_EXPLANATION');
+  check(engine.getState().phase === 'REVEAL_TRUTH', 'Engine state mutated to REVEAL_TRUTH on valid phase');
+  check(harness.getScreen() === 'reveal_truth', 'Screen navigated to reveal_truth');
+  check(harness.getError() === null, 'No error present on successful transition');
 }
 
 console.log('\n====================================================');

@@ -595,6 +595,12 @@ export class GameEngine {
       throw new Error('Cannot proceed to reveal truth: no active game.');
     }
 
+    if (this.state.phase !== 'CRIME_EXPLANATION') {
+      throw new Error(
+        `Cannot proceed to reveal truth: current phase is ${this.state.phase}, expected CRIME_EXPLANATION.`
+      );
+    }
+
     this.state = {
       ...this.state,
       phase: 'REVEAL_TRUTH'

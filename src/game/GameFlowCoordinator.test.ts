@@ -242,6 +242,7 @@ console.log('--- TEST I1: Truth Reveal Success and Failure ---');
   const engine = new GameEngine();
   const harness = createMockHarness(engine, 'crime_explanation');
   engine.startNewGame(story, ['Alice', 'Bob', 'Charlie', 'David']);
+  engine.proceedToCrimeExplanation();
 
   const successResult = harness.coordinator.proceedToTruthReveal();
   check(successResult === true, 'proceedToTruthReveal returned true on valid game');
