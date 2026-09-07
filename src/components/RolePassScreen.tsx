@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Eye, Lock, ArrowLeft, User, ChevronLeft, Home, MessageSquareQuote, BadgeCheck, FileText, AlertTriangle, ShieldAlert, Users } from 'lucide-react';
 import { Player } from '../game/types';
@@ -9,7 +9,7 @@ import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 interface RolePassScreenProps {
   players: Player[];
   currentViewingIndex: number;
-  onAdvanceRolePass: () => void;
+  onAdvanceRolePass: () => void | boolean | Promise<boolean | void>;
   onBack?: () => void;
   onNavigateHome?: () => void;
   language?: 'ar' | 'en';
@@ -28,8 +28,13 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
   const isRtl = !isEn;
 
   const [isRevealed, setIsRevealed] = useState<boolean>(false);
+  const [isAdvancing, setIsAdvancing] = useState<boolean>(false);
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [pendingAction, setPendingAction] = useState<'back' | 'home' | null>(null);
+
+  useEffect(() => {
+    setIsAdvancing(false);
+  }, [currentViewingIndex]);
 
   const currentPlayer = players[currentViewingIndex] || players[0];
   const isLastPlayer = currentViewingIndex >= players.length - 1;
@@ -40,10 +45,19 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
     setIsRevealed(true);
   };
 
-  const handleAdvance = () => {
+  const handleAdvance = async () => {
+    if (isAdvancing) return;
+    setIsAdvancing(true);
     sound.playClick();
     setIsRevealed(false);
-    onAdvanceRolePass();
+    try {
+      const res = await onAdvanceRolePass();
+      if (res === false) {
+        setIsAdvancing(false);
+      }
+    } catch {
+      setIsAdvancing(false);
+    }
   };
 
   const handleGoBack = () => {
@@ -346,7 +360,7 @@ export const RolePassScreen: React.FC<RolePassScreenProps> = ({
                 whileHover={{ scale: 1.015 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleAdvance}
-                className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer`}
+                className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer ${isAdvancing ? 'opacity-70 pointer-events-none' : ''}`}
               >
                 <span>{isLastPlayer ? t.finishPassingStartDiscussion : t.iMemorizedPassDevice}</span>
                 <ArrowLeft className={`w-5 h-5 stroke-[2.5] ${isRtl ? '' : 'rotate-180'}`} />

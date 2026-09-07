@@ -10,7 +10,7 @@ interface RevealTruthScreenProps {
   story: StoryData;
   players: PlayerData[];
   winner: 'innocents' | 'guilty';
-  onProceedToResults: () => void;
+  onProceedToResults: () => void | boolean | Promise<boolean | void>;
   onBack?: () => void;
   onNavigateHome?: () => void;
   language?: 'ar' | 'en';
@@ -141,11 +141,18 @@ export const RevealTruthScreen: React.FC<RevealTruthScreenProps> = ({
           <motion.button
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => {
+            onClick={async () => {
               if (isProceeding) return;
               setIsProceeding(true);
               sound.playClick();
-              onProceedToResults();
+              try {
+                const res = await onProceedToResults();
+                if (res === false) {
+                  setIsProceeding(false);
+                }
+              } catch {
+                setIsProceeding(false);
+              }
             }}
             className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer ${isProceeding ? 'opacity-70 pointer-events-none' : ''}`}
           >

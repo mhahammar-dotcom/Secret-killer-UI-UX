@@ -181,62 +181,70 @@ export default function App() {
   };
 
   // Start new game via GameEngine
-  const handleConfirmPlayers = (playerNames: string[]) => {
+  const handleConfirmPlayers = (playerNames: string[]): boolean => {
     const localizedStory = localizeStory(selectedStory, language);
-    coordinator.startNewGame(localizedStory as unknown as Story, playerNames);
+    return coordinator.startNewGame(localizedStory as unknown as Story, playerNames);
   };
 
-  const handleAdvanceRolePass = () => {
-    coordinator.advanceRolePass();
+  const handleAdvanceRolePass = (): boolean => {
+    return coordinator.advanceRolePass();
   };
 
-  const handleRevealNextEvidence = () => {
+  const handleRevealNextEvidence = (): boolean => {
     try {
       gameEngine.revealNextEvidence();
+      return true;
     } catch (e: any) {
       console.error('Error revealing evidence:', e);
       setTransitionError(e?.message || (isEn ? 'Cannot reveal more evidence.' : 'لا يمكن كشف المزيد من الأدلة.'));
+      return false;
     }
   };
 
-  const handleProceedToVoting = () => {
-    coordinator.startVoting();
+  const handleProceedToVoting = (): boolean => {
+    return coordinator.startVoting();
   };
 
-  const handleCompleteVoting = (votes: Record<number, number>) => {
-    coordinator.resolveVotes(votes);
+  const handleCompleteVoting = (votes: Record<number, number>): boolean => {
+    return coordinator.resolveVotes(votes);
   };
 
-  const handleProceedNextRound = () => {
-    adService.requestInterstitial('round_transition', () => {
-      coordinator.proceedAfterVoteResult();
+  const handleProceedNextRound = (): Promise<boolean> => {
+    return new Promise<boolean>((resolve) => {
+      adService.requestInterstitial('round_transition', () => {
+        const success = coordinator.proceedAfterVoteResult();
+        resolve(success);
+      });
     });
   };
 
-  const handleProceedToTruth = (_determinedWinner: 'innocents' | 'guilty') => {
-    adService.requestInterstitial('game_end', () => {
-      coordinator.proceedAfterVoteResult();
+  const handleProceedToTruth = (_determinedWinner: 'innocents' | 'guilty'): Promise<boolean> => {
+    return new Promise<boolean>((resolve) => {
+      adService.requestInterstitial('game_end', () => {
+        const success = coordinator.proceedAfterVoteResult();
+        resolve(success);
+      });
     });
   };
 
-  const handleProceedToExplanation = () => {
-    coordinator.proceedToCrimeExplanation();
+  const handleProceedToExplanation = (): boolean => {
+    return coordinator.proceedToCrimeExplanation();
   };
 
-  const handleProceedToTruthReveal = () => {
-    coordinator.proceedToTruthReveal();
+  const handleProceedToTruthReveal = (): boolean => {
+    return coordinator.proceedToTruthReveal();
   };
 
-  const handleProceedToResults = () => {
-    coordinator.proceedToGameOver();
+  const handleProceedToResults = (): boolean => {
+    return coordinator.proceedToGameOver();
   };
 
-  const handlePlayAgain = () => {
-    coordinator.resetToLobby('story_select');
+  const handlePlayAgain = (): boolean => {
+    return coordinator.resetToLobby('story_select');
   };
 
-  const handleNavigateHome = () => {
-    coordinator.resetToLobby('home');
+  const handleNavigateHome = (): boolean => {
+    return coordinator.resetToLobby('home');
   };
 
   // Data adapter: convert GameEngine Player shape to UI PlayerData shape

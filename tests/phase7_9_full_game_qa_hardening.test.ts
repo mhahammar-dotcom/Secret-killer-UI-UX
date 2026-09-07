@@ -590,6 +590,306 @@ console.log('--- SCENARIO T & U: Back navigation safety ---');
 }
 
 // =========================================================================
+// SCENARIO V: Duplicate-Action Guard Re-enable On Failure & Successful Retry
+// =========================================================================
+console.log('--- SCENARIO V: Duplicate-action guard re-enable on failure & retry ---');
+{
+  const engine = new GameEngine();
+  const harness = createTestHarness(engine, 'player_setup');
+
+  // 1. Player Setup Screen (handleStartGame with isStarting guard)
+  {
+    let isStarting = false;
+    let startCalls = 0;
+
+    const simulateStartGameClick = async (playersList: string[]) => {
+      if (isStarting) return;
+      isStarting = true;
+      startCalls++;
+      try {
+        const res = harness.coordinator.startNewGame(story, playersList);
+        if (res === false) {
+          isStarting = false;
+        }
+      } catch {
+        isStarting = false;
+      }
+    };
+
+    // Attempt with invalid player count (2 players, minimum is 4) -> coordinator fails and returns false
+    await simulateStartGameClick(['Alice', 'Bob']);
+    check(startCalls === 1, 'V.1: Start button was clicked once');
+    check(isStarting === false, 'V.1: isStarting was re-enabled (false) after coordinator transition failed');
+    check(harness.getScreen() === 'player_setup', 'V.1: Screen remained player_setup after failed transition');
+    check(harness.getError() !== null, 'V.1: Coordinator emitted error message on failure');
+    harness.clearError();
+
+    // Retry with valid 4 players -> coordinator succeeds and enters role_pass
+    await simulateStartGameClick(['Alice', 'Bob', 'Charlie', 'Diana']);
+    check(startCalls === 2, 'V.1: Start button was successfully clicked a second time (retry)');
+    check(harness.getScreen() === 'role_pass', 'V.1: Transition succeeded on retry, moving to role_pass');
+  }
+
+  // 2. Role Pass Screen (handleAdvance with isAdvancing guard)
+  {
+    let isAdvancing = false;
+    let advanceCalls = 0;
+
+    const simulateAdvanceClick = async (forceFail = false) => {
+      if (isAdvancing) return;
+      isAdvancing = true;
+      advanceCalls++;
+      try {
+        let res: boolean;
+        if (forceFail) {
+          // Simulate temporary engine/coordinator failure
+          res = false;
+        } else {
+          res = harness.coordinator.advanceRolePass();
+        }
+        if (res === false) {
+          isAdvancing = false;
+        }
+      } catch {
+        isAdvancing = false;
+      }
+    };
+
+    // Simulate transient failure during advance
+    await simulateAdvanceClick(true);
+    check(advanceCalls === 1, 'V.2: Advance button was clicked once');
+    check(isAdvancing === false, 'V.2: isAdvancing was re-enabled (false) after transition failed');
+
+    // Retry advance
+    await simulateAdvanceClick(false);
+    check(advanceCalls === 2, 'V.2: Advance button was clicked a second time (retry)');
+    check(engine.getState().currentViewingPlayerIndex === 1, 'V.2: Role pass advanced to index 1 on retry');
+
+    // Complete remaining role passes
+    while (engine.getState().currentViewingPlayerIndex < engine.getState().players.length - 1) {
+      harness.coordinator.advanceRolePass();
+    }
+    // Final advance moves to free_discussion
+    harness.coordinator.advanceRolePass();
+    check(harness.getScreen() === 'free_discussion', 'V.2: Successfully arrived at free_discussion');
+  }
+
+  // 3. Discussion Screen (onProceedToVoting with isProceedingToVoting guard)
+  {
+    let isProceedingToVoting = false;
+    let votingCalls = 0;
+
+    const simulateProceedToVotingClick = async (forceFail = false) => {
+      if (isProceedingToVoting) return;
+      isProceedingToVoting = true;
+      votingCalls++;
+      try {
+        let res: boolean;
+        if (forceFail) {
+          res = false;
+        } else {
+          res = harness.coordinator.startVoting();
+        }
+        if (res === false) {
+          isProceedingToVoting = false;
+        }
+      } catch {
+        isProceedingToVoting = false;
+      }
+    };
+
+    // Simulate transition failure (e.g. ad modal rejected or unexpected coordinator state)
+    await simulateProceedToVotingClick(true);
+    check(votingCalls === 1, 'V.3: Proceed to voting clicked once');
+    check(isProceedingToVoting === false, 'V.3: isProceedingToVoting re-enabled after failure');
+
+    // Retry
+    await simulateProceedToVotingClick(false);
+    check(votingCalls === 2, 'V.3: Proceed to voting clicked second time (retry)');
+    check(harness.getScreen() === 'voting', 'V.3: Screen transitioned to voting on retry');
+  }
+
+  // 4. Voting Screen (handleFinalConfirmVote with isSubmitting guard)
+  {
+    let isSubmitting = false;
+    let submitCalls = 0;
+
+    const players = engine.getState().players;
+    const completeVotes: Record<number, number> = {};
+    players.forEach((p, idx) => {
+      completeVotes[p.id] = players[(idx + 1) % players.length].id;
+    });
+
+    const simulateCompleteVotingClick = async (forceFail = false) => {
+      if (isSubmitting) return;
+      isSubmitting = true;
+      submitCalls++;
+      try {
+        let res: boolean;
+        if (forceFail) {
+          res = false;
+        } else {
+          res = harness.coordinator.resolveVotes(completeVotes);
+        }
+        if (res === false) {
+          isSubmitting = false;
+        }
+      } catch {
+        isSubmitting = false;
+      }
+    };
+
+    // Simulate transition failure during voting submit
+    await simulateCompleteVotingClick(true);
+    check(submitCalls === 1, 'V.4: Voting submit clicked once');
+    check(isSubmitting === false, 'V.4: isSubmitting re-enabled after failed vote resolution');
+    check(harness.getScreen() === 'voting', 'V.4: Still on voting screen after failed submit');
+
+    // Player retries and succeeds
+    await simulateCompleteVotingClick(false);
+    check(submitCalls === 2, 'V.4: Voting submit clicked second time (retry)');
+    check(harness.getScreen() === 'vote_result', 'V.4: Screen transitioned to vote_result on retry');
+  }
+
+  // 5. Vote Result Screen (onProceedNextRound / onProceedToTruth with isProceeding guard)
+  {
+    let isProceeding = false;
+    let proceedCalls = 0;
+
+    const simulateProceedNextRoundClick = async (forceFail = false) => {
+      if (isProceeding) return;
+      isProceeding = true;
+      proceedCalls++;
+      try {
+        let res: boolean;
+        if (forceFail) {
+          res = false;
+        } else {
+          res = harness.coordinator.proceedAfterVoteResult();
+        }
+        if (res === false) {
+          isProceeding = false;
+        }
+      } catch {
+        isProceeding = false;
+      }
+    };
+
+    // Simulate interstitial ad or coordinator transition failure
+    await simulateProceedNextRoundClick(true);
+    check(proceedCalls === 1, 'V.5: Proceed next round clicked once');
+    check(isProceeding === false, 'V.5: isProceeding re-enabled after simulated failure');
+
+    // Retry with successful coordinator execution
+    await simulateProceedNextRoundClick(false);
+    check(proceedCalls === 2, 'V.5: Proceed next round clicked second time (retry)');
+    check(
+      harness.getScreen() === 'free_discussion' || harness.getScreen() === 'killer_reveal',
+      'V.5: Screen transitioned successfully on retry'
+    );
+  }
+
+  // 6. Post-Game Screens (KillerReveal, CrimeExplanation, RevealTruth)
+  {
+    harness.setScreen('killer_reveal');
+    let isProceeding = false;
+    let revealCalls = 0;
+
+    const simulateProceedToExplanationClick = async (forceFail = false) => {
+      if (isProceeding) return;
+      isProceeding = true;
+      revealCalls++;
+      try {
+        let res = forceFail ? false : harness.coordinator.proceedToCrimeExplanation();
+        if (res === false) {
+          isProceeding = false;
+        }
+      } catch {
+        isProceeding = false;
+      }
+    };
+
+    await simulateProceedToExplanationClick(true);
+    check(revealCalls === 1, 'V.6: Proceed clicked with failure');
+    check(isProceeding === false, 'V.6: isProceeding re-enabled after failure');
+
+    await simulateProceedToExplanationClick(false);
+    check(revealCalls === 2, 'V.6: Proceed clicked second time (retry)');
+
+    // From crime_explanation to reveal_truth
+    harness.setScreen('crime_explanation');
+    let isProceedingTruth = false;
+    const simulateProceedToTruthClick = async (forceFail = false) => {
+      if (isProceedingTruth) return;
+      isProceedingTruth = true;
+      try {
+        let res = forceFail ? false : harness.coordinator.proceedToTruthReveal();
+        if (res === false) {
+          isProceedingTruth = false;
+        }
+      } catch {
+        isProceedingTruth = false;
+      }
+    };
+
+    await simulateProceedToTruthClick(true);
+    check(isProceedingTruth === false, 'V.6: isProceedingTruth re-enabled on failure');
+    await simulateProceedToTruthClick(false);
+
+    // From reveal_truth to results
+    harness.setScreen('reveal_truth');
+    let isProceedingResults = false;
+    const simulateProceedToResultsClick = async (forceFail = false) => {
+      if (isProceedingResults) return;
+      isProceedingResults = true;
+      try {
+        let res = forceFail ? false : harness.coordinator.proceedToGameOver();
+        if (res === false) {
+          isProceedingResults = false;
+        }
+      } catch {
+        isProceedingResults = false;
+      }
+    };
+
+    await simulateProceedToResultsClick(true);
+    check(isProceedingResults === false, 'V.6: isProceedingResults re-enabled on failure');
+    await simulateProceedToResultsClick(false);
+  }
+
+  // 7. Results Screen (handlePlayAgain & handleNavigateHome with isResetting guard)
+  {
+    harness.setScreen('results');
+    let isResetting = false;
+    let resetCalls = 0;
+
+    const simulatePlayAgainClick = async (forceFail = false) => {
+      if (isResetting) return;
+      isResetting = true;
+      resetCalls++;
+      try {
+        const res = forceFail ? false : harness.coordinator.resetToLobby('story_select');
+        if (res === false) {
+          isResetting = false;
+        }
+      } catch {
+        isResetting = false;
+      }
+    };
+
+    // Failure simulation (e.g. ad failed or reset failed)
+    await simulatePlayAgainClick(true);
+    check(resetCalls === 1, 'V.7: Play again clicked once');
+    check(isResetting === false, 'V.7: isResetting re-enabled on failure');
+
+    // Retry reset
+    await simulatePlayAgainClick(false);
+    check(resetCalls === 2, 'V.7: Play again clicked second time (retry)');
+    check(harness.getScreen() === 'story_select', 'V.7: Screen transitioned to story_select on retry');
+  }
+}
+
+// =========================================================================
 // SUMMARY
 // =========================================================================
 console.log('\n====================================================');

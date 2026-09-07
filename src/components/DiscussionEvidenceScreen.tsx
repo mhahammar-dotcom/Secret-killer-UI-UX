@@ -41,7 +41,7 @@ interface DiscussionEvidenceScreenProps {
   canRevealClue?: boolean;
   onRevealNextEvidence?: () => void;
   hasMoreEvidence?: boolean;
-  onProceedToVoting: () => void;
+  onProceedToVoting: () => void | boolean | Promise<boolean | void>;
   onBack?: () => void;
   onNavigateHome?: () => void;
   language?: 'ar' | 'en';
@@ -73,6 +73,7 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const [revealError, setRevealError] = useState<string | null>(null);
+  const [isProceedingToVoting, setIsProceedingToVoting] = useState(false);
   const isRevealingRef = useRef(false);
 
   const isEn = language === 'en';
@@ -1005,11 +1006,20 @@ export const DiscussionEvidenceScreen: React.FC<DiscussionEvidenceScreenProps> =
             id="btn_proceed_to_voting"
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => {
+            onClick={async () => {
+              if (isProceedingToVoting) return;
+              setIsProceedingToVoting(true);
               sound.playClick();
-              onProceedToVoting();
+              try {
+                const res = await onProceedToVoting();
+                if (res === false) {
+                  setIsProceedingToVoting(false);
+                }
+              } catch {
+                setIsProceedingToVoting(false);
+              }
             }}
-            className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer active:scale-95`}
+            className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer active:scale-95 ${isProceedingToVoting ? 'opacity-70 pointer-events-none' : ''}`}
           >
             <Vote className="w-5 h-5 stroke-[2.4]" />
             <span>{t.proceedToVoting}</span>

@@ -11,8 +11,8 @@ interface GameResultsScreenProps {
   players: PlayerData[];
   winner: 'innocents' | 'guilty';
   votes: Record<number, number>;
-  onPlayAgain: () => void;
-  onNavigateHome: () => void;
+  onPlayAgain: () => void | boolean | Promise<boolean | void>;
+  onNavigateHome: () => void | boolean | Promise<boolean | void>;
   onBack?: () => void;
   language?: 'ar' | 'en';
 }
@@ -156,11 +156,18 @@ export const GameResultsScreen: React.FC<GameResultsScreenProps> = ({
           <motion.button
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => {
+            onClick={async () => {
               if (isResetting) return;
               setIsResetting(true);
               sound.playClick();
-              onPlayAgain();
+              try {
+                const res = await onPlayAgain();
+                if (res === false) {
+                  setIsResetting(false);
+                }
+              } catch {
+                setIsResetting(false);
+              }
             }}
             className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer ${isResetting ? 'opacity-70 pointer-events-none' : ''}`}
           >
@@ -172,11 +179,18 @@ export const GameResultsScreen: React.FC<GameResultsScreenProps> = ({
           <motion.button
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => {
+            onClick={async () => {
               if (isResetting) return;
               setIsResetting(true);
               sound.playClick();
-              onNavigateHome();
+              try {
+                const res = await onNavigateHome();
+                if (res === false) {
+                  setIsResetting(false);
+                }
+              } catch {
+                setIsResetting(false);
+              }
             }}
             className={`w-full rounded-[24px] py-3.5 px-6 bg-black/60 border border-[#c8923a]/60 hover:border-[#f3cb79] text-[#f3cb79] font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer ${isResetting ? 'opacity-70 pointer-events-none' : ''}`}
           >

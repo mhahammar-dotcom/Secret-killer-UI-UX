@@ -8,7 +8,7 @@ import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 interface VotingScreenProps {
   players: PlayerData[];
   round: number;
-  onCompleteVoting: (votes: Record<number, number>) => void;
+  onCompleteVoting: (votes: Record<number, number>) => void | boolean | Promise<boolean | void>;
   onBack?: () => void;
   onNavigateHome?: () => void;
   language?: 'ar' | 'en';
@@ -54,7 +54,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
     setIsConfirming(false);
   };
 
-  const handleSelectSuspect = (targetId: number) => {
+  const handleSelectSuspect = async (targetId: number) => {
     if (fastVotingMode) {
       if (!currentVoter) return;
       sound.playVoteConfirm();
@@ -68,7 +68,14 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
       if (isLastVoter) {
         if (isSubmitting) return;
         setIsSubmitting(true);
-        onCompleteVoting(newVotes);
+        try {
+          const res = await onCompleteVoting(newVotes);
+          if (res === false) {
+            setIsSubmitting(false);
+          }
+        } catch {
+          setIsSubmitting(false);
+        }
       } else {
         setIsPassReady(false);
         setIsConfirming(false);
@@ -92,7 +99,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
     setIsConfirming(false);
   };
 
-  const handleFinalConfirmVote = () => {
+  const handleFinalConfirmVote = async () => {
     if (selectedTargetId === null || !currentVoter) return;
     sound.playVoteConfirm();
 
@@ -105,7 +112,14 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
     if (isLastVoter) {
       if (isSubmitting) return;
       setIsSubmitting(true);
-      onCompleteVoting(newVotes);
+      try {
+        const res = await onCompleteVoting(newVotes);
+        if (res === false) {
+          setIsSubmitting(false);
+        }
+      } catch {
+        setIsSubmitting(false);
+      }
     } else {
       setIsPassReady(false);
       setIsConfirming(false);
@@ -276,7 +290,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
                   whileHover={{ scale: 1.015 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleFinalConfirmVote}
-                  className={`w-full rounded-[22px] py-3.5 px-6 bg-gradient-to-r from-red-600 via-red-500 to-amber-600 text-white font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base shadow-[0_6px_22px_rgba(220,38,38,0.35)] hover:brightness-105 flex items-center justify-center gap-2 cursor-pointer`}
+                  className={`w-full rounded-[22px] py-3.5 px-6 bg-gradient-to-r from-red-600 via-red-500 to-amber-600 text-white font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base shadow-[0_6px_22px_rgba(220,38,38,0.35)] hover:brightness-105 flex items-center justify-center gap-2 cursor-pointer ${isSubmitting ? 'opacity-70 pointer-events-none' : ''}`}
                 >
                   <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
                   <span>{t.confirmVoteFinal}</span>

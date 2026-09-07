@@ -7,7 +7,7 @@ import { AR_STRINGS, EN_STRINGS } from '../data/translations';
 
 interface PlayerSetupScreenProps {
   story: StoryData;
-  onConfirmPlayers: (playerNames: string[]) => void;
+  onConfirmPlayers: (playerNames: string[]) => void | boolean | Promise<boolean | void>;
   onBack: () => void;
   onNavigateHome?: () => void;
   language?: 'ar' | 'en';
@@ -41,6 +41,7 @@ export const PlayerSetupScreen: React.FC<PlayerSetupScreenProps> = ({
   const [names, setNames] = useState<string[]>(() => {
     return defaultList.slice(0, Math.max(4, minPlayers));
   });
+  const [isStarting, setIsStarting] = useState(false);
 
   const handleNameChange = (index: number, value: string) => {
     const next = [...names];
@@ -65,7 +66,9 @@ export const PlayerSetupScreen: React.FC<PlayerSetupScreenProps> = ({
     }, 60);
   };
 
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
+    if (isStarting) return;
+    setIsStarting(true);
     sound.playClick();
     const fallbackPrefix = isEn ? 'Player' : 'لاعب';
     const validatedNames = names.map((n, i) => n.trim() || `${fallbackPrefix} ${i + 1}`);
@@ -83,7 +86,14 @@ export const PlayerSetupScreen: React.FC<PlayerSetupScreenProps> = ({
       uniqueNames.push(uniqueName);
     });
 
-    onConfirmPlayers(uniqueNames);
+    try {
+      const res = await onConfirmPlayers(uniqueNames);
+      if (res === false) {
+        setIsStarting(false);
+      }
+    } catch {
+      setIsStarting(false);
+    }
   };
 
   return (
@@ -206,7 +216,7 @@ export const PlayerSetupScreen: React.FC<PlayerSetupScreenProps> = ({
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleStartGame}
-            className={`w-full rounded-[22px] sm:rounded-[24px] py-3.5 sm:py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer active:scale-95`}
+            className={`w-full rounded-[22px] sm:rounded-[24px] py-3.5 sm:py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer active:scale-95 ${isStarting ? 'opacity-70 pointer-events-none' : ''}`}
           >
             <span>{t.startSecretRoleAssignment}</span>
             <ArrowLeft className={`w-5 h-5 stroke-[2.5] ${isRtl ? '' : 'rotate-180'}`} />
