@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Target, FileText, Syringe, Trash2, ArrowLeft, ChevronLeft, Home } from 'lucide-react';
 import { StoryData, PlayerData } from '../types';
@@ -26,6 +26,7 @@ export const CrimeExplanationScreen: React.FC<CrimeExplanationScreenProps> = ({
   const isEn = language === 'en';
   const t = isEn ? EN_STRINGS : AR_STRINGS;
   const isRtl = !isEn;
+  const [isProceeding, setIsProceeding] = useState<boolean>(false);
 
   const guiltyPlayers = players.filter((p) => p.guilty);
   const caseData = STORY_DEDUCTION_DATABASE[story.id];
@@ -288,10 +289,12 @@ export const CrimeExplanationScreen: React.FC<CrimeExplanationScreenProps> = ({
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
+              if (isProceeding) return;
+              setIsProceeding(true);
               sound.playClick();
               onProceedToResults();
             }}
-            className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer`}
+            className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer ${isProceeding ? 'opacity-70 pointer-events-none' : ''}`}
           >
             <span>{t.revealTruthFullResults}</span>
             <ArrowLeft className={`w-5 h-5 stroke-[2.5] ${isRtl ? '' : 'rotate-180'}`} />

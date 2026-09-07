@@ -51,6 +51,32 @@ export class GameFlowCoordinator {
   }
 
   /**
+   * Cancels voting and returns UI to 'free_discussion' ONLY if GameEngine transition succeeds and phase is DISCUSSION.
+   */
+  public cancelVoting(): boolean {
+    try {
+      const state = this.gameEngine.cancelVoting();
+      if (state.phase === 'DISCUSSION') {
+        this.callbacks.setScreen('free_discussion');
+        return true;
+      } else {
+        throw new Error(
+          this.callbacks.getLanguage() === 'en'
+            ? 'Failed to return to discussion phase.'
+            : 'فشل العودة إلى مرحلة النقاش.'
+        );
+      }
+    } catch (e: any) {
+      console.error('Error cancelling voting via GameEngine:', e);
+      const isEn = this.callbacks.getLanguage() === 'en';
+      this.callbacks.setError(
+        e?.message || (isEn ? 'Cannot cancel voting in current game state.' : 'لا يمكن إلغاء التصويت في الحالة الحالية للعبة.')
+      );
+      return false;
+    }
+  }
+
+  /**
    * Resolves votes cast in voting phase.
    * UI screen advances to 'vote_result' ONLY if GameEngine transition succeeds and phase is VOTE_RESULT.
    */
@@ -197,6 +223,9 @@ export class GameFlowCoordinator {
    */
   public advanceRolePass(): boolean {
     try {
+      if (this.gameEngine.getState().phase !== 'ROLE_PASS') {
+        return false;
+      }
       const updatedState = this.gameEngine.advanceRolePass();
       if (updatedState.phase === 'DISCUSSION') {
         this.callbacks.setScreen('free_discussion');

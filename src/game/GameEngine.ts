@@ -449,6 +449,27 @@ export class GameEngine {
   }
 
   /**
+   * Cancels voting and returns state safely to DISCUSSION phase
+   */
+  public cancelVoting(): GameState {
+    if (!this.state.story) {
+      throw new Error('Cannot cancel voting: no active game.');
+    }
+    if (this.state.phase !== 'VOTING') {
+      throw new Error(`Cannot cancel voting: current phase is ${this.state.phase}, expected VOTING.`);
+    }
+
+    this.state = {
+      ...this.state,
+      phase: 'DISCUSSION',
+      votes: {}
+    };
+
+    this.notify();
+    return this.getState();
+  }
+
+  /**
    * Records a vote from a living voter for a living target
    */
   public castVote(voterId: number, targetId: number): GameState {
@@ -630,6 +651,7 @@ export class GameEngine {
    */
   public resetToLobby(): GameState {
     this.state = createInitialGameState();
+    this.eligibleClues = [];
     this.notify();
     return this.getState();
   }

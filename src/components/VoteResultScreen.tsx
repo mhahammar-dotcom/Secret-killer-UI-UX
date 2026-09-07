@@ -42,6 +42,7 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
   // Local state to toggle voter identities reveal (initialized based on secretBallotMode)
   const [revealIdentities, setRevealIdentities] = useState<boolean>(!secretBallotMode);
   const [showExitConfirm, setShowExitConfirm] = useState<boolean>(false);
+  const [isProceeding, setIsProceeding] = useState<boolean>(false);
 
   // Helper to find all players who cast their vote for a specific target suspect
   const getVotersForPlayer = (targetPlayerId: number): PlayerData[] => {
@@ -359,10 +360,12 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
+                if (isProceeding) return;
+                setIsProceeding(true);
                 sound.playClick();
                 onProceedToTruth(winner);
               }}
-              className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-red-600 via-red-500 to-amber-600 text-white font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(220,38,38,0.35)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer`}
+              className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-red-600 via-red-500 to-amber-600 text-white font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(220,38,38,0.35)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer ${isProceeding ? 'opacity-70 pointer-events-none' : ''}`}
             >
               <Eye className="w-5 h-5 stroke-[2.5]" />
               <span>{t.sessionEndedReveal}</span>
@@ -372,10 +375,12 @@ export const VoteResultScreen: React.FC<VoteResultScreenProps> = ({
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
+                if (isProceeding) return;
+                setIsProceeding(true);
                 sound.playClick();
                 onProceedNextRound();
               }}
-              className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer`}
+              className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer ${isProceeding ? 'opacity-70 pointer-events-none' : ''}`}
             >
               <Play className="w-5 h-5 fill-slate-950 stroke-none" />
               <span>{isEn ? `Continue Discussion (Round ${round + 1})` : `متابعة النقاش والتحقيق (الجولة ${round + 1})`}</span>

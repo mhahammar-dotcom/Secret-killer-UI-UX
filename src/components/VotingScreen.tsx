@@ -38,6 +38,7 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
   const [isConfirming, setIsConfirming] = useState<boolean>(false);
   const [collectedVotes, setCollectedVotes] = useState<Record<number, number>>({});
   const [showExitConfirm, setShowExitConfirm] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const currentVoter = activePlayers[currentVoterIdx];
   // Eligible targets: all living players except the current voter (self-voting prohibited)
@@ -65,6 +66,8 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
       setCollectedVotes(newVotes);
 
       if (isLastVoter) {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         onCompleteVoting(newVotes);
       } else {
         setIsPassReady(false);
@@ -100,6 +103,8 @@ export const VotingScreen: React.FC<VotingScreenProps> = ({
     setCollectedVotes(newVotes);
 
     if (isLastVoter) {
+      if (isSubmitting) return;
+      setIsSubmitting(true);
       onCompleteVoting(newVotes);
     } else {
       setIsPassReady(false);

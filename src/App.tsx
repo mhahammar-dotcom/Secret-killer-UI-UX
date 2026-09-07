@@ -406,7 +406,7 @@ export default function App() {
                 players={players}
                 round={round}
                 onCompleteVoting={handleCompleteVoting}
-                onBack={() => setCurrentScreen('free_discussion')}
+                onBack={() => coordinator.cancelVoting()}
                 onNavigateHome={handleNavigateHome}
                 language={language}
                 secretBallotMode={settings.secretBallotMode}

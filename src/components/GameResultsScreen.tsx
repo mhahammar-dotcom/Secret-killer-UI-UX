@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Trophy, RotateCcw, Home, Skull, CheckCircle, ChevronLeft } from 'lucide-react';
 import { StoryData, PlayerData } from '../types';
@@ -30,6 +30,7 @@ export const GameResultsScreen: React.FC<GameResultsScreenProps> = ({
   const isEn = language === 'en';
   const t = isEn ? EN_STRINGS : AR_STRINGS;
   const isRtl = !isEn;
+  const [isResetting, setIsResetting] = useState<boolean>(false);
 
   const guiltyPlayers = players.filter((p) => p.guilty);
 
@@ -156,10 +157,12 @@ export const GameResultsScreen: React.FC<GameResultsScreenProps> = ({
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
+              if (isResetting) return;
+              setIsResetting(true);
               sound.playClick();
               onPlayAgain();
             }}
-            className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer`}
+            className={`w-full rounded-[24px] py-4 px-6 bg-gradient-to-r from-[#d49e3d] via-[#f1bf66] to-[#c8923a] text-slate-950 font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-base sm:text-lg shadow-[0_6px_22px_rgba(200,146,58,0.3)] hover:brightness-105 flex items-center justify-center gap-3 transition-all cursor-pointer ${isResetting ? 'opacity-70 pointer-events-none' : ''}`}
           >
             <RotateCcw className="w-5 h-5 stroke-[2.5]" />
             <span>{t.playNewCase}</span>
@@ -170,10 +173,12 @@ export const GameResultsScreen: React.FC<GameResultsScreenProps> = ({
             whileHover={{ scale: 1.015 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
+              if (isResetting) return;
+              setIsResetting(true);
               sound.playClick();
               onNavigateHome();
             }}
-            className={`w-full rounded-[24px] py-3.5 px-6 bg-black/60 border border-[#c8923a]/60 hover:border-[#f3cb79] text-[#f3cb79] font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer`}
+            className={`w-full rounded-[24px] py-3.5 px-6 bg-black/60 border border-[#c8923a]/60 hover:border-[#f3cb79] text-[#f3cb79] font-black ${isRtl ? "font-['Cairo']" : 'font-sans'} text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all cursor-pointer ${isResetting ? 'opacity-70 pointer-events-none' : ''}`}
           >
             <Home className="w-4 h-4" />
             <span>{t.returnToMainMenu}</span>
