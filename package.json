@@ -13,6 +13,8 @@
     "test": "tsx src/game/__tests__/engine.test.ts && tsx src/game/__tests__/phase3_integration.test.ts && tsx src/game/__tests__/phase4_rolepass.test.ts && tsx src/game/__tests__/phase5_investigation.test.ts && tsx src/game/__tests__/voting_and_guilty_role.test.ts && tsx src/game/__tests__/story_validator.test.ts && tsx src/game/__tests__/character_allocator.test.ts && tsx src/game/__tests__/phase7_killer_scaling.test.ts && tsx tests/phase7_2b_story_compatibility.test.ts && tsx tests/phase7_3_clue_economy.test.ts && tsx tests/phase7_4_killer_alliance.test.ts && tsx tests/phase7_5_full_game_integration.test.ts && tsx tests/phase7_6_investigation_ui.test.ts && tsx tests/phase7_7_complete_game_flow.test.ts && tsx tests/phase7_7_transition_synchronization.test.ts && tsx src/game/GameFlowCoordinator.test.ts && tsx tests/phase7_8_post_game_hardening.test.ts && tsx tests/phase7_9_full_game_qa_hardening.test.ts && tsx tests/phase7_9c_custom_story_killer_scaling.test.ts"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
     "@types/canvas-confetti": "^1.9.0",
@@ -28,13 +30,14 @@
     "vite": "^6.2.3"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.1",
+    "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3",
-    "@types/express": "^4.17.21"
+    "vite": "^6.2.3"
   }
 }
