@@ -183,9 +183,10 @@ export function loadCustomStories(): StoryData[] {
         stakes: 'قد يفلت الفاعل أو يُدان بريء.',
         objective: 'اكتشفوا الفاعل الحقيقي قبل فوات الأوان.'
       },
-      guiltyPool: item.characters?.filter((c: any) => c.guilty) || [],
-      innocentPool: item.characters?.filter((c: any) => !c.guilty) || [],
-      fixedCharacters: item.characters || [],
+      guiltyPool: item.characters?.filter((c: any) => c.guilty) || item.guiltyPool || [],
+      innocentPool: item.characters?.filter((c: any) => !c.guilty) || item.innocentPool || [],
+      fixedCharacters: item.fixedCharacters || item.characters || [],
+      evidence: item.evidence || [],
       clues: (item.clues || []).map((c: any) => typeof c === 'string' ? c : c.text),
       wrongVoteHints: ['راجعوا أقوال المشتبه بهم بعناية.', 'ابحثوا عن التناقضات بين الأدلة.', 'لا تحكموا بناءً على الشكوك فقط.'],
       investigationRounds: item.investigationRounds || [],

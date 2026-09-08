@@ -26,37 +26,61 @@ console.log('====================================================\n');
 // Helper to construct a custom story matching CustomStoryModal output
 function createCustomStory(
   characterCount: number,
-  guiltyIndices: number[]
+  guiltyIndices: number[],
+  customSolution?: string,
+  lang: 'ar' | 'en' = 'en'
 ): Story {
+  const isEn = lang === 'en';
   const characters: StoryCharacter[] = Array.from({ length: characterCount }, (_, i) => ({
-    name: `Char_${i + 1}`,
-    profession: `Profession_${i + 1}`,
-    publicIdentity: `Identity_${i + 1}`,
-    knowledge: `Secret_${i + 1}`,
+    name: isEn ? `Char_${i + 1}` : `شخصية_${i + 1}`,
+    profession: isEn ? `Profession_${i + 1}` : `مهنة_${i + 1}`,
+    publicIdentity: isEn ? `Public identity of Char_${i + 1}` : `الهوية العامة لشخصية_${i + 1}`,
+    knowledge: isEn ? `Secret knowledge of Char_${i + 1}` : `المعلومة السرية لشخصية_${i + 1}`,
     guilty: guiltyIndices.includes(i),
   }));
 
   const guiltyPool = characters.filter((c) => c.guilty);
   const innocentPool = characters.filter((c) => !c.guilty);
 
-  const evidenceItems: EvidenceItem[] = Array.from(
-    { length: Math.max(characterCount, 12) },
-    (_, i) => ({
-      id: `ev_custom_${i + 1}`,
-      title: `Evidence #${i + 1}`,
-      description: `Forensic observation #${i + 1} at crime scene.`,
-      publicClue: `Scene clue #${i + 1}.`,
-      discussionPrompt: `Discuss clue #${i + 1}.`,
-      category: 'physical' as const,
-      availableFromRound: Math.min(i + 1, 3),
-      isInitialPublic: false,
-    })
-  );
+  // Minimal creator-derived evidence: exactly characterCount items
+  const sceneEvidence: EvidenceItem = {
+    id: 'ev_custom_1',
+    title: isEn ? `Crime Scene: Custom Mystery ${characterCount}` : `مسرح الجريمة: قصة مخصصة ${characterCount}`,
+    description: isEn
+      ? `A customized mystery case designed for ${characterCount} players.`
+      : `قضية غامضة مخصصة لـ ${characterCount} لاعبين.`,
+    publicClue: isEn
+      ? `A customized mystery case designed for ${characterCount} players.`
+      : `قضية غامضة مخصصة لـ ${characterCount} لاعبين.`,
+    discussionPrompt: isEn
+      ? 'Examine the initial crime scene details and verify each suspect’s alibi.'
+      : 'ناقشوا تفاصيل مسرح الحادث وتحققوا من إفادات وتحركات المشتبه بهم.',
+    category: 'physical',
+    availableFromRound: 1,
+    isInitialPublic: false,
+  };
+
+  const characterEvidence: EvidenceItem[] = characters.slice(1).map((char, idx) => ({
+    id: `ev_custom_${idx + 2}`,
+    title: isEn ? `Statement: ${char.name} (${char.profession})` : `إفادة: ${char.name} (${char.profession})`,
+    description: char.publicIdentity || '',
+    publicClue: char.publicIdentity || '',
+    discussionPrompt: isEn
+      ? `Review ${char.name}'s statements and look for inconsistencies.`
+      : `راجعوا إفادة ${char.name} وابحثوا عن أي تناقضات مع باقي الأقوال.`,
+    category: 'witness',
+    availableFromRound: 1,
+    isInitialPublic: false,
+  }));
+
+  const evidenceItems: EvidenceItem[] = [sceneEvidence, ...characterEvidence];
 
   return {
-    id: `custom_${Date.now()}_${characterCount}`,
-    title: `Custom Mystery ${characterCount}`,
-    description: `A customized mystery case designed for ${characterCount} players.`,
+    id: `custom_${Date.now()}_${characterCount}_${Math.random().toString(36).substring(2, 7)}`,
+    title: isEn ? `Custom Mystery ${characterCount}` : `قضية مخصصة ${characterCount}`,
+    description: isEn
+      ? `A customized mystery case designed for ${characterCount} players.`
+      : `قضية غامضة مخصصة لـ ${characterCount} لاعبين.`,
     minPlayers: characterCount,
     maxPlayers: characterCount,
     isCustom: true,
@@ -65,14 +89,19 @@ function createCustomStory(
     fixedCharacters: characters,
     evidence: evidenceItems,
     clues: evidenceItems.map((e) => e.publicClue || e.description),
-    wrongVoteHints: ['Review the evidence carefully.'],
-    solution: 'The perpetrator confessed to the crime.',
+    wrongVoteHints: [isEn ? 'Review the evidence carefully.' : 'راجعوا الأدلة بعناية.'],
+    solution:
+      customSolution !== undefined
+        ? customSolution
+        : isEn
+        ? 'The perpetrator confessed to the crime.'
+        : 'اعترف الجاني بارتكاب الجريمة بعد مواجهته بالأدلة الدامغة.',
     introduction: {
-      setting: 'Custom Crime Scene',
-      situation: 'Detailed case background',
-      incident: 'A crime occurred.',
-      stakes: 'Expose the culprit.',
-      objective: 'Find the truth.',
+      setting: isEn ? 'Custom Crime Scene' : 'مسرح الحادث المخصص',
+      situation: isEn ? 'Detailed case background' : 'تفاصيل خلفية القضية',
+      incident: isEn ? 'A crime occurred.' : 'وقعت حادثة غامضة.',
+      stakes: isEn ? 'Expose the culprit.' : 'كشف الجاني.',
+      objective: isEn ? 'Find the truth.' : 'معرفة الحقيقة.',
     },
     investigationRounds: evidenceItems.map((e, idx) => ({
       roundNumber: idx + 1,
@@ -206,17 +235,21 @@ assert(
 );
 
 // =========================================================================
-// 3. SURPLUS POOL AND RUNTIME INTEGRITY (Requirements 16, 17, 18)
+// 3. SURPLUS POOL AND RUNTIME INTEGRITY (Section 7 Items 1 & 2)
 // =========================================================================
 console.log('\n--- 3. Testing Surplus Pool and Runtime Guilt Integrity ---');
 
-// 16. guiltyPool size can exceed minimum requirement (e.g., 4 candidates for 8 players)
+// Item 1: 8-player story with 4 possible killers
+// - guiltyPool=4
+// - actual selected killers=2
+// - remaining 2 candidates are innocent
+// - character.guilty is false
+// - player.guilty is false
 const story8_surplus = createCustomStory(8, [0, 1, 2, 3]); // 4 candidates for 8 players
 const val8_surplus = StoryEngine.validateStory(story8_surplus);
 assert(val8_surplus.valid === true, 'Requirement 16: 8-character custom story with 4 candidates is valid');
 assert(story8_surplus.guiltyPool.length === 4, 'Requirement 16: guiltyPool length is 4');
 
-// 17. At runtime, actual killers match getKillerCount(playerCount), NOT guiltyPool.length
 const engine8 = new GameEngine();
 const playerNames8 = Array.from({ length: 8 }, (_, i) => `Player_${i + 1}`);
 engine8.startNewGame(story8_surplus, playerNames8);
@@ -229,7 +262,6 @@ assert(
   `Requirement 17: Runtime actual killers (${actualKillers8.length}) strictly equals getKillerCount(8) = 2, NOT guiltyPool.length (4)`
 );
 
-// 18. Non-selected candidates in guiltyPool are treated as innocent players in active game
 const allCandidateNames8 = story8_surplus.guiltyPool.map((c) => c.name);
 const unselectedCandidates8 = allCandidateNames8.filter((name) => !actualKillerNames8.includes(name));
 assert(
@@ -250,23 +282,357 @@ for (const unselectedName of unselectedCandidates8) {
   );
 }
 
-// Verify StorySolutionEngine handles custom story solution cleanly with actual killers
-const truthText = StorySolutionEngine.generateSolution(
-  story8_surplus,
-  actualKillers8,
-  state8.players.filter((p) => !p.guilty),
-  'ar'
-);
-assert(truthText.length > 0, 'Requirement 18: StorySolutionEngine generates valid solution for custom story');
+// Item 2: 12-player story with 5+ possible killers
+// - guiltyPool > 3 (5 candidates for 12 players)
+// - actual selected killers=3
+// - remaining candidates are innocent
+const story12_surplus = createCustomStory(12, [0, 1, 2, 3, 4]); // 5 candidates for 12 players
+const val12_surplus = StoryEngine.validateStory(story12_surplus);
+assert(val12_surplus.valid === true, 'Requirement 19: 12-character custom story with 5 candidates is valid');
+assert(story12_surplus.guiltyPool.length === 5, 'Requirement 19: guiltyPool length is 5 (> 3)');
+
+const engine12 = new GameEngine();
+const playerNames12 = Array.from({ length: 12 }, (_, i) => `Player12_${i + 1}`);
+engine12.startNewGame(story12_surplus, playerNames12);
+
+const state12 = engine12.getState();
+const actualKillers12 = state12.players.filter((p) => p.guilty);
+const actualKillerNames12 = actualKillers12.map((p) => p.character.name);
 assert(
-  truthText.includes('The perpetrator confessed'),
-  'Requirement 18: Solution text accurately renders custom story solution'
+  actualKillers12.length === getKillerCount(12),
+  `Requirement 19: Runtime actual killers (${actualKillers12.length}) strictly equals getKillerCount(12) = 3, NOT guiltyPool.length (5)`
+);
+
+const allCandidateNames12 = story12_surplus.guiltyPool.map((c) => c.name);
+const unselectedCandidates12 = allCandidateNames12.filter((name) => !actualKillerNames12.includes(name));
+assert(
+  unselectedCandidates12.length === 2,
+  'Requirement 19: Exactly 2 surplus candidates remain unselected as killers (5 - 3 = 2)'
+);
+
+for (const unselectedName of unselectedCandidates12) {
+  const player = state12.players.find((p) => p.character.name === unselectedName);
+  assert(player !== undefined, `Requirement 19: Unselected candidate ${unselectedName} is present in player roster`);
+  assert(
+    player?.guilty === false,
+    `Requirement 19: Unselected candidate ${unselectedName} has player.guilty === false`
+  );
+  assert(
+    player?.character.guilty === false,
+    `Requirement 19: Unselected candidate ${unselectedName} has character.guilty === false`
+  );
+}
+
+// =========================================================================
+// 4. CONTENT PRESERVATION (Section 7 Item 3)
+// =========================================================================
+console.log('\n--- 4. Testing Creator-Authored Content Preservation ---');
+
+const authoredStory: Story = {
+  id: 'custom_authored_1',
+  title: 'سرقة المخطوطة القديمة',
+  description: 'اختفت المخطوطة النادرة من قاعة الأرشيف المغلقة دون كسر في الأبواب.',
+  minPlayers: 4,
+  maxPlayers: 4,
+  isCustom: true,
+  guiltyPool: [
+    {
+      name: 'سامي النجار',
+      profession: 'أمين الأرشيف',
+      publicIdentity: 'شوهد في القاعة المجاورة يتفحص الملفات',
+      knowledge: 'يعلم بالرمز السري لقفل الخزانة',
+      guilty: true,
+    },
+    {
+      name: 'هدى سليم',
+      profession: 'باحثة آثار',
+      publicIdentity: 'كانت تجري أبحاثاً حتى ساعة متأخرة',
+      knowledge: 'تمتلك مفتاحاً احتياطياً للأرشيف',
+      guilty: true,
+    },
+  ],
+  innocentPool: [
+    {
+      name: 'كريم عادل',
+      profession: 'حارس أمن',
+      publicIdentity: 'قام بجولة تفقدية منتظمة في الساعة العاشرة',
+      knowledge: 'لاحظ انقطاع الكهرباء للحظات',
+      guilty: false,
+    },
+    {
+      name: 'منى الشريف',
+      profession: 'مديرة المركز',
+      publicIdentity: 'غادرت المركز قبل الحادث بنصف ساعة',
+      knowledge: 'تلقت مكالمة هاتفية مريبة قبل المغادرة',
+      guilty: false,
+    },
+  ],
+  fixedCharacters: [
+    {
+      name: 'سامي النجار',
+      profession: 'أمين الأرشيف',
+      publicIdentity: 'شوهد في القاعة المجاورة يتفحص الملفات',
+      knowledge: 'يعلم بالرمز السري لقفل الخزانة',
+      guilty: true,
+    },
+    {
+      name: 'هدى سليم',
+      profession: 'باحثة آثار',
+      publicIdentity: 'كانت تجري أبحاثاً حتى ساعة متأخرة',
+      knowledge: 'تمتلك مفتاحاً احتياطياً للأرشيف',
+      guilty: true,
+    },
+    {
+      name: 'كريم عادل',
+      profession: 'حارس أمن',
+      publicIdentity: 'قام بجولة تفقدية منتظمة في الساعة العاشرة',
+      knowledge: 'لاحظ انقطاع الكهرباء للحظات',
+      guilty: false,
+    },
+    {
+      name: 'منى الشريف',
+      profession: 'مديرة المركز',
+      publicIdentity: 'غادرت المركز قبل الحادث بنصف ساعة',
+      knowledge: 'تلقت مكالمة هاتفية مريبة قبل المغادرة',
+      guilty: false,
+    },
+  ],
+  clues: [
+    'الأثر 1: بصمات مجهولة على الخزانة',
+    'الأثر 2: بقايا شمع على طاولة الأرشيف',
+    'الأثر 3: بطاقة دخول مفقودة',
+    'الأثر 4: تسلسل كاميرات المراقبة',
+  ],
+  evidence: [
+    {
+      id: 'ev_1',
+      title: 'بصمات الخزانة',
+      description: 'بصمات أصابع واضحة على مقبض الخزانة الزجاجية.',
+      publicClue: 'الأثر 1: بصمات مجهولة على الخزانة',
+      discussionPrompt: 'من كان آخر من لمس مقبض الخزانة؟',
+      category: 'physical',
+      availableFromRound: 1,
+      isInitialPublic: false,
+    },
+    {
+      id: 'ev_2',
+      title: 'بقايا الشمع',
+      description: 'قطرات شمع محترق عثر عليها تحت طاولة الأرشيف.',
+      publicClue: 'الأثر 2: بقايا شمع على طاولة الأرشيف',
+      discussionPrompt: 'لماذا استخدم أحدهم شمعة رغم وجود إضاءة الطوارئ؟',
+      category: 'physical',
+      availableFromRound: 1,
+      isInitialPublic: false,
+    },
+    {
+      id: 'ev_3',
+      title: 'بطاقة الدخول',
+      description: 'بطاقة دخول إلكترونية مسجلة باسم أحد الموظفين.',
+      publicClue: 'الأثر 3: بطاقة دخول مفقودة',
+      discussionPrompt: 'كيف وصلت هذه البطاقة إلى أرضية الردهة؟',
+      category: 'document',
+      availableFromRound: 2,
+      isInitialPublic: false,
+    },
+    {
+      id: 'ev_4',
+      title: 'تسجيل الكاميرات',
+      description: 'تسجيل يوضح ظلاً يمر عبر الممر عند الساعة 10:15.',
+      publicClue: 'الأثر 4: تسلسل كاميرات المراقبة',
+      discussionPrompt: 'طابقوا توقيت مرور الظل مع إفادات الجميع.',
+      category: 'witness',
+      availableFromRound: 2,
+      isInitialPublic: false,
+    },
+  ],
+  wrongVoteHints: ['راجعوا الأدلة بعناية قبل التصويت.'],
+  solution: 'اعترف سامي النجار بأخذ المخطوطة لإخفائها قبل تفتيش الصباح.',
+  introduction: {
+    setting: 'قاعة الأرشيف الوطني',
+    situation: 'اختفت المخطوطة النادرة من قاعة الأرشيف المغلقة دون كسر في الأبواب.',
+    incident: 'اختفاء المخطوطة التاريخية.',
+    stakes: 'إنقاذ الإرث التاريخي من التهريب.',
+    objective: 'من سرق المخطوطة؟',
+  },
+  investigationRounds: [
+    {
+      roundNumber: 1,
+      title: 'بصمات الخزانة',
+      publicClue: 'الأثر 1: بصمات مجهولة على الخزانة',
+      description: 'بصمات أصابع واضحة على مقبض الخزانة الزجاجية.',
+      discussionPrompt: 'من كان آخر من لمس مقبض الخزانة؟',
+    },
+  ],
+};
+
+// Validate that StoryEngine preserves creator-authored content
+const storyEvidence = StoryEngine.getStoryEvidence(authoredStory);
+assert(storyEvidence.length === 4, 'Requirement 20: Creator-authored evidence count is preserved (4)');
+assert(storyEvidence[0].title === 'بصمات الخزانة', 'Requirement 20: Clue 1 title is preserved without generic overwrite');
+assert(storyEvidence[0].description === 'بصمات أصابع واضحة على مقبض الخزانة الزجاجية.', 'Requirement 20: Clue 1 description is preserved');
+assert(storyEvidence[1].title === 'بقايا الشمع', 'Requirement 20: Clue 2 title is preserved');
+
+const engineAuthored = new GameEngine();
+engineAuthored.startNewGame(authoredStory, ['لاعب 1', 'لاعب 2', 'لاعب 3', 'لاعب 4']);
+const stateAuthored = engineAuthored.getState();
+
+// Verify character attributes remain intact
+for (const p of stateAuthored.players) {
+  const original = authoredStory.fixedCharacters.find((c) => c.name === p.character.name);
+  assert(original !== undefined, `Requirement 21: Character ${p.character.name} exists in authored roster`);
+  assert(p.character.profession === original?.profession, `Requirement 21: Character profession preserved for ${p.character.name}`);
+  assert(p.character.publicIdentity === original?.publicIdentity, `Requirement 21: Character publicIdentity preserved for ${p.character.name}`);
+  assert(p.character.knowledge === original?.knowledge, `Requirement 21: Character knowledge preserved for ${p.character.name}`);
+}
+
+// Verify author-defined solution is preserved
+assert(stateAuthored.story?.solution === authoredStory.solution, 'Requirement 22: Author-defined solution string is preserved intact');
+
+// =========================================================================
+// 5. ARABIC VS ENGLISH SOLUTION VALIDATION (Section 7 Item 4)
+// =========================================================================
+console.log('\n--- 5. Testing Arabic vs English Solution Validation ---');
+
+const arKillers = stateAuthored.players.filter((p) => p.guilty);
+const arInnocents = stateAuthored.players.filter((p) => !p.guilty);
+
+// Arabic request returns Arabic solution
+const arSolution = StorySolutionEngine.generateSolution(authoredStory, arKillers, arInnocents, 'ar');
+assert(arSolution.length > 0, 'Requirement 23: Arabic solution generated successfully');
+assert(arSolution === authoredStory.solution, 'Requirement 23: Arabic custom solution returns exact authored Arabic text');
+assert(arSolution.includes('اعترف سامي النجار'), 'Requirement 23: Arabic solution contains authored Arabic phrase');
+assert(!arSolution.includes('The perpetrator confessed'), 'Requirement 23: Arabic solution contains NO English strings');
+
+// Arabic fallback when story solution is empty
+const arEmptyStory = { ...authoredStory, solution: '' };
+const arFallbackSolution = StorySolutionEngine.generateSolution(arEmptyStory, arKillers, arInnocents, 'ar');
+assert(
+  arFallbackSolution === 'تم كشف الفاعلين واكتمال التحقيق بنجاح.',
+  'Requirement 24: Empty Arabic custom story solution falls back to localized Arabic success string'
+);
+
+// English request returns English solution
+const enStory = createCustomStory(4, [0, 1], 'The perpetrator confessed to the crime after being confronted with forensic evidence.', 'en');
+const enEngine = new GameEngine();
+enEngine.startNewGame(enStory, ['P1', 'P2', 'P3', 'P4']);
+const enState = enEngine.getState();
+const enKillers = enState.players.filter((p) => p.guilty);
+const enInnocents = enState.players.filter((p) => !p.guilty);
+
+const enSolution = StorySolutionEngine.generateSolution(enStory, enKillers, enInnocents, 'en');
+assert(enSolution.length > 0, 'Requirement 25: English solution generated successfully');
+assert(enSolution.includes('The perpetrator confessed'), 'Requirement 25: English solution contains authored English text');
+
+// English fallback when story solution is empty
+const enEmptyStory = { ...enStory, solution: '' };
+const enFallbackSolution = StorySolutionEngine.generateSolution(enEmptyStory, enKillers, enInnocents, 'en');
+assert(
+  enFallbackSolution === 'The culprits have been identified and the investigation is successfully closed.',
+  'Requirement 26: Empty English custom story solution falls back to localized English success string'
 );
 
 // =========================================================================
-// 4. FULL FLOW ACROSS 4–12 PLAYERS (Section 10 Scenarios A–H)
+// 6. GAME FLOW COMPLETION (Section 7 Item 5)
 // =========================================================================
-console.log('\n--- 4. Full Flow Across 4–12 Players (Scenarios A–H) ---');
+console.log('\n--- 6. Testing Complete Game Flow on Multi-Killer Custom Story ---');
+
+// 8-player story with 4 candidates (getKillerCount(8) = 2 killers)
+const flowStory = createCustomStory(8, [0, 1, 2, 3], 'The two conspirators admitted their roles in orchestrating the incident.', 'en');
+const flowEngine = new GameEngine();
+const flowPlayers = Array.from({ length: 8 }, (_, i) => `Player_${i + 1}`);
+flowEngine.startNewGame(flowStory, flowPlayers);
+
+// Phase 1: ROLE_PASS
+assert(flowEngine.getState().phase === 'ROLE_PASS', 'Requirement 27: Game starts in ROLE_PASS');
+const flowKillers = flowEngine.getState().players.filter((p) => p.guilty);
+assert(flowKillers.length === 2, 'Requirement 27: Exactly 2 actual killers assigned');
+
+// Cycle through all 8 players in ROLE_PASS
+for (let i = 0; i < 8; i++) {
+  flowEngine.advanceRolePass();
+}
+// After last pass, game transitions to DISCUSSION
+assert(flowEngine.getState().phase === 'DISCUSSION', 'Requirement 27: Transitions to DISCUSSION after role reveal');
+
+// Clue revelation
+const discCluesBefore = flowEngine.getState().revealedClues.length;
+flowEngine.revealNextEvidence();
+const discCluesAfter = flowEngine.getState().revealedClues.length;
+assert(discCluesAfter === discCluesBefore + 1, 'Requirement 27: Evidence clue revealed in discussion');
+
+// Phase 2: Start Voting for Round 1
+flowEngine.startVoting();
+assert(flowEngine.getState().phase === 'VOTING', 'Requirement 27: Enters VOTING phase');
+
+// Round 1: Eliminate first actual killer
+const killer1 = flowKillers[0];
+const votesRound1: Record<number, number> = {};
+for (const p of flowEngine.getState().players) {
+  votesRound1[p.id] = killer1.id;
+}
+const voteResult1 = flowEngine.resolveVotes(votesRound1);
+assert(voteResult1.eliminatedPlayer?.id === killer1.id, 'Requirement 28: First killer is eliminated in round 1');
+assert(voteResult1.wasGuilty === true, 'Requirement 28: Eliminated player is marked guilty');
+assert(voteResult1.winner === 'NONE', 'Requirement 28: Game continues with 1 killer remaining');
+
+// Advance to round 2 via proceedAfterVoteResult
+flowEngine.proceedAfterVoteResult();
+assert(flowEngine.getState().phase === 'DISCUSSION', 'Requirement 29: Enters round 2 DISCUSSION');
+assert(flowEngine.getState().currentRound === 2, 'Requirement 29: Current round is 2');
+
+// Phase 3: Start Voting for Round 2
+flowEngine.startVoting();
+assert(flowEngine.getState().phase === 'VOTING', 'Requirement 29: Enters round 2 VOTING');
+
+// Round 2: Eliminate second actual killer
+const killer2 = flowKillers[1];
+const votesRound2: Record<number, number> = {};
+for (const p of flowEngine.getState().players) {
+  if (!p.isEliminated) {
+    votesRound2[p.id] = killer2.id;
+  }
+}
+const voteResult2 = flowEngine.resolveVotes(votesRound2);
+assert(voteResult2.eliminatedPlayer?.id === killer2.id, 'Requirement 30: Second killer is eliminated in round 2');
+assert(voteResult2.wasGuilty === true, 'Requirement 30: Eliminated player is marked guilty');
+assert(voteResult2.winner === 'INNOCENTS', 'Requirement 30: Innocents win when all killers are eliminated');
+assert(flowEngine.getState().winner === 'INNOCENTS', 'Requirement 30: Engine state reflects INNOCENTS as winner');
+
+// Transitions through endgame screens:
+// 1. Killer Reveal
+flowEngine.proceedAfterVoteResult();
+assert(flowEngine.getState().phase === 'KILLER_REVEAL', 'Requirement 31: Enters KILLER_REVEAL phase');
+const revealedKillers = flowEngine.getState().players.filter((p) => p.guilty);
+assert(revealedKillers.length === 2, 'Requirement 31: Killer reveal displays exactly the 2 actual killers');
+assert(
+  revealedKillers.some((k) => k.id === killer1.id) && revealedKillers.some((k) => k.id === killer2.id),
+  'Requirement 31: Killer reveal matches the actual killers'
+);
+
+// 2. Crime Explanation
+flowEngine.proceedToCrimeExplanation();
+assert(flowEngine.getState().phase === 'CRIME_EXPLANATION', 'Requirement 32: Enters CRIME_EXPLANATION phase');
+
+// 3. Reveal Truth
+flowEngine.proceedToTruthReveal();
+assert(flowEngine.getState().phase === 'REVEAL_TRUTH', 'Requirement 32: Enters REVEAL_TRUTH phase');
+const truthOutput = StorySolutionEngine.generateSolution(
+  flowStory,
+  revealedKillers,
+  flowEngine.getState().players.filter((p) => !p.guilty),
+  'en'
+);
+assert(truthOutput.includes('The two conspirators admitted their roles'), 'Requirement 32: Truth output renders custom story solution');
+
+// 4. Game Over / Results
+flowEngine.proceedToGameOver();
+assert(flowEngine.getState().phase === 'GAME_OVER', 'Requirement 33: Enters GAME_OVER phase');
+assert(flowEngine.getState().winner === 'INNOCENTS', 'Requirement 33: Results screen reflects INNOCENTS winner');
+
+// =========================================================================
+// 7. FULL FLOW ACROSS 4–12 PLAYERS (Section 10 Scenarios A–I)
+// =========================================================================
+console.log('\n--- 7. Full Flow Across 4–12 Players (Scenarios A–I) ---');
 
 const testCases = [
   { count: 4, poolIndices: [0, 1], expectedKillers: 1, label: 'A. 4-player custom story' },

@@ -151,22 +151,43 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
     sound.playVoteConfirm();
 
     const totalCount = characters.length;
-    const evidenceItems: EvidenceItem[] = Array.from({ length: Math.max(totalCount, 12) }, (_, i) => ({
-      id: `ev_custom_${i + 1}`,
-      title: isEn ? `Investigation Evidence #${i + 1}` : `الأثر الجنائي #${i + 1}`,
-      description: isEn
-        ? `Forensic observation #${i + 1} regarding suspect movements at the scene.`
-        : `ملاحظة جنائية #${i + 1} مستخلصة من مسرح الحادث حول تحركات المشتبه بهم.`,
-      publicClue: isEn
-        ? `Preliminary trace #${i + 1} discovered at the crime scene.`
-        : `أثر أولي #${i + 1} تم العثور عليه في موقع الحادث.`,
+    // Primary scene clue authored directly by the creator
+    const sceneEvidence: EvidenceItem = {
+      id: 'ev_custom_1',
+      title: isEn ? `Crime Scene: ${title}` : `مسرح الجريمة: ${title}`,
+      description,
+      publicClue: description,
       discussionPrompt: isEn
-        ? `Review the statements of the suspects regarding evidence #${i + 1}.`
-        : `ناقشوا إفادات المشتبه بهم المتعلقة بالأثر #${i + 1}.`,
+        ? 'Examine the initial crime scene details and verify each suspect’s alibi.'
+        : 'ناقشوا تفاصيل مسرح الحادث وتحققوا من إفادات وتحركات المشتبه بهم.',
       category: 'physical',
-      availableFromRound: Math.min(i + 1, 3),
+      availableFromRound: 1,
       isInitialPublic: false,
-    }));
+    };
+
+    // Subsequent clues (2..N) derived directly from creator-authored character profiles and testimonies
+    const characterEvidence: EvidenceItem[] = characters.slice(1).map((char, idx) => {
+      const charStatement = char.publicIdentity?.trim()
+        ? char.publicIdentity.trim()
+        : isEn
+        ? `Statement from ${char.name} (${char.profession}) regarding their presence.`
+        : `إفادة مسجلة من ${char.name} (${char.profession}) حول تواجده في الموقع.`;
+
+      return {
+        id: `ev_custom_${idx + 2}`,
+        title: isEn ? `Statement: ${char.name} (${char.profession})` : `إفادة: ${char.name} (${char.profession})`,
+        description: charStatement,
+        publicClue: charStatement,
+        discussionPrompt: isEn
+          ? `Review ${char.name}'s statements and look for inconsistencies.`
+          : `راجعوا إفادة ${char.name} وابحثوا عن أي تناقضات مع باقي الأقوال.`,
+        category: 'witness',
+        availableFromRound: 1,
+        isInitialPublic: false,
+      };
+    });
+
+    const evidenceItems: EvidenceItem[] = [sceneEvidence, ...characterEvidence];
 
     const newStory: StoryData = {
       id: `custom_${Date.now()}`,
@@ -185,7 +206,11 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
           ? 'Review the evidence carefully before casting your next vote.'
           : 'راجعوا الأدلة بعناية قبل التسرع في التصويت القادم.',
       ],
-      solution: solution || (isEn ? 'The custom mystery case has been resolved.' : 'تم حل لغز القضية المخصصة.'),
+      solution: solution.trim()
+        ? solution.trim()
+        : isEn
+        ? 'The custom mystery case has been resolved.'
+        : 'تم حل لغز القضية المخصصة.',
       introduction: {
         setting: isEn ? 'Custom Crime Scene' : 'الموقع المخصص',
         situation: description,
