@@ -4,6 +4,8 @@ import { X, Plus, Trash2, BookOpen, Check } from 'lucide-react';
 import { StoryData, StoryCharacterData } from '../types';
 import { sound } from '../utils/audio';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
+import { getKillerCount } from '../game/PlayerManager';
+import { EvidenceItem } from '../game/types';
 
 interface CustomStoryModalProps {
   isOpen: boolean;
@@ -60,7 +62,7 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
 
   const handleAddCharacter = () => {
     sound.playClick();
-    if (characters.length >= 10) return;
+    if (characters.length >= 12) return;
     const newId = characters.length + 1;
     setCharacters([
       ...characters,
@@ -76,7 +78,7 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
 
   const handleRemoveCharacter = (idx: number) => {
     sound.playClick();
-    if (characters.length <= 3) return;
+    if (characters.length <= 4) return;
     const next = characters.filter((_, i) => i !== idx);
     setCharacters(next);
   };
@@ -89,10 +91,9 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
 
   const handleToggleGuilty = (idx: number) => {
     sound.playClick();
-    const next = characters.map((c, i) => ({
-      ...c,
-      guilty: i === idx,
-    }));
+    const next = characters.map((c, i) =>
+      i === idx ? { ...c, guilty: !c.guilty } : c
+    );
     setCharacters(next);
   };
 
@@ -102,10 +103,70 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
       return;
     }
 
-    sound.playVoteConfirm();
+    if (characters.length < 4 || characters.length > 12) {
+      alert(
+        isEn
+          ? 'Custom stories must have between 4 and 12 characters.'
+          : 'يجب أن تحتوي القصة المخصصة على ما بين 4 و12 شخصية.'
+      );
+      return;
+    }
 
+    for (const char of characters) {
+      if (!char.name.trim()) {
+        alert(isEn ? 'All characters must have a name.' : 'يجب أن تمتلك جميع الشخصيات اسماً.');
+        return;
+      }
+      if (!char.profession.trim()) {
+        alert(isEn ? 'All characters must have a profession.' : 'يجب أن تمتلك جميع الشخصيات مهنة.');
+        return;
+      }
+    }
+
+    const requiredKillerCandidates = getKillerCount(characters.length);
     const guiltyPool = characters.filter((c) => c.guilty);
     const innocentPool = characters.filter((c) => !c.guilty);
+
+    if (guiltyPool.length < requiredKillerCandidates) {
+      const msg = isEn
+        ? `Select at least ${requiredKillerCandidates} possible killer${requiredKillerCandidates > 1 ? 's' : ''}.`
+        : requiredKillerCandidates === 1
+        ? 'يرجى تحديد قاتل محتمل واحد على الأقل.'
+        : requiredKillerCandidates === 2
+        ? 'يرجى تحديد قاتلين محتملين على الأقل.'
+        : `يرجى تحديد ${requiredKillerCandidates} قتلة محتملين على الأقل.`;
+      alert(msg);
+      return;
+    }
+
+    if (innocentPool.length === 0) {
+      alert(
+        isEn
+          ? 'At least one character must remain innocent.'
+          : 'يجب أن تبقى شخصية واحدة بريئة على الأقل.'
+      );
+      return;
+    }
+
+    sound.playVoteConfirm();
+
+    const totalCount = characters.length;
+    const evidenceItems: EvidenceItem[] = Array.from({ length: Math.max(totalCount, 12) }, (_, i) => ({
+      id: `ev_custom_${i + 1}`,
+      title: isEn ? `Investigation Evidence #${i + 1}` : `الأثر الجنائي #${i + 1}`,
+      description: isEn
+        ? `Forensic observation #${i + 1} regarding suspect movements at the scene.`
+        : `ملاحظة جنائية #${i + 1} مستخلصة من مسرح الحادث حول تحركات المشتبه بهم.`,
+      publicClue: isEn
+        ? `Preliminary trace #${i + 1} discovered at the crime scene.`
+        : `أثر أولي #${i + 1} تم العثور عليه في موقع الحادث.`,
+      discussionPrompt: isEn
+        ? `Review the statements of the suspects regarding evidence #${i + 1}.`
+        : `ناقشوا إفادات المشتبه بهم المتعلقة بالأثر #${i + 1}.`,
+      category: 'physical',
+      availableFromRound: Math.min(i + 1, 3),
+      isInitialPublic: false,
+    }));
 
     const newStory: StoryData = {
       id: `custom_${Date.now()}`,
@@ -114,11 +175,16 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
       minPlayers: characters.length,
       maxPlayers: characters.length,
       isCustom: true,
-      guiltyPool: guiltyPool.length > 0 ? guiltyPool : [characters[0]],
-      innocentPool: innocentPool.length > 0 ? innocentPool : characters.slice(1),
+      guiltyPool,
+      innocentPool,
       fixedCharacters: characters,
-      clues: [isEn ? 'General clue discovered at the crime scene' : 'دليل عام تم اكتشافه في مسرح الجريمة'],
-      wrongVoteHints: [isEn ? 'Review the evidence carefully before casting your next vote.' : 'راجعوا الأدلة بعناية قبل التسرع في التصويت القادم.'],
+      evidence: evidenceItems,
+      clues: evidenceItems.map((e) => e.publicClue || e.description),
+      wrongVoteHints: [
+        isEn
+          ? 'Review the evidence carefully before casting your next vote.'
+          : 'راجعوا الأدلة بعناية قبل التسرع في التصويت القادم.',
+      ],
       solution: solution || (isEn ? 'The custom mystery case has been resolved.' : 'تم حل لغز القضية المخصصة.'),
       introduction: {
         setting: isEn ? 'Custom Crime Scene' : 'الموقع المخصص',
@@ -127,15 +193,13 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
         stakes: isEn ? 'Expose the truth or let the culprit slip away.' : 'كشف الحقيقة أو إفلات الجاني.',
         objective: isEn ? 'Who is the culprit?' : 'من القاتل؟',
       },
-      investigationRounds: [
-        {
-          roundNumber: 1,
-          title: isEn ? 'Initial Trail' : 'الأثر الأول',
-          publicClue: isEn ? 'Preliminary forensic traces at the scene.' : 'أدلة أولية في مسرح الحادث.',
-          description: isEn ? 'Key clues extracted from the crime scene.' : 'تفاصيل الأثر المستخلص من موقع الحادث.',
-          discussionPrompt: isEn ? 'Examine the initial movements of the suspects.' : 'ناقشوا التحركات الأولية للمشتبه بهم.',
-        },
-      ],
+      investigationRounds: evidenceItems.map((e, idx) => ({
+        roundNumber: idx + 1,
+        title: e.title,
+        publicClue: e.publicClue || e.description,
+        description: e.description,
+        discussionPrompt: e.discussionPrompt,
+      })),
     };
 
     onSaveStory(newStory);
@@ -216,7 +280,11 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
             <span className="text-sm font-black text-[#f5ebd9]">
               {t.caseCharacters} ({characters.length})
             </span>
-            <span className="text-xs text-[#a39a8c]">{t.selectCulpritHint}</span>
+            <span className="text-xs text-[#a39a8c]">
+              {isEn
+                ? `Possible killers: ${characters.filter((c) => c.guilty).length} (min ${getKillerCount(characters.length)})`
+                : `القتلة المحتملون: ${characters.filter((c) => c.guilty).length} (الحد الأدنى ${getKillerCount(characters.length)})`}
+            </span>
           </div>
 
           <div className="flex flex-col gap-2.5 max-h-[35vh] overflow-y-auto pr-1 custom-scrollbar">
@@ -272,10 +340,14 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
                     }`}
                   >
                     {char.guilty ? <Check className="w-3.5 h-3.5" /> : null}
-                    <span>{char.guilty ? (isEn ? 'Culprit (Guilty)' : 'القاتل (مذنب)') : (isEn ? 'Make Culprit' : 'جعله القاتل')}</span>
+                    <span>
+                      {char.guilty
+                        ? (isEn ? 'Possible Killer' : 'قاتل محتمل')
+                        : (isEn ? 'Make Possible Killer' : 'تحديد كقاتل محتمل')}
+                    </span>
                   </button>
 
-                  {characters.length > 3 && (
+                  {characters.length > 4 && (
                     <button
                       onClick={() => handleRemoveCharacter(idx)}
                       className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 cursor-pointer"
@@ -288,7 +360,7 @@ export const CustomStoryModal: React.FC<CustomStoryModalProps> = ({
             ))}
           </div>
 
-          {characters.length < 10 && (
+          {characters.length < 12 && (
             <button
               onClick={handleAddCharacter}
               className="w-full py-2.5 rounded-xl border border-dashed border-[#7a5c2b]/60 text-[#e5b35a] hover:bg-black/40 text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer"

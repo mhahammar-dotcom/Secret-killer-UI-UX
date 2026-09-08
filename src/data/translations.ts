@@ -598,7 +598,7 @@ export const AR_STRINGS: UIStrings = {
   crimeDescriptionLabel: 'وصف وملابسات الجريمة *',
   solutionAndConfessionLabel: 'الحل والاعتراف الكامل (يُعرض في النهاية)',
   caseCharacters: 'شخصيات القضية',
-  selectCulpritHint: 'حدد القاتل بالنقر على زر المذنب',
+  selectCulpritHint: 'حدد القتلة المحتملين بالنقر على الزر',
   saveCustomCaseAndPlay: 'حفظ القضية والبدء باللعب',
 };
 
@@ -889,6 +889,6 @@ export const EN_STRINGS: UIStrings = {
   crimeDescriptionLabel: 'Crime Description & Background *',
   solutionAndConfessionLabel: 'Full Solution & Confession (Revealed at the end)',
   caseCharacters: 'Case Characters',
-  selectCulpritHint: 'Mark the culprit by toggling the guilty button',
+  selectCulpritHint: 'Mark possible killers by toggling the button',
   saveCustomCaseAndPlay: 'Save Case & Start Playing',
 };
