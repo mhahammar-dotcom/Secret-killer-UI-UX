@@ -7,15 +7,23 @@ class SoundEngine {
   private isTitleAudioLoading: boolean = false;
 
   private initCtx() {
-    if (!this.ctx) {
-      const AudioCtx =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext })
-          .webkitAudioContext;
-      this.ctx = new AudioCtx();
-    }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume().catch(() => {});
+    try {
+      if (!this.ctx) {
+        const AudioCtx =
+          typeof window !== 'undefined'
+            ? window.AudioContext ||
+              (window as unknown as { webkitAudioContext: typeof AudioContext })
+                .webkitAudioContext
+            : null;
+        if (AudioCtx) {
+          this.ctx = new AudioCtx();
+        }
+      }
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+    } catch {
+      // AudioContext unavailable or restricted in environment
     }
   }
 

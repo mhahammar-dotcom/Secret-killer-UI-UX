@@ -59,7 +59,7 @@ export const InterstitialAdModal: React.FC<InterstitialAdModalProps> = ({
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-between p-4 select-none overflow-hidden"
+        className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-between p-4 pt-safe pb-safe select-none overflow-hidden"
         dir={isRtl ? 'rtl' : 'ltr'}
       >
         {/* Top AdBar Header */}

@@ -23,6 +23,8 @@ import { InterstitialAdModal } from './components/ads/InterstitialAdModal';
 import { adService } from './services/adService';
 import { sound } from './utils/audio';
 import { validateFirebaseConnection } from './services/firebase';
+import { App as CapApp } from '@capacitor/app';
+import { resolveAndroidBackAction, AndroidBackUIState } from './utils/androidBackHandler';
 
 export default function App() {
   // Stable GameEngine instance that survives renders
@@ -117,6 +119,96 @@ export default function App() {
   const [showRules, setShowRules] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showCustomStoryModal, setShowCustomStoryModal] = useState(false);
+
+  // Android Back-Button Handling
+  const lastBackPressTimeRef = useRef<number>(0);
+  const backUIStateRef = useRef<AndroidBackUIState>({
+    currentScreen,
+    showRules,
+    showSettings,
+    showCustomStoryModal,
+    isInterstitialOpen: false,
+  });
+
+  backUIStateRef.current = {
+    currentScreen,
+    showRules,
+    showSettings,
+    showCustomStoryModal,
+    isInterstitialOpen: adService.getActiveInterstitial().isOpen,
+  };
+
+  useEffect(() => {
+    const handleAndroidBack = () => {
+      const now = Date.now();
+      // Debounce rapid back presses (prevent double navigation)
+      if (now - lastBackPressTimeRef.current < 300) {
+        return;
+      }
+      lastBackPressTimeRef.current = now;
+
+      const action = resolveAndroidBackAction(backUIStateRef.current);
+
+      switch (action.type) {
+        case 'CLOSE_INTERSTITIAL':
+          sound.playClick();
+          adService.closeInterstitial();
+          break;
+        case 'CLOSE_CUSTOM_STORY':
+          sound.playClick();
+          setShowCustomStoryModal(false);
+          break;
+        case 'CLOSE_SETTINGS':
+          sound.playClick();
+          setShowSettings(false);
+          break;
+        case 'CLOSE_RULES':
+          sound.playClick();
+          setShowRules(false);
+          break;
+        case 'NAVIGATE':
+          sound.playClick();
+          setCurrentScreen(action.targetScreen);
+          break;
+        case 'BLOCK_ACTIVE_GAMEPLAY':
+          // Intentionally blocked to protect active game state
+          break;
+        case 'EXIT_APP':
+          try {
+            CapApp.exitApp().catch(() => {});
+          } catch {}
+          break;
+      }
+    };
+
+    let backListenerPromise: any = null;
+    try {
+      backListenerPromise = CapApp.addListener('backButton', () => {
+        handleAndroidBack();
+      });
+    } catch {
+      // In web / non-native environments
+    }
+
+    const handleDocBack = (e: Event) => {
+      e.preventDefault();
+      handleAndroidBack();
+    };
+    document.addEventListener('backbutton', handleDocBack);
+
+    return () => {
+      document.removeEventListener('backbutton', handleDocBack);
+      if (backListenerPromise && typeof backListenerPromise.then === 'function') {
+        backListenerPromise
+          .then((handle: any) => {
+            if (handle && typeof handle.remove === 'function') {
+              handle.remove();
+            }
+          })
+          .catch(() => {});
+      }
+    };
+  }, []);
 
   // Load custom stories & preload/trigger opening title voice on startup
   useEffect(() => {
@@ -275,7 +367,7 @@ export default function App() {
   const customCount = stories.filter((s) => s.isCustom).length;
 
   return (
-    <div className={`min-h-screen bg-[#07080c] text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 ${isRtl ? "font-['Cairo',sans-serif]" : "font-sans"}`} dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen min-h-[100dvh] bg-[#07080c] text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 pt-safe pb-safe pl-safe pr-safe ${isRtl ? "font-['Cairo',sans-serif]" : "font-sans"}`} dir={isRtl ? 'rtl' : 'ltr'}>
       {/* Main Screen Views */}
       <main className="flex-1 flex flex-col justify-center">
         <AnimatePresence mode="wait">
