@@ -340,6 +340,62 @@ console.log('--- TEST K: Role Pass Reset Success and Failure ---');
   engine.resetRolePass = originalResetRole;
 }
 
+// =========================================================================
+// TEST L: ANDROID BACK NAVIGATION VIA GAMEFLOWCOORDINATOR AUTHORITY
+// =========================================================================
+console.log('--- TEST L: Android Back Navigation via GameFlowCoordinator Authority ---');
+{
+  // 1. In voting phase -> cancels voting and returns to free_discussion
+  const engine1 = new GameEngine();
+  const harness1 = createMockHarness(engine1, 'voting');
+  engine1.startNewGame(story, ['Alice', 'Bob', 'Charlie', 'David']);
+  while (engine1.getState().phase === 'ROLE_PASS') {
+    engine1.advanceRolePass();
+  }
+  engine1.startVoting();
+  check(engine1.getState().phase === 'VOTING', 'Engine is in VOTING phase');
+
+  const backVotingResult = harness1.coordinator.handleBack('voting');
+  check(backVotingResult === true, 'coordinator.handleBack(voting) returns true');
+  check(engine1.getState().phase === 'DISCUSSION', 'Engine phase returned to DISCUSSION');
+  check(harness1.getScreen() === 'free_discussion', 'UI screen returned to free_discussion');
+
+  // 2. In role pass phase -> resets role pass and returns to player_setup
+  const engine2 = new GameEngine();
+  const harness2 = createMockHarness(engine2, 'role_pass');
+  engine2.startNewGame(story, ['Alice', 'Bob', 'Charlie', 'David']);
+  engine2.advanceRolePass();
+  check(engine2.getState().currentViewingPlayerIndex === 1, 'Viewing player index is 1');
+
+  const backRoleResult = harness2.coordinator.handleBack('role_pass');
+  check(backRoleResult === true, 'coordinator.handleBack(role_pass) returns true');
+  check(engine2.getState().currentViewingPlayerIndex === 0, 'Viewing player index reset to 0');
+  check(harness2.getScreen() === 'player_setup', 'UI screen returned to player_setup');
+
+  // 3. In results screen -> resets to lobby / home
+  const engine3 = new GameEngine();
+  const harness3 = createMockHarness(engine3, 'results');
+  engine3.startNewGame(story, ['Alice', 'Bob', 'Charlie', 'David']);
+
+  const backResultsResult = harness3.coordinator.handleBack('results');
+  check(backResultsResult === true, 'coordinator.handleBack(results) returns true');
+  check(engine3.getState().phase === 'LOBBY', 'Engine phase reset to LOBBY');
+  check(harness3.getScreen() === 'home', 'UI screen reset to home');
+
+  // 4. In active gameplay with no safe reverse transition (free_discussion, vote_result, etc.)
+  const engine4 = new GameEngine();
+  const harness4 = createMockHarness(engine4, 'free_discussion');
+  engine4.startNewGame(story, ['Alice', 'Bob', 'Charlie', 'David']);
+  while (engine4.getState().phase === 'ROLE_PASS') {
+    engine4.advanceRolePass();
+  }
+
+  const backDiscussionResult = harness4.coordinator.handleBack('free_discussion');
+  check(backDiscussionResult === false, 'coordinator.handleBack(free_discussion) blocked (returns false)');
+  check(harness4.getScreen() === 'free_discussion', 'UI screen unchanged on blocked back');
+  check(engine4.getState().phase === 'DISCUSSION', 'Engine phase preserved on blocked back');
+}
+
 console.log('\n====================================================');
 console.log(`ALL GameFlowCoordinator DEDICATED TESTS PASSED! (${passedTests} assertions)`);
 console.log('====================================================\n');

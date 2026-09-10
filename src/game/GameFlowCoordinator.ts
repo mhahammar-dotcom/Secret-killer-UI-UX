@@ -321,4 +321,25 @@ export class GameFlowCoordinator {
       return false;
     }
   }
+
+  /**
+   * Authoritative back navigation for gameplay screens.
+   * Delegates to existing coordinator authority:
+   * - 'voting': cancels active voting and returns to 'free_discussion'
+   * - 'role_pass': resets role pass to index 0 and returns to 'player_setup'
+   * - 'results': resets game to lobby and returns to 'home'
+   * Returns true if transition was executed, false if blocked during active gameplay.
+   */
+  public handleBack(currentScreen: GameScreen): boolean {
+    switch (currentScreen) {
+      case 'voting':
+        return this.cancelVoting();
+      case 'role_pass':
+        return this.resetRolePass();
+      case 'results':
+        return this.resetToLobby('home');
+      default:
+        return false;
+    }
+  }
 }

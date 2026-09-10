@@ -13,7 +13,8 @@ export type AndroidBackAction =
   | { type: 'CLOSE_RULES' }
   | { type: 'CLOSE_SETTINGS' }
   | { type: 'CLOSE_CUSTOM_STORY' }
-  | { type: 'NAVIGATE'; targetScreen: GameScreen }
+  | { type: 'NAVIGATE_PREGAME'; targetScreen: 'home' | 'story_select' | 'story_intro' }
+  | { type: 'COORDINATOR_BACK'; screen: GameScreen }
   | { type: 'BLOCK_ACTIVE_GAMEPLAY'; reason: string; screen: GameScreen }
   | { type: 'EXIT_APP' };
 
@@ -22,10 +23,10 @@ export type AndroidBackAction =
  *
  * Rules:
  * 1. Modals & Overlays take precedence (close top overlay first).
- * 2. Pre-game lobby screens navigate back to their previous screen.
- * 3. Active gameplay screens (role_pass, free_discussion, voting, vote_result)
- *    are STRICTLY BLOCKED to prevent accidental reset or corruption of authoritative game state.
- * 4. Post-game review screens allow reviewing previous review steps.
+ * 2. Pre-game setup screens navigate back cleanly to earlier setup steps.
+ * 3. Gameplay screens (voting, role_pass, results) delegate directly to GameFlowCoordinator authority.
+ * 4. Active gameplay screens without reverse transitions (free_discussion, vote_result, reveals)
+ *    are protected / blocked from back navigation to prevent game state desynchronization.
  * 5. Home screen triggers application exit.
  */
 export function resolveAndroidBackAction(state: AndroidBackUIState): AndroidBackAction {
@@ -46,62 +47,35 @@ export function resolveAndroidBackAction(state: AndroidBackUIState): AndroidBack
     return { type: 'CLOSE_RULES' };
   }
 
-  // 2. Pre-game screens
-  if (state.currentScreen === 'story_select') {
-    return { type: 'NAVIGATE', targetScreen: 'home' };
-  }
-
-  if (state.currentScreen === 'story_intro') {
-    return { type: 'NAVIGATE', targetScreen: 'story_select' };
-  }
-
-  if (state.currentScreen === 'player_setup') {
-    return { type: 'NAVIGATE', targetScreen: 'story_intro' };
-  }
-
-  // 3. Active gameplay screens - STRICTLY PROTECTED / BLOCKED
-  // Back navigation must NOT accidentally reset or mutate active games.
-  const activeGameplayScreens: GameScreen[] = [
-    'role_pass',
-    'free_discussion',
-    'voting',
-    'vote_result',
-  ];
-
-  if (activeGameplayScreens.includes(state.currentScreen)) {
-    return {
-      type: 'BLOCK_ACTIVE_GAMEPLAY',
-      reason: 'Hardware back button blocked during active gameplay to prevent game reset or state corruption',
-      screen: state.currentScreen,
-    };
-  }
-
-  // 4. Post-game review screens
-  if (state.currentScreen === 'results') {
-    return { type: 'NAVIGATE', targetScreen: 'reveal_truth' };
-  }
-
-  if (state.currentScreen === 'reveal_truth') {
-    return { type: 'NAVIGATE', targetScreen: 'crime_explanation' };
-  }
-
-  if (state.currentScreen === 'crime_explanation') {
-    return { type: 'NAVIGATE', targetScreen: 'killer_reveal' };
-  }
-
-  if (state.currentScreen === 'killer_reveal') {
-    return { type: 'NAVIGATE', targetScreen: 'vote_result' };
-  }
-
-  // 5. Home screen - exit application
+  // 2. Home screen - exit application
   if (state.currentScreen === 'home') {
     return { type: 'EXIT_APP' };
   }
 
-  // Fallback safe default: block to avoid undefined state
+  // 3. Pre-game setup screens (local UI navigation before game is started)
+  if (state.currentScreen === 'story_select') {
+    return { type: 'NAVIGATE_PREGAME', targetScreen: 'home' };
+  }
+
+  if (state.currentScreen === 'story_intro') {
+    return { type: 'NAVIGATE_PREGAME', targetScreen: 'story_select' };
+  }
+
+  if (state.currentScreen === 'player_setup') {
+    return { type: 'NAVIGATE_PREGAME', targetScreen: 'story_intro' };
+  }
+
+  // 4. Gameplay post-game screen delegating to GameFlowCoordinator authority (resetToLobby)
+  if (state.currentScreen === 'results') {
+    return { type: 'COORDINATOR_BACK', screen: 'results' };
+  }
+
+  // 5. Active gameplay screens (role_pass, free_discussion, voting, vote_result, reveals)
+  // are protected from hardware back to prevent accidental reset or desynchronization
   return {
     type: 'BLOCK_ACTIVE_GAMEPLAY',
-    reason: `Unhandled screen ${state.currentScreen}; blocking back to protect state`,
+    reason: `Android hardware back button blocked on ${state.currentScreen} to protect GameEngine state and enforce GameFlowCoordinator authority`,
     screen: state.currentScreen,
   };
 }
+

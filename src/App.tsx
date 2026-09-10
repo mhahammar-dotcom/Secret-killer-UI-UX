@@ -166,12 +166,16 @@ export default function App() {
           sound.playClick();
           setShowRules(false);
           break;
-        case 'NAVIGATE':
+        case 'NAVIGATE_PREGAME':
           sound.playClick();
           setCurrentScreen(action.targetScreen);
           break;
+        case 'COORDINATOR_BACK':
+          sound.playClick();
+          coordinatorRef.current?.handleBack(action.screen);
+          break;
         case 'BLOCK_ACTIVE_GAMEPLAY':
-          // Intentionally blocked to protect active game state
+          // Intentionally blocked to protect active game state under GameFlowCoordinator authority
           break;
         case 'EXIT_APP':
           try {
@@ -613,7 +617,7 @@ export default function App() {
                 votes={lastVotes}
                 onPlayAgain={handlePlayAgain}
                 onNavigateHome={handleNavigateHome}
-                onBack={() => setCurrentScreen('reveal_truth')}
+                onBack={handleNavigateHome}
                 language={language}
               />
             </motion.div>

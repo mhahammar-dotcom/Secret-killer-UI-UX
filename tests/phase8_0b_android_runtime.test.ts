@@ -85,7 +85,7 @@ console.log('Test 2: Pre-game navigation flows backward through setup');
     isInterstitialOpen: false,
   };
   const selectAction = resolveAndroidBackAction(selectState);
-  check(selectAction.type === 'NAVIGATE' && selectAction.targetScreen === 'home', 'story_select must navigate back to home');
+  check(selectAction.type === 'NAVIGATE_PREGAME' && selectAction.targetScreen === 'home', 'story_select must navigate back to home');
 
   const introState: AndroidBackUIState = {
     currentScreen: 'story_intro',
@@ -95,7 +95,7 @@ console.log('Test 2: Pre-game navigation flows backward through setup');
     isInterstitialOpen: false,
   };
   const introAction = resolveAndroidBackAction(introState);
-  check(introAction.type === 'NAVIGATE' && introAction.targetScreen === 'story_select', 'story_intro must navigate back to story_select');
+  check(introAction.type === 'NAVIGATE_PREGAME' && introAction.targetScreen === 'story_select', 'story_intro must navigate back to story_select');
 
   const setupState: AndroidBackUIState = {
     currentScreen: 'player_setup',
@@ -105,20 +105,38 @@ console.log('Test 2: Pre-game navigation flows backward through setup');
     isInterstitialOpen: false,
   };
   const setupAction = resolveAndroidBackAction(setupState);
-  check(setupAction.type === 'NAVIGATE' && setupAction.targetScreen === 'story_intro', 'player_setup must navigate back to story_intro');
+  check(setupAction.type === 'NAVIGATE_PREGAME' && setupAction.targetScreen === 'story_intro', 'player_setup must navigate back to story_intro');
 }
 
-// Test 3: Active Gameplay Screens are Strictly Protected & Blocked
-console.log('Test 3: Active gameplay screens strictly block back navigation');
+// Test 3: Gameplay Screens Delegate to GameFlowCoordinator Authority
+console.log('Test 3: Gameplay screens delegate to GameFlowCoordinator authority');
 {
-  const activeScreens: GameScreen[] = [
+  // Results screen delegates to coordinator
+  const resultsState: AndroidBackUIState = {
+    currentScreen: 'results',
+    showRules: false,
+    showSettings: false,
+    showCustomStoryModal: false,
+    isInterstitialOpen: false,
+  };
+  const resultsAction = resolveAndroidBackAction(resultsState);
+  check(resultsAction.type === 'COORDINATOR_BACK' && resultsAction.screen === 'results', 'results must delegate to COORDINATOR_BACK');
+}
+
+// Test 4: Active Gameplay Screens are strictly blocked from accidental back navigation
+console.log('Test 4: Active gameplay screens are strictly blocked to protect game state');
+{
+  const blockedScreens: GameScreen[] = [
     'role_pass',
     'free_discussion',
     'voting',
     'vote_result',
+    'killer_reveal',
+    'crime_explanation',
+    'reveal_truth',
   ];
 
-  for (const screen of activeScreens) {
+  for (const screen of blockedScreens) {
     const state: AndroidBackUIState = {
       currentScreen: screen,
       showRules: false,
@@ -127,64 +145,8 @@ console.log('Test 3: Active gameplay screens strictly block back navigation');
       isInterstitialOpen: false,
     };
     const action = resolveAndroidBackAction(state);
-    check(action.type === 'BLOCK_ACTIVE_GAMEPLAY', `${screen} must block Android hardware back button`);
+    check(action.type === 'BLOCK_ACTIVE_GAMEPLAY', `${screen} must block Android hardware back button to protect GameEngine state`);
   }
-}
-
-// Test 4: Post-game Review Screen Navigation
-console.log('Test 4: Post-game review screens navigate backwards through reveal stages');
-{
-  const resultsState: AndroidBackUIState = {
-    currentScreen: 'results',
-    showRules: false,
-    showSettings: false,
-    showCustomStoryModal: false,
-    isInterstitialOpen: false,
-  };
-  check(
-    resolveAndroidBackAction(resultsState).type === 'NAVIGATE' &&
-      (resolveAndroidBackAction(resultsState) as any).targetScreen === 'reveal_truth',
-    'results must navigate back to reveal_truth'
-  );
-
-  const truthState: AndroidBackUIState = {
-    currentScreen: 'reveal_truth',
-    showRules: false,
-    showSettings: false,
-    showCustomStoryModal: false,
-    isInterstitialOpen: false,
-  };
-  check(
-    resolveAndroidBackAction(truthState).type === 'NAVIGATE' &&
-      (resolveAndroidBackAction(truthState) as any).targetScreen === 'crime_explanation',
-    'reveal_truth must navigate back to crime_explanation'
-  );
-
-  const crimeState: AndroidBackUIState = {
-    currentScreen: 'crime_explanation',
-    showRules: false,
-    showSettings: false,
-    showCustomStoryModal: false,
-    isInterstitialOpen: false,
-  };
-  check(
-    resolveAndroidBackAction(crimeState).type === 'NAVIGATE' &&
-      (resolveAndroidBackAction(crimeState) as any).targetScreen === 'killer_reveal',
-    'crime_explanation must navigate back to killer_reveal'
-  );
-
-  const killerState: AndroidBackUIState = {
-    currentScreen: 'killer_reveal',
-    showRules: false,
-    showSettings: false,
-    showCustomStoryModal: false,
-    isInterstitialOpen: false,
-  };
-  check(
-    resolveAndroidBackAction(killerState).type === 'NAVIGATE' &&
-      (resolveAndroidBackAction(killerState) as any).targetScreen === 'vote_result',
-    'killer_reveal must navigate back to vote_result'
-  );
 }
 
 // Test 5: Home Screen triggers Application Exit
@@ -342,6 +304,51 @@ console.log('Test 9: AdService executes callbacks safely and integrates with bac
   adService.closeInterstitial();
   check(!adService.getActiveInterstitial().isOpen, 'Interstitial closed');
   check(closedProceeded, 'Interstitial onProceed callback executed upon back dismissal');
+}
+
+// Test 10: Authoritative GameFlowCoordinator back handling execution
+console.log('Test 10: Back navigation executes coordinator transitions without direct setCurrentScreen');
+{
+  let currentScreen: GameScreen = 'results' as GameScreen;
+  let coordinatorError: string | null = null;
+  const engine = new GameEngine();
+  const coordinator = new GameFlowCoordinator(engine, {
+    getScreen: () => currentScreen,
+    setScreen: (s: GameScreen) => { currentScreen = s; },
+    setError: (e: string | null) => { coordinatorError = e; },
+    getLanguage: () => 'en',
+  });
+
+  engine.startNewGame(story, ['Player 1', 'Player 2', 'Player 3', 'Player 4']);
+  check(engine.getState().players.length === 4, 'Game started with 4 players');
+
+  // 1. In results screen, back delegates to COORDINATOR_BACK
+  const resultsAction = resolveAndroidBackAction({
+    currentScreen: 'results',
+    showRules: false,
+    showSettings: false,
+    showCustomStoryModal: false,
+    isInterstitialOpen: false,
+  });
+  check(resultsAction.type === 'COORDINATOR_BACK' && resultsAction.screen === 'results', 'Action is COORDINATOR_BACK for results');
+
+  if (resultsAction.type === 'COORDINATOR_BACK') {
+    const handled = coordinator.handleBack(resultsAction.screen);
+    check(handled === true, 'coordinator.handleBack(results) returned true');
+  }
+  check(engine.getState().phase === 'LOBBY', 'GameEngine phase synchronized back to LOBBY');
+  check(currentScreen === 'home', 'Screen safely transitioned to home under coordinator authority');
+  check(coordinatorError === null, 'No transition error during coordinator back');
+
+  // 2. In active voting, back is strictly blocked to protect active game state
+  const votingAction = resolveAndroidBackAction({
+    currentScreen: 'voting',
+    showRules: false,
+    showSettings: false,
+    showCustomStoryModal: false,
+    isInterstitialOpen: false,
+  });
+  check(votingAction.type === 'BLOCK_ACTIVE_GAMEPLAY', 'Voting blocks Android back to protect active game state');
 }
 
 console.log(`\n====================================================`);
