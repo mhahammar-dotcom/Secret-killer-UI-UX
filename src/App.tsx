@@ -556,7 +556,7 @@ export default function App() {
                 players={players}
                 winner={winner}
                 onProceedToExplanation={handleProceedToExplanation}
-                onBack={() => setCurrentScreen('vote_result')}
+                onBack={handleNavigateHome}
                 onNavigateHome={handleNavigateHome}
                 language={language}
               />
@@ -575,7 +575,7 @@ export default function App() {
                 story={activeStory}
                 players={players}
                 onProceedToResults={handleProceedToTruthReveal}
-                onBack={() => setCurrentScreen('killer_reveal')}
+                onBack={handleNavigateHome}
                 onNavigateHome={handleNavigateHome}
                 language={language}
               />
@@ -595,7 +595,7 @@ export default function App() {
                 players={players}
                 winner={winner}
                 onProceedToResults={handleProceedToResults}
-                onBack={() => setCurrentScreen('crime_explanation')}
+                onBack={handleNavigateHome}
                 onNavigateHome={handleNavigateHome}
                 language={language}
               />
