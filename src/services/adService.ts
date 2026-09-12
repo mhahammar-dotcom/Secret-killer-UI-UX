@@ -8,8 +8,8 @@ import {
 
 export type InterstitialPlacement = 'round_transition' | 'game_end' | 'story_start' | 'manual';
 
-const bannerAdUnitId = import.meta.env.VITE_ADMOB_BANNER_AD_UNIT_ID?.trim();
-const interstitialAdUnitId = import.meta.env.VITE_ADMOB_INTERSTITIAL_AD_UNIT_ID?.trim();
+const bannerAdUnitId = (import.meta as any).env?.VITE_ADMOB_BANNER_AD_UNIT_ID?.trim();
+const interstitialAdUnitId = (import.meta as any).env?.VITE_ADMOB_INTERSTITIAL_AD_UNIT_ID?.trim();
 
 /**
  * Native AdMob adapter. Ads are enabled by the app configuration, never by an
