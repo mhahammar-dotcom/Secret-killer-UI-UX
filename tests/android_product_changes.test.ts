@@ -18,4 +18,9 @@ check(ads.includes("@capacitor-community/admob"), 'Ads must use the native AdMob
 check(!ads.includes('ca-app-pub-3940256099942544'), 'No Google test ad IDs may ship.');
 const manifest = readFileSync(new URL('../android/app/src/main/AndroidManifest.xml', import.meta.url), 'utf8');
 check(manifest.includes('com.google.android.gms.ads.APPLICATION_ID'), 'Android manifest must configure the AdMob app ID.');
+
+const appSource = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
+check(appSource.includes("const isHomeScreen = currentScreen === 'home'"), 'Banner must be tied strictly to the Home screen.');
+check(!appSource.includes("currentScreen === 'results'") || !appSource.includes("shouldShowBanner = currentScreen === 'home' || currentScreen === 'story_select'"), 'Banner must not be configured for non-home screens.');
+check(appSource.includes('adService.showBanner()') && appSource.includes('adService.hideBanner()'), 'App must toggle banner via adService showBanner/hideBanner.');
 console.log(`Android product changes passed (${assertions} assertions).`);

@@ -216,13 +216,21 @@ export default function App() {
     };
   }, []);
 
+  // AdMob native banner placement: shown strictly on the Home screen and hidden upon leaving Home
   useEffect(() => {
-    const shouldShowBanner = currentScreen === 'home' || currentScreen === 'story_select' || currentScreen === 'results';
-    if (shouldShowBanner && !showRules && !showSettings && !showCustomStoryModal && !showExitConfirmation) {
+    const isHomeScreen = currentScreen === 'home';
+    const isModalOpen = showRules || showSettings || showCustomStoryModal || showExitConfirmation;
+    if (isHomeScreen && !isModalOpen) {
       void adService.showBanner();
     } else {
       void adService.hideBanner();
     }
+
+    return () => {
+      if (currentScreen === 'home') {
+        void adService.hideBanner();
+      }
+    };
   }, [currentScreen, showRules, showSettings, showCustomStoryModal, showExitConfirmation]);
 
   // Load custom stories & preload/trigger opening title voice on startup
