@@ -1,122 +1,104 @@
-export interface AdConfig {
-  adsEnabled: boolean;
-  testMode: boolean;
-  adMobAppId?: string;
-  bannerAdUnitId?: string;
-  interstitialAdUnitId?: string;
-  lastInterstitialTime?: number;
-  interstitialCooldownSeconds?: number;
-}
+import { Capacitor } from '@capacitor/core';
+import {
+  AdMob,
+  AdmobConsentStatus,
+  BannerAdPosition,
+  BannerAdSize,
+} from '@capacitor-community/admob';
 
 export type InterstitialPlacement = 'round_transition' | 'game_end' | 'story_start' | 'manual';
 
+const bannerAdUnitId = import.meta.env.VITE_ADMOB_BANNER_AD_UNIT_ID?.trim();
+const interstitialAdUnitId = import.meta.env.VITE_ADMOB_INTERSTITIAL_AD_UNIT_ID?.trim();
+
+/**
+ * Native AdMob adapter. Ads are enabled by the app configuration, never by an
+ * end-user setting. No ad is simulated: if Android, consent, or a production
+ * unit ID is unavailable, game flow continues without an ad.
+ */
 class AdService {
-  private config: AdConfig = {
-    adsEnabled: true,
-    testMode: true,
-    adMobAppId: 'ca-app-pub-3940256099942544~3347511713', // Google Test App ID
-    bannerAdUnitId: 'ca-app-pub-3940256099942544/6300978111', // Google Test Banner ID
-    interstitialAdUnitId: 'ca-app-pub-3940256099942544/1033173712', // Google Test Interstitial ID
-    lastInterstitialTime: 0,
-    interstitialCooldownSeconds: 30, // 30 seconds minimum between interstitials
-  };
+  private initialized = false;
+  private initializationPromise: Promise<boolean> | null = null;
+  private bannerVisible = false;
+  private lastInterstitialTime = 0;
+  private readonly interstitialCooldownMs = 30_000;
 
-  private activeInterstitial: {
-    isOpen: boolean;
-    placement: InterstitialPlacement;
-    onClose?: () => void;
-  } = {
-    isOpen: false,
-    placement: 'round_transition',
-  };
+  public isNativeAndroid(): boolean {
+    return Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
+  }
 
-  private listeners: Array<() => void> = [];
+  public hasProductionConfiguration(): boolean {
+    return Boolean(bannerAdUnitId || interstitialAdUnitId);
+  }
 
-  constructor() {
-    try {
-      const saved = localStorage.getItem('secret_killer_ad_config');
-      if (saved) {
-        this.config = { ...this.config, ...JSON.parse(saved) };
+  public async initialize(): Promise<boolean> {
+    if (!this.isNativeAndroid() || !this.hasProductionConfiguration()) return false;
+    if (this.initialized) return true;
+    if (this.initializationPromise) return this.initializationPromise;
+
+    this.initializationPromise = (async () => {
+      try {
+        await AdMob.initialize();
+        let consent = await AdMob.requestConsentInfo();
+        if (!consent.canRequestAds && consent.status === AdmobConsentStatus.REQUIRED) {
+          consent = await AdMob.showConsentForm();
+        }
+        this.initialized = consent.canRequestAds;
+        return this.initialized;
+      } catch (error) {
+        console.warn('AdMob initialization was unavailable; continuing without ads.', error);
+        return false;
+      } finally {
+        this.initializationPromise = null;
       }
-    } catch {}
+    })();
+    return this.initializationPromise;
   }
 
-  public getConfig(): AdConfig {
-    return { ...this.config };
-  }
-
-  public updateConfig(newConfig: Partial<AdConfig>) {
-    this.config = { ...this.config, ...newConfig };
+  public async showBanner(): Promise<void> {
+    if (!bannerAdUnitId || this.bannerVisible || !(await this.initialize())) return;
     try {
-      localStorage.setItem('secret_killer_ad_config', JSON.stringify(this.config));
-    } catch {}
-    this.notify();
+      await AdMob.showBanner({
+        adId: bannerAdUnitId,
+        adSize: BannerAdSize.ADAPTIVE_BANNER,
+        position: BannerAdPosition.BOTTOM_CENTER,
+        margin: 0,
+      });
+      this.bannerVisible = true;
+    } catch (error) {
+      console.warn('AdMob banner could not be shown.', error);
+    }
   }
 
-  public subscribe(listener: () => void): () => void {
-    this.listeners.push(listener);
-    return () => {
-      this.listeners = this.listeners.filter((l) => l !== listener);
-    };
+  public async hideBanner(): Promise<void> {
+    if (!this.bannerVisible) return;
+    try {
+      await AdMob.removeBanner();
+    } catch (error) {
+      console.warn('AdMob banner could not be removed.', error);
+    } finally {
+      this.bannerVisible = false;
+    }
   }
 
-  private notify() {
-    this.listeners.forEach((l) => l());
-  }
-
-  public isInterstitialReady(placement: InterstitialPlacement): boolean {
-    if (!this.config.adsEnabled) return false;
+  public async requestInterstitial(placement: InterstitialPlacement, onProceed: () => void): Promise<boolean> {
     const now = Date.now();
-    const elapsedSeconds = (now - (this.config.lastInterstitialTime || 0)) / 1000;
-    
-    // Always permit game_end or if cooldown has elapsed
-    if (placement === 'game_end' || elapsedSeconds >= (this.config.interstitialCooldownSeconds || 30)) {
-      return true;
-    }
-    return false;
-  }
-
-  public requestInterstitial(
-    placement: InterstitialPlacement,
-    onProceed: () => void
-  ): boolean {
-    if (!this.config.adsEnabled) {
+    const shouldShow = placement === 'game_end' || now - this.lastInterstitialTime >= this.interstitialCooldownMs;
+    if (!interstitialAdUnitId || !shouldShow || !(await this.initialize())) {
       onProceed();
       return false;
     }
 
-    if (this.isInterstitialReady(placement)) {
-      this.activeInterstitial = {
-        isOpen: true,
-        placement,
-        onClose: onProceed,
-      };
-      this.config.lastInterstitialTime = Date.now();
-      this.notify();
+    try {
+      await AdMob.prepareInterstitial({ adId: interstitialAdUnitId });
+      this.lastInterstitialTime = now;
+      await AdMob.showInterstitial({ adId: interstitialAdUnitId });
       return true;
-    } else {
-      // Cooldown active, seamlessly proceed with gameplay
-      onProceed();
+    } catch (error) {
+      console.warn('AdMob interstitial could not be shown; continuing game flow.', error);
       return false;
-    }
-  }
-
-  public getActiveInterstitial() {
-    return this.activeInterstitial;
-  }
-
-  public closeInterstitial() {
-    if (this.activeInterstitial.isOpen) {
-      const callback = this.activeInterstitial.onClose;
-      this.activeInterstitial = {
-        isOpen: false,
-        placement: 'round_transition',
-        onClose: undefined,
-      };
-      this.notify();
-      if (callback) {
-        callback();
-      }
+    } finally {
+      onProceed();
     }
   }
 }

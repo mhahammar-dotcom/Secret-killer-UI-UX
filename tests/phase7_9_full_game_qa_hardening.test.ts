@@ -506,11 +506,9 @@ console.log('--- SCENARIO Q: Ad service safety and cooldown ---');
   let threw = false;
   try {
     let proceedCount = 0;
-    const res1 = adService.requestInterstitial('round_transition', () => { proceedCount++; });
-    const res2 = adService.requestInterstitial('round_transition', () => { proceedCount++; });
-    if (adService.getActiveInterstitial().isOpen) {
-      adService.closeInterstitial();
-    }
+    await adService.requestInterstitial('round_transition', () => { proceedCount++; });
+    await adService.requestInterstitial('round_transition', () => { proceedCount++; });
+    check(proceedCount === 2, 'Q: Ad service never blocks a game transition when a native ad is unavailable');
   } catch (err) {
     threw = true;
   }

@@ -18,8 +18,6 @@ import { GameResultsScreen } from './components/GameResultsScreen';
 import { RulesModal } from './components/RulesModal';
 import { SettingsModal } from './components/SettingsModal';
 import { CustomStoryModal } from './components/CustomStoryModal';
-import { BannerAd } from './components/ads/BannerAd';
-import { InterstitialAdModal } from './components/ads/InterstitialAdModal';
 import { adService } from './services/adService';
 import { sound } from './utils/audio';
 import { validateFirebaseConnection } from './services/firebase';
@@ -119,6 +117,7 @@ export default function App() {
   const [showRules, setShowRules] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showCustomStoryModal, setShowCustomStoryModal] = useState(false);
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
   // Android Back-Button Handling
   const lastBackPressTimeRef = useRef<number>(0);
@@ -128,6 +127,7 @@ export default function App() {
     showSettings,
     showCustomStoryModal,
     isInterstitialOpen: false,
+    showExitConfirmation,
   });
 
   backUIStateRef.current = {
@@ -135,7 +135,8 @@ export default function App() {
     showRules,
     showSettings,
     showCustomStoryModal,
-    isInterstitialOpen: adService.getActiveInterstitial().isOpen,
+    isInterstitialOpen: false,
+    showExitConfirmation,
   };
 
   useEffect(() => {
@@ -151,8 +152,10 @@ export default function App() {
 
       switch (action.type) {
         case 'CLOSE_INTERSTITIAL':
+          break;
+        case 'CLOSE_EXIT_CONFIRMATION':
           sound.playClick();
-          adService.closeInterstitial();
+          setShowExitConfirmation(false);
           break;
         case 'CLOSE_CUSTOM_STORY':
           sound.playClick();
@@ -177,10 +180,9 @@ export default function App() {
         case 'BLOCK_ACTIVE_GAMEPLAY':
           // Intentionally blocked to protect active game state under GameFlowCoordinator authority
           break;
-        case 'EXIT_APP':
-          try {
-            CapApp.exitApp().catch(() => {});
-          } catch {}
+        case 'CONFIRM_EXIT':
+          sound.playClick();
+          setShowExitConfirmation(true);
           break;
       }
     };
@@ -213,6 +215,15 @@ export default function App() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const shouldShowBanner = currentScreen === 'home' || currentScreen === 'story_select' || currentScreen === 'results';
+    if (shouldShowBanner && !showRules && !showSettings && !showCustomStoryModal && !showExitConfirmation) {
+      void adService.showBanner();
+    } else {
+      void adService.hideBanner();
+    }
+  }, [currentScreen, showRules, showSettings, showCustomStoryModal, showExitConfirmation]);
 
   // Load custom stories & preload/trigger opening title voice on startup
   useEffect(() => {
@@ -669,8 +680,20 @@ export default function App() {
         language={language}
       />
 
-      {/* Google AdMob Full-screen Interstitial Ad Modal */}
-      <InterstitialAdModal language={language} />
+      <AnimatePresence>
+        {showExitConfirmation && (
+          <motion.div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-sm rounded-3xl border border-[#c8923a]/60 bg-[#0d0f16] p-6 text-center shadow-2xl" dir={isRtl ? 'rtl' : 'ltr'}>
+              <h2 className="text-xl font-black text-[#f5ebd9]">{isEn ? 'Are you sure?' : 'هل أنت متأكد؟'}</h2>
+              <p className="mt-2 text-sm text-[#bdb5a7]">{isEn ? 'Do you want to exit Secret Killer?' : 'هل تريد الخروج من لعبة Secret Killer؟'}</p>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <button type="button" onClick={() => { sound.playClick(); setShowExitConfirmation(false); }} className="rounded-xl border border-[#7a5c2b]/60 py-3 font-black text-[#f5ebd9]">{isEn ? 'Stay' : 'البقاء'}</button>
+                <button type="button" onClick={() => { sound.playClick(); try { CapApp.exitApp().catch(() => {}); } catch {} }} className="rounded-xl bg-gradient-to-r from-[#d49e3d] to-[#c8923a] py-3 font-black text-slate-950">{isEn ? 'Exit' : 'خروج'}</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

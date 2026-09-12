@@ -57,3 +57,12 @@ This document outlines the complete compliance and preparation checklist require
   * Title: سيكرت كيلر (Secret Killer)
   * Short Description: لعبة الاستنتاج والتحقيق التفاعلية مع الأصدقاء.
   * Full Description: Detailed game description highlighting features and game rules without keyword stuffing.
+# AdMob production configuration
+
+Before distributing a build with ads, add the real AdMob application ID to `android/gradle.properties`:
+
+```properties
+ADMOB_APP_ID=ca-app-pub-xxxxxxxxxxxxxxxx~xxxxxxxxxx
+```
+
+Also create a local `.env` from `.env.example` and enter the real banner and interstitial unit IDs. The app intentionally does not include Google test IDs or simulated ads. Register development devices as AdMob test devices while testing.

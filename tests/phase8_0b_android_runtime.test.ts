@@ -4,7 +4,6 @@ import { BUILT_IN_STORIES_V2 } from '../src/data/stories';
 import { GameScreen } from '../src/types';
 import { resolveAndroidBackAction, AndroidBackUIState } from '../src/utils/androidBackHandler';
 import { sound } from '../src/utils/audio';
-import { adService } from '../src/services/adService';
 
 let passedTests = 0;
 let failedTests = 0;
@@ -149,8 +148,8 @@ console.log('Test 4: Active gameplay screens are strictly blocked to protect gam
   }
 }
 
-// Test 5: Home Screen triggers Application Exit
-console.log('Test 5: Home screen triggers EXIT_APP');
+// Test 5: Home Screen requires an explicit exit confirmation
+console.log('Test 5: Home screen triggers CONFIRM_EXIT');
 {
   const homeState: AndroidBackUIState = {
     currentScreen: 'home',
@@ -160,7 +159,11 @@ console.log('Test 5: Home screen triggers EXIT_APP');
     isInterstitialOpen: false,
   };
   const homeAction = resolveAndroidBackAction(homeState);
-  check(homeAction.type === 'EXIT_APP', 'home screen must trigger EXIT_APP');
+  check(homeAction.type === 'CONFIRM_EXIT', 'home screen must request exit confirmation instead of exiting');
+
+  const confirmationState = { ...homeState, showExitConfirmation: true };
+  const confirmationAction = resolveAndroidBackAction(confirmationState);
+  check(confirmationAction.type === 'CLOSE_EXIT_CONFIRMATION', 'back dismisses the exit confirmation and remains on home');
 }
 
 // Test 6: Authoritative GameEngine and Coordinator State Integrity During Active Gameplay Back Press
@@ -273,37 +276,16 @@ console.log('Test 8: Audio engine executes safely without throwing');
   check(!threw, 'All sound methods execute without throwing in any environment');
 }
 
-// Test 9: AdService safe continuation and back dismissal
-console.log('Test 9: AdService executes callbacks safely and integrates with back button');
+// Test 9: Ad service never simulates ads or blocks the game outside configured Android AdMob
+console.log('Test 9: Ad service safely continues without native production configuration');
 {
   let proceeded = false;
-  adService.updateConfig({ adsEnabled: false });
-  adService.requestInterstitial('round_transition', () => {
+  const { adService } = await import('../src/services/adService');
+  await adService.requestInterstitial('round_transition', () => {
     proceeded = true;
   });
-  check(proceeded, 'AdService immediately calls onProceed when ads are disabled');
-
-  // When interstitial is opened and back button closes it
-  adService.updateConfig({ adsEnabled: true, interstitialCooldownSeconds: 0 });
-  let closedProceeded = false;
-  adService.requestInterstitial('game_end', () => {
-    closedProceeded = true;
-  });
-  check(adService.getActiveInterstitial().isOpen, 'Interstitial is opened');
-
-  // Back button closes interstitial
-  const adBackState: AndroidBackUIState = {
-    currentScreen: 'results',
-    showRules: false,
-    showSettings: false,
-    showCustomStoryModal: false,
-    isInterstitialOpen: adService.getActiveInterstitial().isOpen,
-  };
-  const adAction = resolveAndroidBackAction(adBackState);
-  check(adAction.type === 'CLOSE_INTERSTITIAL', 'Back resolves to CLOSE_INTERSTITIAL');
-  adService.closeInterstitial();
-  check(!adService.getActiveInterstitial().isOpen, 'Interstitial closed');
-  check(closedProceeded, 'Interstitial onProceed callback executed upon back dismissal');
+  check(proceeded, 'Ad service immediately continues when native production ads are unavailable');
+  check(!adService.hasProductionConfiguration(), 'Test environment contains no fake AdMob unit IDs');
 }
 
 // Test 10: Authoritative GameFlowCoordinator back handling execution

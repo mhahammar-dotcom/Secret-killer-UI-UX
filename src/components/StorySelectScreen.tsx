@@ -5,7 +5,6 @@ import { StoryData } from '../types';
 import { sound } from '../utils/audio';
 import { STORY_COVERS, DEFAULT_STORY_COVER } from '../assets/covers';
 import { AR_STRINGS, EN_STRINGS } from '../data/translations';
-import { BannerAd } from './ads/BannerAd';
 
 interface StorySelectScreenProps {
   stories: StoryData[];
@@ -368,8 +367,6 @@ export const StorySelectScreen: React.FC<StorySelectScreenProps> = ({
             </div>
           </motion.button>
 
-          {/* Banner Ad */}
-          <BannerAd language={language} className="py-1" />
         </div>
 
       </div>

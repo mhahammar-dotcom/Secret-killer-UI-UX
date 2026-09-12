@@ -5,6 +5,8 @@ android {
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "com.secretkiller.game"
+        def admobAppId = project.findProperty("ADMOB_APP_ID") ?: "ADMOB_APP_ID_REQUIRED"
+        resValue "string", "admob_app_id", admobAppId
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

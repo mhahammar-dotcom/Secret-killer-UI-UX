@@ -6,17 +6,19 @@ export interface AndroidBackUIState {
   showSettings: boolean;
   showCustomStoryModal: boolean;
   isInterstitialOpen: boolean;
+  showExitConfirmation?: boolean;
 }
 
 export type AndroidBackAction =
   | { type: 'CLOSE_INTERSTITIAL' }
+  | { type: 'CLOSE_EXIT_CONFIRMATION' }
   | { type: 'CLOSE_RULES' }
   | { type: 'CLOSE_SETTINGS' }
   | { type: 'CLOSE_CUSTOM_STORY' }
   | { type: 'NAVIGATE_PREGAME'; targetScreen: 'home' | 'story_select' | 'story_intro' }
   | { type: 'COORDINATOR_BACK'; screen: GameScreen }
   | { type: 'BLOCK_ACTIVE_GAMEPLAY'; reason: string; screen: GameScreen }
-  | { type: 'EXIT_APP' };
+  | { type: 'CONFIRM_EXIT' };
 
 /**
  * Authoritative resolver for Android hardware back-button actions.
@@ -27,12 +29,16 @@ export type AndroidBackAction =
  * 3. Gameplay screens (voting, role_pass, results) delegate directly to GameFlowCoordinator authority.
  * 4. Active gameplay screens without reverse transitions (free_discussion, vote_result, reveals)
  *    are protected / blocked from back navigation to prevent game state desynchronization.
- * 5. Home screen triggers application exit.
+ * 5. Home screen asks for confirmation before application exit.
  */
 export function resolveAndroidBackAction(state: AndroidBackUIState): AndroidBackAction {
   // 1. Overlays take highest precedence
   if (state.isInterstitialOpen) {
     return { type: 'CLOSE_INTERSTITIAL' };
+  }
+
+  if (state.showExitConfirmation) {
+    return { type: 'CLOSE_EXIT_CONFIRMATION' };
   }
 
   if (state.showCustomStoryModal) {
@@ -47,9 +53,9 @@ export function resolveAndroidBackAction(state: AndroidBackUIState): AndroidBack
     return { type: 'CLOSE_RULES' };
   }
 
-  // 2. Home screen - exit application
+  // 2. Home screen - never exit without a user confirmation.
   if (state.currentScreen === 'home') {
-    return { type: 'EXIT_APP' };
+    return { type: 'CONFIRM_EXIT' };
   }
 
   // 3. Pre-game setup screens (local UI navigation before game is started)
