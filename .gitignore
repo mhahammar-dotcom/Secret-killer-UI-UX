@@ -7,6 +7,9 @@ coverage/
 .env*
 !.env.example
 tmp/
+.npm-cache/
+.idea/
+android/.idea/
 
 # Capacitor Android generated assets
 android/app/src/main/assets/public/
