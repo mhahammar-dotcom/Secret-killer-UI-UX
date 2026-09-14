@@ -56,6 +56,10 @@ export interface UIStrings {
   testAdPreview: string;
   interstitialAdBadge: string;
   bannerAdBadge: string;
+  privacyPolicy: string;
+  privacyPolicyDesc: string;
+  viewPolicy: string;
+  privacyPolicyTitle: string;
 
   // Story Select Screen
   caseArchive: string;
@@ -361,6 +365,10 @@ export const AR_STRINGS: UIStrings = {
   testAdPreview: 'معاينة إعلان تجريبي',
   interstitialAdBadge: 'إعلان بيني',
   bannerAdBadge: 'إعلان بانر',
+  privacyPolicy: 'سياسة الخصوصية',
+  privacyPolicyDesc: 'عرض شروط الخصوصية وحماية بيانات اللاعبين',
+  viewPolicy: 'عرض',
+  privacyPolicyTitle: 'سياسة الخصوصية وحماية البيانات',
 
   caseArchive: 'أرشيف القضايا الجنائية',
   selectStoryTitle: 'أرشيف القضايا',
@@ -652,6 +660,10 @@ export const EN_STRINGS: UIStrings = {
   testAdPreview: 'Preview Test Ad',
   interstitialAdBadge: 'Interstitial Ad',
   bannerAdBadge: 'Banner Ad',
+  privacyPolicy: 'Privacy Policy',
+  privacyPolicyDesc: 'View player data handling and privacy terms',
+  viewPolicy: 'View',
+  privacyPolicyTitle: 'Privacy Policy & Data Protection',
 
   caseArchive: 'Criminal Case Archive',
   selectStoryTitle: 'Criminal Cases Archive',

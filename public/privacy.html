@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - Secret Killer (سيكرت كيلر)</title>
+  <style>
+    :root {
+      --bg-color: #080a0f;
+      --card-bg: #11141c;
+      --card-border: #2a2418;
+      --gold-primary: #c8923a;
+      --gold-light: #f3cb79;
+      --text-main: #e2ded5;
+      --text-muted: #9c9588;
+      --link-color: #e5b35a;
+      --placeholder-bg: rgba(200, 146, 58, 0.15);
+      --placeholder-border: #c8923a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.65;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 36px 28px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    .header {
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 24px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .lang-switcher {
+      display: flex;
+      gap: 10px;
+      align-self: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .lang-btn {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--gold-primary);
+      color: var(--gold-light);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn.active, .lang-btn:hover {
+      background: var(--gold-primary);
+      color: #050608;
+    }
+
+    h1 {
+      color: var(--gold-light);
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .badge-date {
+      display: inline-block;
+      background: rgba(200, 146, 58, 0.1);
+      border: 1px solid rgba(200, 146, 58, 0.3);
+      color: var(--gold-light);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    h2 {
+      color: var(--gold-primary);
+      font-size: 19px;
+      margin-top: 30px;
+      margin-bottom: 12px;
+      border-left: 3px solid var(--gold-primary);
+      padding-left: 10px;
+    }
+
+    .rtl h2 {
+      border-left: none;
+      border-right: 3px solid var(--gold-primary);
+      padding-left: 0;
+      padding-right: 10px;
+    }
+
+    p {
+      margin-bottom: 14px;
+      font-size: 15px;
+      color: var(--text-main);
+    }
+
+    ul, ol {
+      margin-bottom: 16px;
+      padding-left: 24px;
+    }
+
+    .rtl ul, .rtl ol {
+      padding-left: 0;
+      padding-right: 24px;
+    }
+
+    li {
+      margin-bottom: 8px;
+      font-size: 14.5px;
+      color: var(--text-main);
+    }
+
+    strong {
+      color: #fff;
+    }
+
+    a {
+      color: var(--link-color);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .placeholder {
+      display: inline-block;
+      background: var(--placeholder-bg);
+      border: 1px dashed var(--placeholder-border);
+      color: #ffd685;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+
+    .callout {
+      background: rgba(200, 146, 58, 0.08);
+      border: 1px solid rgba(200, 146, 58, 0.25);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    .section-divider {
+      border: 0;
+      height: 1px;
+      background: var(--card-border);
+      margin: 40px 0;
+    }
+
+    .rtl {
+      direction: rtl;
+      text-align: right;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Cairo", Roboto, sans-serif;
+    }
+
+    .footer {
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1px solid var(--card-border);
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="lang-switcher">
+        <a href="#lang-en" class="lang-btn active" id="btn-en">English</a>
+        <a href="#lang-ar" class="lang-btn" id="btn-ar">العربية</a>
+      </div>
+      <h1>Privacy Policy - Secret Killer</h1>
+      <div class="subtitle">سيكرت كيلر - سياسة الخصوصية وحماية البيانات</div>
+      <div>
+        <span class="badge-date">Effective Date: September 2026</span>
+      </div>
+    </div>
+
+    <!-- ENGLISH SECTION -->
+    <div id="lang-en" class="content-section">
+      <p>
+        This Privacy Policy explains how <strong>Secret Killer</strong> ("the Application", "the App", "we", "us", or "our"), developed by <span class="placeholder">[DEVELOPER_OR_COMPANY_NAME_PLACEHOLDER]</span>, handles user information, device data, and third-party integrations.
+      </p>
+
+      <div class="callout">
+        <strong>Summary for Players:</strong> Secret Killer is primarily an offline, pass-and-play social deduction party game. We do not require accounts, logins, passwords, contact lists, GPS locations, or microphone/camera access. Any ratings or feedback you voluntarily submit are transmitted securely without personal identifiers.
+      </div>
+
+      <h2>1. Information Collected and Usage</h2>
+      <p>The Application processes minimal data necessary for game functionality and user-initiated features:</p>
+      <ul>
+        <li>
+          <strong>Voluntary User Ratings & Feedback:</strong> If you choose to submit a rating or feedback in the rating modal, we collect the numerical star rating (1–5), optional feedback text (up to 1,000 characters), feedback category, app version, language setting, and submission timestamp. This data is non-sensitive and is collected solely to diagnose gameplay issues and improve the app.
+        </li>
+        <li>
+          <strong>Device Local Storage:</strong> The App stores your game preferences (sound volume, discussion timer length, language choice, secret ballot mode) and any custom mystery stories you author locally on your device using standard web/WebView local storage. This data remains on your device and is never transmitted to our servers.
+        </li>
+        <li>
+          <strong>No Account or Identity Data:</strong> The App does not require registration, email sign-up, phone numbers, or social logins. We do not collect user names, real names, or personal identities.
+        </li>
+      </ul>
+
+      <h2>2. Third-Party Services and Advertising</h2>
+      <p>The Application integrates standard Google services to facilitate backend feedback storage and advertising:</p>
+      <ul>
+        <li>
+          <strong>Google Cloud / Firebase Firestore:</strong> When you voluntarily submit feedback or a star rating, the submission is recorded in Google Cloud Firestore. This transmission is encrypted in transit via HTTPS/TLS. Firestore security rules enforce strict write-only validation and deny public read/update access.
+          <br>Privacy Policy: <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener noreferrer">https://firebase.google.com/support/privacy</a>
+        </li>
+        <li>
+          <strong>Google AdMob (Advertising):</strong> The Application displays banner ads on the Home screen and occasional interstitial ads during natural game transitions. Google AdMob may collect and process device identifiers (such as the Google Advertising ID / GAID), coarse location based on IP address, and interaction diagnostics for ad delivery, fraud prevention, and frequency capping.
+          <br>Google Advertising Policies: <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">https://policies.google.com/technologies/ads</a>
+        </li>
+        <li>
+          <strong>Consent Management (Google UMP):</strong> In jurisdictions where consent is required (such as the European Economic Area and the UK under GDPR/ePrivacy), the App presents the Google User Messaging Platform (UMP) consent dialog on launch. You can grant or decline consent for personalized advertising.
+        </li>
+      </ul>
+
+      <h2>3. Artificial Intelligence (AI) and Gemini Processing</h2>
+      <p>
+        The production mobile Android application operates with complete offline, deterministic game logic, pre-authored mystery cases, and pass-and-play role allocations. 
+        <strong>No user gameplay, custom story text, or voice input in the mobile app is transmitted to or processed by artificial intelligence models or Google Gemini.</strong>
+        While our development web server contains an experimental administrative endpoint for generating mystery story drafts, the mobile Android application does not invoke this endpoint and does not transmit player information to external AI services.
+      </p>
+
+      <h2>4. Data Encryption and Security</h2>
+      <p>
+        All network communications (including voluntary feedback submissions to Firebase and advertising requests through Google AdMob) use secure, encrypted transport protocols (HTTPS/TLS). We do not collect or store unencrypted sensitive personal information.
+      </p>
+
+      <h2>5. Data Retention and Deletion</h2>
+      <ul>
+        <li>
+          <strong>Local Device Data:</strong> You may delete all locally stored game preferences, custom stories, and cached data at any time by clearing the application's storage or cache via your Android device settings or by uninstalling the Application.
+        </li>
+        <li>
+          <strong>Firestore Feedback Deletion:</strong> Anonymous feedback submitted through the rating modal is retained for quality assurance and game improvement. If you wish to request deletion of feedback you submitted, contact us at <span class="placeholder">[PRIVACY_CONTACT_EMAIL_PLACEHOLDER]</span> with the approximate submission date and text snippet.
+        </li>
+      </ul>
+
+      <h2>6. Children's Privacy (Target Audience)</h2>
+      <p>
+        Secret Killer is designed as a social deduction murder mystery game for general audiences aged 13 and older. The Application does not knowingly collect personal identifiable information from children under 13 years of age. If you believe that a child has provided us with personal information, please contact us so that we can promptly remove such data.
+      </p>
+
+      <h2>7. Changes to This Privacy Policy</h2>
+      <p>
+        We may update this Privacy Policy periodically. Any modifications will be posted to this page with an updated effective date. Continued use of the Application after changes are posted constitutes acceptance of the revised policy.
+      </p>
+
+      <h2>8. Contact Information</h2>
+      <p>
+        If you have questions, feedback, or privacy concerns regarding Secret Killer, please contact:
+      </p>
+      <ul>
+        <li><strong>Developer/Company:</strong> <span class="placeholder">[DEVELOPER_OR_COMPANY_NAME_PLACEHOLDER]</span></li>
+        <li><strong>Privacy Contact Email:</strong> <span class="placeholder">[PRIVACY_CONTACT_EMAIL_PLACEHOLDER]</span></li>
+        <li><strong>Official Public URL:</strong> <span class="placeholder">[PUBLIC_PRIVACY_POLICY_URL_PLACEHOLDER]</span></li>
+      </ul>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- ARABIC SECTION -->
+    <div id="lang-ar" class="content-section rtl">
+      <div class="header" style="border:none; padding:0; margin-bottom:20px;">
+        <h1>سياسة الخصوصية - سيكرت كيلر (Secret Killer)</h1>
+        <div class="subtitle">تاريخ السريان: سبتمبر 2026</div>
+      </div>
+
+      <p>
+        توضح سياسة الخصوصية هذه كيفية تعامل لعبة <strong>سيكرت كيلر (Secret Killer)</strong> ("التطبيق" أو "نحن")، المطورة بواسطة <span class="placeholder">[DEVELOPER_OR_COMPANY_NAME_PLACEHOLDER]</span>، مع بيانات المستخدم والأجهزة والخدمات الخارجية.
+      </p>
+
+      <div class="callout">
+        <strong>ملخص للاعبين:</strong> لعبة سيكرت كيلر هي لعبة جماعية تعتمد على الاستنتاج واللعب وجهاً لوجه على نفس الجهاز (Pass-and-Play). التطبيق لا يتطلب إنشاء حساب أو تسجيل دخول أو بريد إلكتروني، ولا يطلب الوصول إلى جهات الاتصال أو الكاميرا أو الميكروفون أو الموقع الجغرافي. أي تقييم أو ملاحظة ترسلها اختيارياً يتم تشفيرها وإرسالها بأمان بدون أي بيانات تعريف شخصية.
+      </div>
+
+      <h2>1. البيانات التي يتم جمعها وكيفية استخدامها</h2>
+      <ul>
+        <li>
+          <strong>التقييمات والملاحظات الاختيارية:</strong> إذا اخترت إرسال تقييم للعبة، نقوم بجمع عدد النجوم (1 إلى 5)، والملاحظات المكتوبة اختيارياً (حتى 1000 حرف)، وتصنيف الملاحظة، وإصدار التطبيق، واللغة، وتوقيت الإرسال. هذه البيانات غير حساسة وتُستخدم حصرياً لتحسين جودة اللعبة وإصلاح الأخطاء.
+        </li>
+        <li>
+          <strong>التخزين المحلي على الجهاز:</strong> يحفظ التطبيق إعداداتك المفضلة (مستوى الصوت، مدة مؤقت النقاش، خيار الاقتراع السري، واللغة) والقضايا المخصصة التي تقوم بتأليفها محلياً على جهازك باستخدام التخزين المحلي (LocalStorage). هذه البيانات لا تغادر جهازك إطلاقاً ولا تُرسل إلى خوادمنا.
+        </li>
+        <li>
+          <strong>عدم وجود حسابات أو بيانات هوية:</strong> لا يتطلب التطبيق أي تسجيل دخول، ولا نقوم بجمع الأسماء الحقيقية للمستخدمين أو أرقام الهواتف أو كلمات المرور.
+        </li>
+      </ul>
+
+      <h2>2. الخدمات الخارجية والإعلانات</h2>
+      <ul>
+        <li>
+          <strong>قاعدة بيانات Google Cloud / Firebase Firestore:</strong> عند إرسال تقييم أو ملاحظة اختيارياً، تُحفظ الملاحظة في قاعدة بيانات Firebase Firestore المشفرة عبر بروتوكول HTTPS/TLS الآمن. قواعد الأمان تمنع القراءة العامة أو التعديل لحماية البيانات.
+          <br>سياسة خصوصية Firebase: <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener noreferrer">https://firebase.google.com/support/privacy</a>
+        </li>
+        <li>
+          <strong>إعلانات Google AdMob:</strong> يعرض التطبيق إعلانات بانر على الشاشة الرئيسية وإعلانات بينية أثناء الانتقالات الطبيعية بين الجولات. قد تستخدم شبكة AdMob معرف الإعلانات الخاص بالجهاز (GAID) وعنوان IP ومعلومات تشخيصية لعرض الإعلانات ومكافحة الاحتيال وضبط تكرار الإعلانات.
+          <br>سياسة خصوصية Google: <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">https://policies.google.com/technologies/ads</a>
+        </li>
+        <li>
+          <strong>إدارة الموافقة (Google UMP):</strong> في المناطق التي تتطلب موافقة صريحة (مثل المنطقة الاقتصادية الأوروبية والمملكة المتحدة)، يُظهر التطبيق نموذج الموافقة المعتمد من Google لمنح المستخدم حرية اختيار الإعلانات المخصصة أو العامة.
+        </li>
+      </ul>
+
+      <h2>3. معالجة الذكاء الاصطناعي (Gemini)</h2>
+      <p>
+        يعمل تطبيق أندرويد الإنتاجي بالكامل محلياً على الجهاز بقواعد استنتاج وقضايا مكتوبة مسبقاً وتوزيع أدوار محكم دون اتصال خارجي.
+        <strong>لا يتم إرسال أي نص أو اسم أو تسجيل صوتي أو بيانات لعب من تطبيق أندرويد إلى نماذج الذكاء الاصطناعي أو Google Gemini.</strong>
+      </p>
+
+      <h2>4. أمان وتشفير البيانات</h2>
+      <p>
+        تتم جميع الاتصالات الشبكية (مثل إرسال التقييمات أو تحميل الإعلانات) عبر بروتوكولات التشفير القياسية (HTTPS/TLS).
+      </p>
+
+      <h2>5. حذف البيانات والاحتفاظ بها</h2>
+      <ul>
+        <li>
+          <strong>البيانات المحلية:</strong> يمكنك حذف كافة الإعدادات والقصص المخصصة في أي وقت عبر مسح بيانات التطبيق من إعدادات جهاز أندرويد أو عبر إلغاء تثبيت التطبيق.
+        </li>
+        <li>
+          <strong>حذف الملاحظات المرسلة:</strong> لحذف أي ملاحظة قمت بإرسالها سابقاً، يمكنك التواصل معنا عبر البريد الإلكتروني <span class="placeholder">[PRIVACY_CONTACT_EMAIL_PLACEHOLDER]</span> مع ذكر التاريخ التقريبي ونص الملاحظة.
+        </li>
+      </ul>
+
+      <h2>6. خصوصية الأطفال والجمهور المستهدف</h2>
+      <p>
+        لعبة سيكرت كيلر موجهة للجمهور العام والأعمار من 13 عاماً فما فوق، ولا تجمع اللعبة عن قصد أي بيانات تعريف شخصية من الأطفال دون سن 13 عاماً.
+      </p>
+
+      <h2>7. التعديلات على سياسة الخصوصية</h2>
+      <p>
+        قد يتم تحديث سياسة الخصوصية هذه مستقبلاً لمواكبة الميزات الجديدة. سيتم نشر أي تعديل على هذه الصفحة مع تحديث تاريخ السريان.
+      </p>
+
+      <h2>8. معلومات الاتصال</h2>
+      <ul>
+        <li><strong>المطور / الجهة المطورة:</strong> <span class="placeholder">[DEVELOPER_OR_COMPANY_NAME_PLACEHOLDER]</span></li>
+        <li><strong>البريد الإلكتروني للخصوصية:</strong> <span class="placeholder">[PRIVACY_CONTACT_EMAIL_PLACEHOLDER]</span></li>
+        <li><strong>رابط الصفحة الرسمي:</strong> <span class="placeholder">[PUBLIC_PRIVACY_POLICY_URL_PLACEHOLDER]</span></li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      Secret Killer &copy; 2026. All rights reserved.
+    </div>
+  </div>
+
+  <script>
+    // Smooth language toggle
+    const btnEn = document.getElementById('btn-en');
+    const btnAr = document.getElementById('btn-ar');
+    const secEn = document.getElementById('lang-en');
+    const secAr = document.getElementById('lang-ar');
+
+    function showLang(lang) {
+      if (lang === 'ar') {
+        btnAr.classList.add('active');
+        btnEn.classList.remove('active');
+        secAr.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        btnEn.classList.add('active');
+        btnAr.classList.remove('active');
+        secEn.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    btnEn.addEventListener('click', (e) => {
+      e.preventDefault();
+      showLang('en');
+    });
+
+    btnAr.addEventListener('click', (e) => {
+      e.preventDefault();
+      showLang('ar');
+    });
+  </script>
+</body>
+</html>
